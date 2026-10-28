@@ -1,127 +1,184 @@
-# Controle van de onderdelendata
+# Bronnen en controle van de onderdelendata
 
-De onderdelen in `database/data/parts.php` zijn bestaande producten. Niet alles is al gecontroleerd. In dit document staat wat nog nagekeken moet worden.
-
-Werkwijze na het controleren van een onderdeel:
-
-1. De waarde aanpassen in `database/data/parts.php`.
-2. Bij een prijs: `price_date` op de datum van de controle zetten, bijvoorbeeld `'price_date' => '2026-11-02'`.
-3. Het onderdeel hieronder afvinken.
-4. `composer seed` draaien.
+Op 28 oktober 2026 zijn alle onderdelen in `database/data/parts.php` gecontroleerd: of ze nog te koop zijn, wat ze kosten en of de specificaties kloppen. In dit document staat waar de gegevens vandaan komen en welke keuzes ik heb gemaakt als bronnen elkaar tegenspraken.
 
 ## 1. Prijzen
 
-Alle prijzen zijn schattingen die ik op 28 oktober 2026 heb ingevoerd. Ze zijn nog niet opgezocht. Bron voor de controle: de laagste prijs bij een bekende Nederlandse winkel in de Tweakers Pricewatch.
+Bron: de laagste prijs in de [Tweakers Pricewatch](https://tweakers.net/pricewatch/) op 28 oktober 2026. Bij processors is dat de Boxed-versie. Alle onderdelen hebben in de Pricewatch prijzen van meerdere winkels.
+
+Geheugen, opslag en videokaarten zijn op dit moment veel duurder dan een jaar eerder, door een tekort aan geheugenchips. Een kit van 16 GB DDR5 kost bijvoorbeeld € 314,10. Dat is geen fout in de data.
+
+Prijzen veranderen snel. Werkwijze om ze bij te werken:
+
+1. De prijs opzoeken in de Tweakers Pricewatch.
+2. `price_eur` aanpassen in `database/data/parts.php` en `price_date` op de datum van de controle zetten.
+3. `composer seed` draaien.
 
 ### Processors
 
-| Onderdeel | Richtprijs nu | Gecontroleerd |
-|---|---|---|
-| AMD Ryzen 5 5600 | € 99,00 | |
-| AMD Ryzen 7 5700X3D | € 199,00 | |
-| AMD Ryzen 5 7600 | € 179,00 | |
-| AMD Ryzen 5 9600X | € 209,00 | |
-| AMD Ryzen 7 7800X3D | € 349,00 | |
-| AMD Ryzen 7 9800X3D | € 469,00 | |
-| Intel Core i5-12400F | € 109,00 | |
-| Intel Core i5-14600K | € 229,00 | |
-| Intel Core Ultra 5 245K | € 249,00 | |
+| Onderdeel | Prijs |
+|---|---|
+| AMD Ryzen 5 5600 Boxed | € 124,96 |
+| AMD Ryzen 7 5700X Boxed | € 194,90 |
+| AMD Ryzen 5 7600 Boxed | € 176,82 |
+| AMD Ryzen 5 9600X Boxed | € 181,00 |
+| AMD Ryzen 7 7800X3D Boxed | € 356,84 |
+| AMD Ryzen 7 9800X3D Boxed | € 429,00 |
+| Intel Core i5-12400F Boxed | € 145,04 |
+| Intel Core i5-14600K Boxed | € 260,84 |
+| Intel Core Ultra 5 245K Boxed | € 183,00 |
 
 ### Moederborden
 
-| Onderdeel | Richtprijs nu | Gecontroleerd |
-|---|---|---|
-| MSI MAG B550 TOMAHAWK | € 139,00 | |
-| ASRock B550M Pro4 | € 99,00 | |
-| Gigabyte B650M DS3H | € 119,00 | |
-| MSI B650 GAMING PLUS WIFI | € 169,00 | |
-| ASUS ROG STRIX B650E-I GAMING WIFI | € 289,00 | |
-| MSI PRO B760M-A WIFI DDR4 | € 139,00 | |
-| Gigabyte Z790 AORUS ELITE AX | € 229,00 | |
-| MSI MAG B860 TOMAHAWK WIFI | € 219,00 | |
+| Onderdeel | Prijs |
+|---|---|
+| ASUS TUF Gaming B550-PLUS | € 120,12 |
+| ASRock B550M Pro4 | € 95,48 |
+| Gigabyte B850M DS3H | € 134,00 |
+| MSI B850 GAMING PLUS WIFI | € 169,00 |
+| ASUS ROG Strix B850-I GAMING WIFI | € 279,00 |
+| Gigabyte B760M DS3H DDR4 | € 99,00 |
+| Gigabyte Z790 AORUS ELITE AX | € 206,99 |
+| MSI MAG B860 TOMAHAWK WIFI | € 218,51 |
 
 ### Geheugen
 
-| Onderdeel | Richtprijs nu | Gecontroleerd |
-|---|---|---|
-| Kingston FURY Beast 16GB (2x8GB) DDR4-3200 | € 45,00 | |
-| Corsair Vengeance LPX 32GB (2x16GB) DDR4-3600 | € 79,00 | |
-| G.Skill Ripjaws V 64GB (2x32GB) DDR4-3600 | € 139,00 | |
-| Kingston FURY Beast 16GB (2x8GB) DDR5-5600 | € 65,00 | |
-| Corsair Vengeance 32GB (2x16GB) DDR5-6000 CL30 | € 119,00 | |
-| G.Skill Flare X5 32GB (2x16GB) DDR5-6000 CL30 | € 125,00 | |
-| Corsair Vengeance 64GB (2x32GB) DDR5-6000 CL30 | € 239,00 | |
+| Onderdeel | Prijs |
+|---|---|
+| Kingston FURY Beast 16GB (2x8GB) DDR4-3200 | € 169,00 |
+| Kingston FURY Beast 32GB (2x16GB) DDR4-3200 | € 299,00 |
+| Kingston FURY Beast 16GB (2x8GB) DDR5-5600 | € 314,10 |
+| Corsair Vengeance 32GB (2x16GB) DDR5-6000 CL30 | € 599,00 |
+| G.Skill Flare X5 32GB (2x16GB) DDR5-6000 CL30 | € 619,00 |
 
 ### Videokaarten
 
-| Onderdeel | Richtprijs nu | Gecontroleerd |
-|---|---|---|
-| Intel Arc B580 Limited Edition | € 279,00 | |
-| MSI GeForce RTX 5060 VENTUS 2X OC 8G | € 309,00 | |
-| AMD Radeon RX 7600 | € 259,00 | |
-| NVIDIA GeForce RTX 5070 Founders Edition | € 619,00 | |
-| AMD Radeon RX 7800 XT | € 479,00 | |
-| Sapphire PULSE Radeon RX 9070 XT 16GB | € 689,00 | |
-| NVIDIA GeForce RTX 5080 Founders Edition | € 1.179,00 | |
-| ASUS ROG Strix GeForce RTX 4090 OC Edition | € 1.999,00 | |
+| Onderdeel | Prijs |
+|---|---|
+| MSI GeForce RTX 5060 8G VENTUS 2X OC | € 499,00 |
+| PowerColor Reaper Radeon RX 9060 XT 16GB | € 570,01 |
+| MSI GeForce RTX 5060 Ti 16G VENTUS 2X OC PLUS | € 843,90 |
+| MSI GeForce RTX 5070 12G VENTUS 2X OC | € 949,00 |
+| Sapphire Pulse Radeon RX 9070 XT | € 999,00 |
+| MSI GeForce RTX 5080 16G VENTUS 3X OC | € 1.999,00 |
+| ASUS ROG Astral GeForce RTX 5080 16GB GDDR7 OC Edition | € 2.229,00 |
 
 ### Koelers
 
-| Onderdeel | Richtprijs nu | Gecontroleerd |
-|---|---|---|
-| Noctua NH-L12S | € 59,00 | |
-| DeepCool AK400 | € 35,00 | |
-| Thermalright Peerless Assassin 120 SE | € 39,00 | |
-| ARCTIC Freezer 36 | € 32,00 | |
-| DeepCool AK620 | € 59,00 | |
-| Noctua NH-D15 G2 | € 149,00 | |
+| Onderdeel | Prijs |
+|---|---|
+| Noctua NH-L12S | € 57,95 |
+| DeepCool AK400 | € 32,99 |
+| Thermalright Peerless Assassin 120 SE | € 43,00 |
+| ARCTIC Freezer 36 | € 21,20 |
+| DeepCool AK620 | € 64,95 |
+| Noctua NH-D15 G2 | € 138,94 |
 
 ### Kasten
 
-| Onderdeel | Richtprijs nu | Gecontroleerd |
-|---|---|---|
-| Cooler Master MasterBox Q300L | € 49,00 | |
-| Corsair 3000D Airflow | € 79,00 | |
-| Corsair 4000D Airflow | € 99,00 | |
-| Fractal Design North | € 139,00 | |
-| Lian Li Lancool 216 | € 99,00 | |
-| Cooler Master MasterBox NR200P | € 109,00 | |
-| SilverStone SUGO SG13 | € 59,00 | |
+| Onderdeel | Prijs |
+|---|---|
+| Cooler Master MasterBox Q300L V2 | € 62,00 |
+| Corsair 3000D Airflow Tempered Glass | € 76,00 |
+| Lian Li Lancool 216 | € 89,90 |
+| Fractal Design North TG Clear Charcoal Black | € 144,90 |
+| Cooler Master MasterBox NR200P V3 | € 103,05 |
 
 ### Opslag
 
-| Onderdeel | Richtprijs nu | Gecontroleerd |
-|---|---|---|
-| Crucial P3 Plus 500GB | € 45,00 | |
-| Samsung 870 EVO 500GB | € 59,00 | |
-| Kingston NV3 1TB | € 65,00 | |
-| Crucial MX500 1TB | € 75,00 | |
-| Western Digital WD_BLACK SN850X 1TB | € 99,00 | |
-| Samsung 990 PRO 2TB | € 179,00 | |
+| Onderdeel | Prijs |
+|---|---|
+| Kingston NV3 M.2 2280 500GB | € 104,22 |
+| Samsung 870 EVO 500GB | € 164,95 |
+| Kingston NV3 M.2 2280 1TB | € 149,90 |
+| Samsung 870 EVO 1TB | € 249,00 |
+| Western Digital WD_BLACK SN850X 1TB | € 199,00 |
+| Samsung 990 PRO 2TB | € 339,00 |
 
 ### Voedingen
 
-| Onderdeel | Richtprijs nu | Gecontroleerd |
-|---|---|---|
-| be quiet! System Power 10 450W | € 52,00 | |
-| Corsair CX550 | € 62,00 | |
-| Corsair RM650e | € 89,00 | |
-| Seasonic FOCUS GX-750 | € 115,00 | |
-| be quiet! Pure Power 12 M 850W | € 125,00 | |
-| Corsair RM1000x | € 179,00 | |
+| Onderdeel | Prijs |
+|---|---|
+| Corsair CX550 (2023) | € 49,95 |
+| Corsair RM650e (2025) | € 82,84 |
+| Seasonic FOCUS GX ATX 3 (2024) 750W | € 123,75 |
+| be quiet! Pure Power 13 M 850W | € 125,10 |
+| Corsair RM1000x (2024) | € 186,45 |
 
-## 2. Geschat verbruik
+## 2. Bronnen van de maten
+
+Voor de controleregels zijn vooral de maten belangrijk. Die heb ik opgezocht bij de fabrikant of, als die niet bereikbaar was, bij meerdere winkels die dezelfde waarde gaven.
+
+| Onderdeel | Waarde in de data | Bron |
+|---|---|---|
+| MSI GeForce RTX 5060 8G VENTUS 2X OC | 197 mm | Specificaties MSI: 197 x 120 x 41 mm |
+| PowerColor Reaper Radeon RX 9060 XT 16GB | 220 mm | PowerColor: 220 mm met bracket, 200 mm zonder |
+| MSI GeForce RTX 5060 Ti 16G VENTUS 2X OC PLUS | 227 mm | Winkels (Memory Express, Newegg): 227 x 127 x 41 mm |
+| MSI GeForce RTX 5070 12G VENTUS 2X OC | 236 mm | Winkels en distributeurs: 236 x 126 x 50 mm |
+| Sapphire Pulse Radeon RX 9070 XT | 320 mm | Sapphire via review PCPer: 320 x 120,25 x 61,6 mm |
+| MSI GeForce RTX 5080 16G VENTUS 3X OC | 303 mm | MSI-store: 303 x 121 x 49 mm |
+| ASUS ROG Astral GeForce RTX 5080 OC | 358 mm | ASUS: 357,6 x 149,3 x 76 mm |
+| Cooler Master MasterBox Q300L V2 | GPU 360 mm, koeler 159 mm | Cooler Master |
+| Corsair 3000D Airflow | GPU 360 mm, koeler 170 mm | Corsair-handleiding en winkels |
+| Lian Li Lancool 216 | GPU 392 mm, koeler 180 mm | Lian Li via winkels: 392 mm en 180,5 mm |
+| Fractal Design North (TG) | GPU 355 mm, koeler 170 mm | Fractal Design via winkels |
+| Cooler Master MasterBox NR200P V3 | GPU 361 mm, koeler 70 mm | Winkels: 361,5 mm en 70 mm |
+| Noctua NH-L12S | 70 mm | Noctua: 70 mm met de ventilator onder de koelvinnen |
+| DeepCool AK400 | 155 mm | DeepCool |
+| Thermalright Peerless Assassin 120 SE | 155 mm | Winkels (Galaxus en anderen) |
+| ARCTIC Freezer 36 | 159 mm | ARCTIC via winkels: 159 x 126 x 104 mm |
+| DeepCool AK620 | 160 mm | DeepCool via winkels: 129 x 138 x 160 mm |
+| Noctua NH-D15 G2 | 168 mm | Noctua: 168 mm met ventilatoren |
+
+Sockets, RAM-types, formaten, kernen en kloksnelheden komen uit de productinformatie in de Tweakers Pricewatch en zijn vergeleken met de sites van AMD, Intel en de fabrikanten van de moederborden. Het aantal geheugensloten van de Gigabyte B850M DS3H en B760M DS3H DDR4 (allebei 4) heb ik nagekeken bij Gigabyte en winkels.
+
+## 3. Keuzes als bronnen verschillen
+
+Als een maat niet precies vaststaat, kies ik de veilige kant. Dan zegt de site eerder "past niet" dan "past" terwijl het niet past.
+
+- **Afronden.** De database slaat hele millimeters op. Een videokaart rond ik naar boven af (ROG Astral: 357,6 wordt 358 mm). De ruimte in een kast rond ik naar beneden af (Lancool 216: 180,5 wordt 180 mm, NR200P V3: 361,5 wordt 361 mm).
+- **Videokaart met of zonder bracket.** De Reaper RX 9060 XT is 200 mm zonder en 220 mm met bracket. In de kast telt de lengte met bracket, dus 220 mm.
+- **Fractal Design North.** De versie met glazen zijpaneel (TG) past koelers tot 170 mm. De Mesh-versie met ventilatorbeugel maar tot 145 mm. In de data staat de TG-versie.
+- **Noctua NH-L12S.** 70 mm met de ventilator onder de koelvinnen (zo wordt hij geleverd), 86 mm met de ventilator erboven. In de data staat 70 mm.
+- **Cooler Master Q300L V2.** Cooler Master geeft 159 mm voor de koeler, sommige winkels 157 mm. Ik volg de fabrikant.
+
+## 4. Vervangen onderdelen
+
+De eerste versie van de data bevatte onderdelen die niet meer te koop zijn, maar bij een of twee winkels liggen of veel te duur zijn. Die zijn vervangen door vergelijkbare onderdelen die wel goed te koop zijn, of weggehaald.
+
+| Oud | Nieuw | Reden |
+|---|---|---|
+| AMD Ryzen 7 5700X3D | AMD Ryzen 7 5700X | Geen prijzen meer in de Pricewatch |
+| MSI MAG B550 TOMAHAWK | ASUS TUF Gaming B550-PLUS | Geen prijzen meer |
+| MSI B650 GAMING PLUS WIFI | MSI B850 GAMING PLUS WIFI | Geen prijzen meer, B850 is de opvolger |
+| Gigabyte B650M DS3H | Gigabyte B850M DS3H | Nog maar één winkel, B850 is de opvolger |
+| ASUS ROG STRIX B650E-I GAMING WIFI | ASUS ROG Strix B850-I GAMING WIFI | Opvolger, zodat alle AM5-borden dezelfde generatie (B850) zijn |
+| MSI PRO B760M-A WIFI DDR4 | Gigabyte B760M DS3H DDR4 | Geen prijzen meer |
+| Corsair Vengeance LPX 32GB DDR4-3600 | Kingston FURY Beast 32GB DDR4-3200 | Maar drie winkels en € 100 duurder |
+| G.Skill Ripjaws V 64GB DDR4 en Corsair Vengeance 64GB DDR5 | geen | Rond € 1.500 bij één of enkele winkels |
+| Intel Arc B580 Limited Edition | MSI GeForce RTX 5060 Ti 16G VENTUS 2X OC PLUS | Arc B580 bij maar twee winkels |
+| AMD Radeon RX 7600 en RX 7800 XT (referentie) | PowerColor Reaper RX 9060 XT 16GB | Referentiekaarten niet meer te koop |
+| NVIDIA RTX 5070 en RTX 5080 Founders Edition | MSI RTX 5070 VENTUS 2X OC en RTX 5080 VENTUS 3X OC | Founders Edition niet in Nederlandse winkels |
+| ASUS ROG Strix RTX 4090 OC | ASUS ROG Astral RTX 5080 OC | Niet meer te koop. De Astral is net zo lang (358 mm) |
+| Cooler Master MasterBox NR200P | Cooler Master MasterBox NR200P V3 | Origineel niet meer te koop. De V3 heeft andere maten |
+| Cooler Master MasterBox Q300L | Cooler Master MasterBox Q300L V2 | Origineel bij maar twee winkels |
+| Corsair 4000D Airflow | geen | Gewone versie bijna niet meer te koop |
+| SilverStone SUGO SG13 | geen | Er past alleen een koeler van maximaal 61 mm in, en die zit niet in de data |
+| Crucial P3 Plus 500GB en MX500 1TB | Kingston NV3 500GB en Samsung 870 EVO 1TB | Crucial verkoopt geen consumentenproducten meer |
+| be quiet! System Power 10 450W | geen | Geen prijzen meer. De CX550 is nu de goedkoopste voeding |
+| be quiet! Pure Power 12 M 850W | be quiet! Pure Power 13 M 850W | Opvolger |
+| Seasonic FOCUS GX-750 | Seasonic FOCUS GX ATX 3 (2024) 750W | Oude versie bij maar één winkel |
+
+## 5. Geschat verbruik
 
 Het verbruik (`power_w`) wordt gebruikt voor de controle van de voeding.
 
 **Processors.** Het maximale vermogen volgens de fabrikant:
 
-- AMD: de PPT, dat is 1,35 keer de TDP. 65 W TDP wordt 88 W, 105 W wordt 142 W en 120 W wordt 162 W.
+- AMD: de PPT, dat is 1,35 keer de TDP. 65 W TDP wordt 88 W en 120 W wordt 162 W.
 - Intel: de Maximum Turbo Power. Core i5-12400F 117 W, Core i5-14600K 181 W en Core Ultra 5 245K 159 W.
 
-Controleren op amd.com en intel.com (ark.intel.com).
-
-**Videokaarten.** Het totale vermogen (total board power) van het referentiemodel van AMD, NVIDIA of Intel. Overgeklokte versies van andere merken kunnen iets meer verbruiken. Dat geldt voor de MSI RTX 5060 VENTUS 2X OC, de Sapphire PULSE RX 9070 XT en de ASUS ROG Strix RTX 4090 OC.
+**Videokaarten.** Het totale vermogen (total board power) van de chip volgens AMD of NVIDIA: RTX 5060 145 W, RX 9060 XT 16GB 160 W, RTX 5060 Ti 180 W, RTX 5070 250 W, RX 9070 XT 304 W en RTX 5080 360 W. Overgeklokte versies (OC) kunnen iets meer verbruiken. De marge van 30% vangt dat op.
 
 **Overige onderdelen.** Dit zijn vaste schattingen, geen gegevens van de fabrikant:
 
@@ -134,26 +191,13 @@ Controleren op amd.com en intel.com (ark.intel.com).
 | Opslag | 5 W |
 | Voeding | 0 W, levert zelf het vermogen |
 
-## 3. Specificaties waar ik niet zeker van ben
+## 6. Randgevallen in de echte data
 
-| Onderdeel | Veld | Waarde nu | Wat controleren |
-|---|---|---|---|
-| MSI GeForce RTX 5060 VENTUS 2X OC 8G | lengte | 197 mm | Lengte op de productpagina van MSI. |
-| Sapphire PULSE Radeon RX 9070 XT 16GB | lengte | 320 mm | Lengte op de productpagina van Sapphire. |
-| Intel Arc B580 Limited Edition | lengte | 272 mm | Lengte op de productpagina van Intel. |
-| ASUS ROG Strix GeForce RTX 4090 OC Edition | lengte | 358 mm | Fabrikant geeft 357,6 mm, afgerond naar boven. Kijken of hij nog te koop is. |
-| AMD Radeon RX 7600 en RX 7800 XT | lengte | 204 en 267 mm | Dit zijn de referentiemodellen van AMD. In winkels liggen vooral versies van andere merken, met een andere lengte. Eventueel vervangen door een model dat wel te koop is. |
-| Cooler Master MasterBox Q300L | max. GPU en koeler | 360 en 157 mm | Specificaties op de site van Cooler Master. |
-| Corsair 3000D Airflow | max. GPU en koeler | 360 en 170 mm | Specificaties op de site van Corsair. |
-| Lian Li Lancool 216 | max. GPU en koeler | 392 en 180 mm | Specificaties op de site van Lian Li. |
-| SilverStone SUGO SG13 | max. GPU en koeler | 267 en 61 mm | Specificaties op de site van SilverStone. |
-| Corsair 4000D Airflow en Lian Li Lancool 216 | grootste formaat | ATX | Volgens de fabrikant past ook een smal E-ATX-bord. Dat maakt nu niet uit, want er zitten geen E-ATX-borden in de data. |
-| ARCTIC Freezer 36 | hoogte | 159 mm | Productpagina van ARCTIC. |
-| Noctua NH-L12S | hoogte | 70 mm | Hoogte met de ventilator bovenop, productpagina van Noctua. |
-| MSI PRO B760M-A WIFI DDR4 | naam | | Er bestaan meerdere versies (ook "DDR4 II"). Kijken welke te koop is. |
-| Gigabyte B650M DS3H | aantal RAM-sloten | 4 | Productpagina van Gigabyte. |
-| Kingston FURY Beast 16GB (2x8GB) DDR5-5600 | naam | | Bestaat in meerdere CL-varianten. Kijken welke te koop is. |
+De data is zo gekozen dat elke controleregel ook met echte onderdelen een keer afgaat:
 
-## 4. Verkrijgbaarheid
-
-Sommige onderdelen zijn van een oudere generatie en zijn misschien niet meer nieuw te koop: Ryzen 5 5600, Ryzen 7 5700X3D, Core i5-12400F, Radeon RX 7600, Radeon RX 7800 XT en GeForce RTX 4090. Bij de prijscontrole kijken of ze nog te koop zijn. Zo niet, dan vervangen door een vergelijkbaar onderdeel en de specificaties opnieuw opzoeken.
+- **Socket:** een AM4-processor op een AM5-bord.
+- **RAM-type:** DDR5-geheugen op de Gigabyte B760M DS3H DDR4, een Intel-bord met DDR4.
+- **Formaat:** een ATX-bord in de Q300L V2 (Micro-ATX) of de NR200P V3 (Mini-ITX).
+- **Lengte videokaart:** de ROG Astral (358 mm) past niet in de Fractal North (355 mm), maar wel in de Q300L V2 (360 mm).
+- **Hoogte koeler:** de NH-L12S (70 mm) past precies in de NR200P V3 (70 mm). De Freezer 36 (159 mm) past precies in de Q300L V2 (159 mm), de AK620 (160 mm) net niet.
+- **Voeding:** de Ryzen 7 9800X3D met de ROG Astral en de rest van de onderdelen verbruikt ongeveer 583 W. Met 30% marge is 758 W nodig. Een voeding van 750 W geeft dan een waarschuwing, 850 W is in orde.
