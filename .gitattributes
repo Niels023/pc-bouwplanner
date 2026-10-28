@@ -1,0 +1,3 @@
+# Altijd LF-regeleinden in de repo (PSR-12 vereist LF)
+* text=auto eol=lf
+*.png binary
