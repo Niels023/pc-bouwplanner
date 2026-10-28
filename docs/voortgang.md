@@ -27,10 +27,11 @@ Start: woensdag 28 oktober 2026.
 - Composer geïnstalleerd. Projectopzet gemaakt met phpdotenv, PHPUnit 11 en PHP_CodeSniffer 4 (PSR-12). De databasegegevens staan in `.env`.
 - Op branch `feature/database` (#1): databaseschema, 57 bestaande onderdelen als seed-data en een seed-script. 4 tests controleren de data en slagen. De linter geeft 0 fouten.
 - Ontwerp aangepast: `m2_slots` is uit het ERD en het klassendiagram gehaald.
+- Op branch `fix/onderdelendata` (#1): alle onderdelen gecontroleerd. Prijzen opgezocht in de Tweakers Pricewatch, maten opgezocht bij fabrikanten en winkels. Onderdelen die niet meer te koop zijn vervangen. De data bevat nu 51 onderdelen. Alle bronnen en keuzes staan in `docs/data-controle.md`.
 
 **Open:**
 
-- Prijzen en twijfelgevallen in `docs/data-controle.md` nakijken. Pas daarna kan #1 dicht.
+- De budgetverdeling van de aanbeveling (ontwerp §7.1) opnieuw bekijken als ik aan F-16 begin. Die gaat uit van 8% voor geheugen, maar met de huidige prijzen kost geheugen in een goedkope build bijna een kwart van het budget.
 - Volgende stap: de compatibiliteitsregels (F-05 t/m F-11).
 
 **Afwijkingen en wat ik eraan gedaan heb:**
@@ -41,5 +42,8 @@ Start: woensdag 28 oktober 2026.
 - Na het installeren van de GitHub CLI vond de terminal `gh` niet, omdat de terminal al open stond voor de installatie. Oplossing: `gh` gestart met het volledige pad.
 - `composer test` faalde omdat in `phpunit.xml` testmappen stonden die nog niet bestaan. Oplossing: alleen de bestaande testmap in de configuratie gezet. De andere mappen komen erbij als er tests in staan.
 - Bij het maken van de seed-data bleek dat ik het aantal M.2-sloten per moederbord niet zeker wist en dat geen enkele regel het gebruikt. Oplossing: het veld uit het ontwerp en de database gehaald.
+- Bij het controleren van de data bleken veel onderdelen niet meer te koop, alleen nog bij een of twee winkels te krijgen of veel te duur. Voorbeelden: de oudere videokaarten, twee B650-moederborden en de Crucial-SSD's. Oplossing: 24 onderdelen vervangen of weggehaald (lijst in `docs/data-controle.md`).
+- Geheugen, opslag en videokaarten bleken veel duurder dan ik had geschat, door een tekort aan geheugenchips. Zo kost 16 GB DDR5 € 314,10 in plaats van de geschatte € 65. Oplossing: de echte prijzen gebruikt. De gevolgen voor de aanbeveling staan bij "Open".
+- Tweakers was niet automatisch uit te lezen. Oplossing: de Pricewatch met de hand doorzocht in de browser.
 
 **Komt de planning in gevaar?** Nee. Er is geen deadline en er is nog niets uitgelopen.
