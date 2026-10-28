@@ -30,8 +30,9 @@ flowchart TB
 | Logica | `src/Compatibility/`, `src/Recommendation/` | Compatibiliteitsregels en de aanbeveling. Deze code kent geen database en geen HTML, daardoor is hij goed te testen. |
 | Model | `src/Model/` | Klassen voor onderdelen en een build. |
 | Data | `src/Repository/` | Query's naar de database met PDO en prepared statements. |
+| Databaseverbinding | `src/Database/` | `Connection` maakt de PDO-verbinding, `Seeder` vult de database. |
 | Weergave | `templates/` | PHP-templates die de HTML maken. |
-| Database | `database/` | `schema.sql` met de tabellen en `seed.php` met de onderdelen. |
+| Database | `database/` | `schema.sql` met de tabellen, `seed.php` om de database te vullen en in `data/` de onderdelen zelf. |
 | Configuratie | `config/`, `.env` | Databasegegevens, voedingsmarge en budgetverdeling. |
 | Tests | `tests/Unit/`, `tests/Api/` | PHPUnit-tests. |
 
@@ -126,7 +127,6 @@ erDiagram
         int form_factor_id FK
         varchar chipset
         tinyint ram_slots
-        tinyint m2_slots
     }
     ram_kits {
         int part_id PK, FK
@@ -154,7 +154,7 @@ erDiagram
     storage_drives {
         int part_id PK, FK
         enum type "NVMe of SATA"
-        int capacity_gb
+        smallint capacity_gb
     }
     psus {
         int part_id PK, FK
@@ -196,6 +196,7 @@ Toelichting:
 - **Formaat** heeft een `size_rank`: Mini-ITX = 1, Micro-ATX = 2, ATX = 3, E-ATX = 4. Een kast slaat alleen het grootste formaat op dat erin past. Een moederbord past als zijn `size_rank` kleiner of gelijk is aan die van de kast.
 - **Verbruik** (`power_w`) staat bij elk onderdeel. Voor processors en videokaarten is dat het maximale vermogen volgens de fabrikant, voor de andere categorieën een vaste schatting. Zie [keuzes.md](keuzes.md).
 - **Build en onderdelen** is een veel-op-veel-relatie via `build_parts`. Dat er per categorie maar één onderdeel in een build zit, controleert de code bij het opslaan.
+- **Geen M.2-sloten:** in de eerste versie van het ontwerp had een moederbord ook `m2_slots`. Dat veld is eruit gehaald, omdat geen enkele regel het gebruikt en ik het aantal per moederbord niet zeker wist.
 
 ## 4. Klassendiagram
 
@@ -241,7 +242,6 @@ classDiagram
         +FormFactor formFactor
         +string chipset
         +int ramSlots
-        +int m2Slots
     }
     class RamKit {
         +string ramType
