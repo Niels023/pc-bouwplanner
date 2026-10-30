@@ -125,7 +125,7 @@ Sockets, RAM-types en formaten staan in aparte tabellen. Daardoor kan een socket
 
 ## 9. Aanbeveling met vaste regels
 
-**Gekozen:** het budget wordt per doel volgens vaste percentages over de categorieën verdeeld. Per categorie kiest de module het duurste compatibele onderdeel binnen het deelbudget. Wat over is, schuift door naar de volgende categorie.
+**Gekozen:** het budget wordt per doel volgens vaste percentages over de categorieën verdeeld. Per categorie kiest de module het duurste compatibele onderdeel binnen het deelbudget. Wat daarna over is, gaat naar de onderdelen die voor dat doel het belangrijkst zijn. Bij elke keuze kijkt de module vooruit of de build daarna nog af kan binnen het budget.
 
 **Waarom:**
 
@@ -134,6 +134,14 @@ Sockets, RAM-types en formaten staan in aparte tabellen. Daardoor kan een socket
 - De percentages staan in de configuratie en zijn makkelijk aan te passen als testgebruikers vinden dat een verdeling niet klopt.
 
 **Prijs als maat voor kwaliteit:** binnen een categorie is een duurder onderdeel meestal sneller of beter. Dat klopt niet altijd, maar het is een eerlijke en uitlegbare regel. Ik noem dit ook als beperking in de verbetervoorstellen.
+
+**Vooruitkijken in plaats van reserveren:** in het eerste ontwerp bleef er alleen genoeg geld over voor het goedkoopste onderdeel per categorie. Dat is te simpel, omdat onderdelen van elkaar afhangen. Een AM5-processor dwingt je tot DDR5-geheugen, en dat kost nu bijna twee keer zoveel als DDR4. Daarom controleert de module bij elke keuze of de hele build nog af kan. Zo loopt hij nooit vast: als het budget hoog genoeg is voor de goedkoopste build, komt er altijd een complete build uit.
+
+**Restgeld apart verdelen in plaats van doorschuiven:** eerst schoof ongebruikt geld door naar de volgende categorie. Op de echte data ging dat mis: bij € 1.500 voor gamen kwam er een koeler van € 139 op een zuinige processor, en bij € 4.000 bleef € 865 liggen terwijl een veel betere videokaart betaalbaar was. Daarom krijgt elke categorie nu alleen zijn eigen deel, en wordt wat overblijft pas aan het eind verdeeld op volgorde van belangrijkheid. Dat is ook makkelijker uit te leggen.
+
+**Geen videokaart upgraden bij werken:** bij werken levert een snellere videokaart niets op. Je houdt dan liever geld over dan dat de site het uitgeeft omdat het kan.
+
+**Minimaal 4 geheugensloten:** zonder deze regel koos de module bij hoge budgetten een Mini-ITX-bord, alleen omdat dat het duurst is. Die borden zijn niet sneller en je kunt er minder geheugen op kwijt.
 
 **Alternatieven:**
 
