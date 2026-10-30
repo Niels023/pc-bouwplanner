@@ -9,6 +9,7 @@ use App\Http\Request;
 use App\Http\Response;
 use App\Recommendation\BudgetTooLowException;
 use App\Recommendation\Goal;
+use App\Recommendation\NoBuildPossibleException;
 use App\Recommendation\Recommendation;
 use App\Recommendation\RecommendedChoice;
 use App\Recommendation\Recommender;
@@ -21,6 +22,7 @@ class RecommendationApiController
         private PartRepository $parts,
         private CompatibilityChecker $checker,
         private array $goals,
+        private array $gameTypes,
     ) {
     }
 
@@ -28,12 +30,15 @@ class RecommendationApiController
     {
         $budget = Input::budget($request->query('budget'));
         $goal = Input::goal($request->query('goal'));
+        $target = Input::gameTarget($request, $goal, $this->gameTypes);
         $recommender = new Recommender($this->parts->findByFilter(new PartFilter()), $this->checker, $this->goals);
 
         try {
-            return Response::json($this->toArray($recommender->recommend($budget, $goal), $goal));
+            return Response::json($this->toArray($recommender->recommend($budget, $goal, $target), $goal));
         } catch (BudgetTooLowException $e) {
             throw new HttpException(422, 'budget_too_low', $e->getMessage());
+        } catch (NoBuildPossibleException $e) {
+            throw new HttpException(422, 'no_build_possible', $e->getMessage());
         }
     }
 
@@ -42,8 +47,9 @@ class RecommendationApiController
     {
         return [
             'goal' => $goal->value,
-            'budget_eur' => $recommendation->budgetCents / 100,
+            'budget_eur' => $recommendation->budgetGiven ? $recommendation->budgetCents / 100 : null,
             'leftover_eur' => $recommendation->leftoverCents() / 100,
+            'summary' => $recommendation->summary(),
             'choices' => array_map(fn (RecommendedChoice $choice) => [
                 'part' => $choice->part->toArray(),
                 'category_budget_eur' => $choice->categoryBudgetCents / 100,

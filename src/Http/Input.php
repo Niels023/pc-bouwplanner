@@ -4,6 +4,9 @@ namespace App\Http;
 
 use App\Model\Build;
 use App\Model\Category;
+use App\Model\Resolution;
+use App\Recommendation\GameTarget;
+use App\Recommendation\GameType;
 use App\Recommendation\Goal;
 use App\Repository\PartFilter;
 
@@ -90,14 +93,39 @@ class Input
         return $build;
     }
 
-    public static function budget(?string $value): int
+    // Leeg betekent: geef de goedkoopste build die past.
+    public static function budget(?string $value): ?int
     {
-        if ($value === null || !ctype_digit($value) || (int) $value < 1 || (int) $value > self::MAX_BUDGET_EUR) {
+        if ($value === null) {
+            return null;
+        }
+
+        if (!ctype_digit($value) || (int) $value < 1 || (int) $value > self::MAX_BUDGET_EUR) {
             $maximum = number_format(self::MAX_BUDGET_EUR, 0, ',', '.');
             throw new HttpException(422, 'invalid_budget', "Vul een budget in hele euro's in, van 1 tot $maximum.");
         }
 
         return (int) $value;
+    }
+
+    /** @param array<string, array{min_fps: int}> $gameTypes */
+    public static function gameTarget(Request $request, Goal $goal, array $gameTypes): ?GameTarget
+    {
+        $resolution = $request->query('resolution');
+        $gameType = $request->query('game_type');
+
+        if ($goal === Goal::Work || ($resolution === null && $gameType === null)) {
+            return null;
+        }
+
+        $chosenResolution = Resolution::tryFrom((string) $resolution);
+        $chosenGameType = GameType::tryFrom((string) $gameType);
+
+        if ($chosenResolution === null || $chosenGameType === null) {
+            throw new HttpException(422, 'invalid_game_target', 'Kies je scherm en het soort games dat je speelt.');
+        }
+
+        return new GameTarget($chosenResolution, $chosenGameType, $gameTypes[$chosenGameType->value]['min_fps']);
     }
 
     public static function goal(?string $value): Goal

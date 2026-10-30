@@ -33,13 +33,66 @@ class RecommendationPageTest extends PageTestCase
         $this->assertMatchesRegularExpression('/value="work"\s+checked/', $response->body);
     }
 
-    public function testEmptyBudgetGivesMessage(): void
+    public function testEmptyBudgetGivesTheCheapestBuild(): void
     {
         $response = $this->get('/aanbeveling', ['budget' => '', 'goal' => 'gaming']);
 
+        $this->assertSame(200, $response->status);
+        $this->assertPageContains('Dit is de goedkoopste build die bij je keuzes past.', $response);
+        $this->assertPageContains('De goedkoopste keuze die past', $response);
+        $this->assertPageNotContains('Over van je budget', $response);
+    }
+
+    public function testFormAsksForScreenAndGamesWithExamples(): void
+    {
+        $response = $this->get('/aanbeveling');
+
+        $this->assertPageContains('Full HD (1920 x 1080)', $response);
+        $this->assertPageContains('Fortnite', $response);
+        $this->assertPageContains('Cyberpunk 2077', $response);
+        $this->assertPageContains('name="resolution"', $response);
+        $this->assertPageContains('name="game_type"', $response);
+    }
+
+    public function testChoosingScreenAndGamesShowsWhatTheBuildCanDo(): void
+    {
+        $query = ['budget' => '', 'goal' => 'gaming', 'resolution' => '1440p', 'game_type' => 'heavy'];
+
+        $response = $this->get('/aanbeveling', $query);
+
+        $this->assertPageContains('ongeveer 67 FPS in zware games op 1440p', $response);
+        $this->assertPageContains('Radeon RX 9060 XT', $response);
+        $this->assertPageContains('geschikt voor zware games op 1440p', $response);
+    }
+
+    public function testChoicesStaySelected(): void
+    {
+        $query = ['goal' => 'gaming', 'resolution' => '4k', 'game_type' => 'light'];
+
+        $response = $this->get('/aanbeveling', $query);
+
+        $this->assertMatchesRegularExpression('/value="4k"\s+checked/', $response->body);
+        $this->assertMatchesRegularExpression('/value="light"\s+checked/', $response->body);
+    }
+
+    public function testBudgetTooLowLinksToTheCheapestBuild(): void
+    {
+        $query = ['budget' => '1300', 'goal' => 'gaming', 'resolution' => '4k', 'game_type' => 'heavy'];
+
+        $response = $this->get('/aanbeveling', $query);
+
         $this->assertSame(422, $response->status);
-        $this->assertStringContainsString('role="alert"', $response->body);
-        $this->assertPageContains("Vul een budget in hele euro's in", $response);
+        $this->assertPageContains('Voor zware games op 4K heb je minimaal', $response);
+        $this->assertPageContains('/aanbeveling?goal=gaming&resolution=4k&game_type=heavy', $response);
+    }
+
+    public function testAdoptingKeepsTheChoices(): void
+    {
+        $query = ['budget' => '', 'goal' => 'gaming', 'resolution' => '4k', 'game_type' => 'heavy'];
+
+        $this->postForm('/aanbeveling/overnemen', [], $query);
+
+        $this->assertPageContains('Radeon RX 9070 XT', $this->get('/overzicht'));
     }
 
     public function testInvalidBudgetsGiveMessage(): void

@@ -490,12 +490,33 @@ fieldset {
 }
 
 .recommendation-form {
-    max-width: 26rem;
+    max-width: 36rem;
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 6px;
     margin-bottom: 1.5rem;
     padding: 1rem;
+}
+
+.recommendation-form:has(input[name="goal"][value="work"]:checked) .game-options {
+    display: none;
+}
+
+.message p {
+    margin: 0 0 0.25rem;
+}
+
+.hint {
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+    margin: 0.25rem 0 0;
+}
+
+.summary {
+    background: var(--ok-bg);
+    border-left: 5px solid var(--ok);
+    border-radius: 4px;
+    padding: 0.6rem 0.8rem;
 }
 
 .recommendation-list {
