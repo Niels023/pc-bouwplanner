@@ -96,6 +96,8 @@ Sockets, RAM-types en formaten staan in aparte tabellen. Daardoor kan een socket
 
 **Alternatief:** één functie met een lange reeks `if`-statements. Dat is in het begin sneller, maar wordt lang, lastig te testen en bij elke nieuwe regel moet je in dezelfde functie zitten.
 
+**Build met een methode per onderdeel:** `Build` heeft methodes als `cpu()` en `psu()`. Het alternatief was één methode `part(Category)`. Die geeft alleen een `Part` terug, dus PHP en PhpStorm weten dan niet dat er een veld `socket` is. Dat kost zeven korte methodes, maar de regels worden er duidelijker en veiliger van.
+
 **Statussen:** naast in orde en fout heb ik "waarschuwing" (alleen voor de voeding, als die net genoeg is maar weinig marge heeft) en "nog niet gecontroleerd" (als een onderdeel nog ontbreekt). Zonder die laatste status zou een halve build als fout of juist als goed worden gezien, en dat klopt allebei niet.
 
 **Formaat moederbord en kast:** ik geef elk formaat een rangnummer (Mini-ITX 1, Micro-ATX 2, ATX 3, E-ATX 4). Een kast slaat het grootste formaat op dat past. In de praktijk past in een kast ook elk kleiner formaat. Het alternatief, per kast een lijst met alle formaten, kost meer tabellen en invoer zonder dat de uitkomst verandert.
