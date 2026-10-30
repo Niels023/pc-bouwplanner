@@ -1,6 +1,8 @@
 -- Tabellen van de PC-bouwplanner. Bestaande tabellen worden eerst verwijderd,
 -- zodat het seed-script altijd met een schone database begint.
 
+DROP VIEW IF EXISTS part_details;
+
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS build_parts, builds, cpus, motherboards, ram_kits, gpus, coolers, cases,
     storage_drives, psus, parts, sockets, ram_types, form_factors;
@@ -119,3 +121,54 @@ CREATE TABLE build_parts (
     FOREIGN KEY (build_id) REFERENCES builds (id) ON DELETE CASCADE,
     FOREIGN KEY (part_id) REFERENCES parts (id)
 );
+
+-- Eén rij per onderdeel met alle specificaties, zodat de PHP-code niet steeds
+-- dezelfde lange reeks joins nodig heeft. Velden van een andere categorie zijn NULL.
+CREATE VIEW part_details AS
+SELECT
+    p.id,
+    p.category,
+    p.brand,
+    p.name,
+    p.price_eur,
+    p.price_date,
+    p.power_w,
+    COALESCE(cpu_socket.name, board_socket.name) AS socket,
+    COALESCE(board_ram.name, kit_ram.name) AS ram_type,
+    board_size.name AS form_factor,
+    board_size.size_rank AS form_factor_rank,
+    case_size.name AS max_form_factor,
+    case_size.size_rank AS max_form_factor_rank,
+    c.cores,
+    c.threads,
+    c.boost_clock_ghz,
+    c.has_integrated_graphics,
+    m.chipset,
+    m.ram_slots,
+    COALESCE(r.capacity_gb, s.capacity_gb) AS capacity_gb,
+    r.module_count,
+    r.speed_mts,
+    g.chip,
+    g.vram_gb,
+    g.length_mm,
+    co.height_mm,
+    ca.max_gpu_length_mm,
+    ca.max_cooler_height_mm,
+    s.type AS storage_type,
+    ps.wattage_w,
+    ps.efficiency_rating
+FROM parts p
+LEFT JOIN cpus c ON c.part_id = p.id
+LEFT JOIN sockets cpu_socket ON cpu_socket.id = c.socket_id
+LEFT JOIN motherboards m ON m.part_id = p.id
+LEFT JOIN sockets board_socket ON board_socket.id = m.socket_id
+LEFT JOIN ram_types board_ram ON board_ram.id = m.ram_type_id
+LEFT JOIN form_factors board_size ON board_size.id = m.form_factor_id
+LEFT JOIN ram_kits r ON r.part_id = p.id
+LEFT JOIN ram_types kit_ram ON kit_ram.id = r.ram_type_id
+LEFT JOIN gpus g ON g.part_id = p.id
+LEFT JOIN coolers co ON co.part_id = p.id
+LEFT JOIN cases ca ON ca.part_id = p.id
+LEFT JOIN form_factors case_size ON case_size.id = ca.max_form_factor_id
+LEFT JOIN storage_drives s ON s.part_id = p.id
+LEFT JOIN psus ps ON ps.part_id = p.id;

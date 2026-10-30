@@ -26,4 +26,15 @@ readonly class Motherboard extends Part
     {
         return Category::Motherboard;
     }
+
+    public function specs(): array
+    {
+        return [
+            'socket' => $this->socket,
+            'ram_type' => $this->ramType,
+            'form_factor' => $this->formFactor->name,
+            'chipset' => $this->chipset,
+            'ram_slots' => $this->ramSlots,
+        ];
+    }
 }

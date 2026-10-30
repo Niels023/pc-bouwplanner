@@ -17,4 +17,22 @@ abstract readonly class Part
     }
 
     abstract public function category(): Category;
+
+    /** @return array<string, mixed> */
+    abstract public function specs(): array;
+
+    /** @return array<string, mixed> */
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'category' => $this->category()->value,
+            'brand' => $this->brand,
+            'name' => $this->name,
+            'price_eur' => $this->priceCents / 100,
+            'price_date' => $this->priceDate->format('Y-m-d'),
+            'power_w' => $this->powerW,
+            'specs' => $this->specs(),
+        ];
+    }
 }

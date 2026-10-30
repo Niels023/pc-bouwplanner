@@ -48,6 +48,8 @@ Per keuze staat hier wat ik gekozen heb, welk alternatief ik heb overwogen en wa
 
 Sockets, RAM-types en formaten staan in aparte tabellen. Daardoor kan een socket maar op één manier geschreven worden en vergelijken de regels altijd dezelfde waarden.
 
+**View `part_details`:** omdat een onderdeel over meerdere tabellen verdeeld is, heb je veel joins nodig om het op te halen. Die staan op één plek in een view. Het alternatief was per categorie een eigen query in PHP schrijven. Dat zijn acht query's die bijna hetzelfde doen, en filteren over alle categorieën tegelijk wordt dan lastig.
+
 ## 4. Prijzen in centen
 
 **Gekozen:** in de database `DECIMAL(7,2)`, in PHP hele centen (`int`).
