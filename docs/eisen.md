@@ -30,7 +30,7 @@ Functionele eisen hebben een ID die begint met F, niet-functionele eisen een ID 
 | F-13 | Totaalprijs en geschat verbruik | Bij elke stap zie ik de totaalprijs (som van de richtprijzen) en het geschatte verbruik in watt. Beide kloppen direct na het kiezen of verwijderen van een onderdeel. |
 | F-14 | Build opslaan | Ik geef de build een naam van 1 tot 60 tekens en sla hem op. Ik krijg een unieke deelcode van 8 tekens en een link. Een build zonder onderdelen of zonder naam kan ik niet opslaan en ik zie waarom. |
 | F-15 | Opgeslagen build ophalen | Via de link of door de deelcode in te vullen zie ik de build met onderdelen, totaalprijs, verbruik en controleresultaat. Bij een onbekende code zie ik "Geen build gevonden met deze code". |
-| F-16 | Aanbeveling op basis van budget en doel | Ik vul een budget in hele euro's in en kies gamen, werken of streamen. Ik krijg een complete build die volledig compatibel is en waarvan de totaalprijs niet hoger is dan mijn budget. Is het budget leeg, 0, negatief of geen getal, dan zie ik een melding. Is het budget lager dan de goedkoopste complete build, dan zie ik het minimale bedrag dat nodig is. |
+| F-16 | Aanbeveling op basis van budget en doel | Ik vul een budget in hele euro's in en kies gamen, werken of streamen. Ik krijg een complete build die volledig compatibel is en waarvan de totaalprijs niet hoger is dan mijn budget. Is het budget 0, negatief of geen getal, dan zie ik een melding. Een leeg budget mag sinds F-32. Is het budget lager dan de goedkoopste complete build, dan zie ik het minimale bedrag dat nodig is. |
 | F-17 | Uitleg bij de aanbeveling | Bij elk aanbevolen onderdeel staat in één zin waarom het gekozen is, met het deelbudget voor die categorie. Ik zie ook hoeveel van mijn budget over is. |
 | F-18 | REST API | De API geeft JSON terug en heeft deze endpoints: onderdelen ophalen en filteren, één onderdeel ophalen, build opslaan, build ophalen, build controleren en aanbeveling opvragen. Bij ongeldige invoer geeft de API de juiste statuscode (400, 404 of 422) en een foutmelding met een code en een uitleg in het Nederlands. |
 
@@ -40,7 +40,9 @@ Functionele eisen hebben een ID die begint met F, niet-functionele eisen een ID 
 |---|---|---|
 | F-19 | Aanbeveling overnemen en aanpassen | Met één knop zet ik de aanbevolen build in de bouwplanner. Daarna kan ik elk onderdeel wijzigen zoals bij F-04. |
 | F-20 | Onderdelen sorteren | Ik kan de onderdelen in een stap sorteren op prijs (laag naar hoog en hoog naar laag) en op naam. |
-| F-21 | Controle beeld zonder videokaart | Kies ik geen videokaart en heeft de processor geen ingebouwde graphics, dan geeft de controle een fout: de PC geeft dan geen beeld. Met ingebouwde graphics is een build zonder videokaart in orde. |
+| F-21 | Controle beeld zonder videokaart | Kies ik geen videokaart en heeft de processor geen ingebouwde graphics, dan geeft de controle een fout zodra de andere zeven onderdelen gekozen zijn: de PC geeft dan geen beeld. Met ingebouwde graphics is een build zonder videokaart in orde. |
+| F-31 | Aanbeveling op basis van scherm en games | Bij gamen en streamen kies ik mijn scherm (Full HD, 1440p of 4K) en het soort games (licht of zwaar), met voorbeelden die ik herken. De aanbeveling kiest alleen een videokaart die dat aankan: bij zware games gemiddeld minimaal 60 FPS op dat scherm. Ik zie in gewone taal wat de build haalt. Is mijn budget te laag voor mijn keuze, dan zie ik welk bedrag ik nodig heb. |
+| F-32 | Aanbeveling zonder budget | Het budget mag ik leeg laten. Dan krijg ik de goedkoopste complete build die bij mijn keuzes past. |
 
 ### Could have
 
