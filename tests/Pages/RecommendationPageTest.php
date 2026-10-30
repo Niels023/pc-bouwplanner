@@ -67,6 +67,59 @@ class RecommendationPageTest extends PageTestCase
         $this->assertPageContains('Kies een doel', $response);
     }
 
+    public function testResultHasButtonToAdoptTheBuild(): void
+    {
+        $response = $this->get('/aanbeveling', ['budget' => '2000', 'goal' => 'gaming']);
+
+        $this->assertPageContains('/aanbeveling/overnemen?budget=2000&goal=gaming', $response);
+    }
+
+    public function testAdoptingPutsThePartsInThePlanner(): void
+    {
+        $response = $this->postForm('/aanbeveling/overnemen', [], ['budget' => '2000', 'goal' => 'gaming']);
+
+        $this->assertRedirectsTo('/overzicht', $response);
+        $overview = $this->get('/overzicht');
+        $this->assertPageContains('Sapphire Pulse Radeon RX 9070 XT', $overview);
+        $this->assertSame(0, substr_count($overview->body, 'Nog niet gekozen'));
+    }
+
+    public function testAdoptedPartCanBeChanged(): void
+    {
+        $this->postForm('/aanbeveling/overnemen', [], ['budget' => '2000', 'goal' => 'gaming']);
+
+        $this->postForm('/bouwen/cooler/kiezen', ['part_id' => $this->partId('AK400')]);
+
+        $this->assertPageContains('DeepCool AK400', $this->get('/overzicht'));
+    }
+
+    public function testAdoptingReplacesTheEarlierBuild(): void
+    {
+        $this->postForm('/bouwen/cpu/kiezen', ['part_id' => $this->partId('Ryzen 5 5600 Boxed')]);
+
+        $this->postForm('/aanbeveling/overnemen', [], ['budget' => '2000', 'goal' => 'gaming']);
+
+        $this->assertPageNotContains('Ryzen 5 5600 Boxed', $this->get('/overzicht'));
+    }
+
+    public function testAdoptingWorkBuildGivesCompleteBuildWithoutGpu(): void
+    {
+        $this->postForm('/aanbeveling/overnemen', [], ['budget' => '1500', 'goal' => 'work']);
+
+        $overview = $this->get('/overzicht');
+
+        $this->assertPageContains('In orde', $overview);
+        $this->assertSame(1, substr_count($overview->body, 'Nog niet gekozen'));
+    }
+
+    public function testAdoptingWithTooLowBudgetGivesErrorPage(): void
+    {
+        $response = $this->postForm('/aanbeveling/overnemen', [], ['budget' => '100', 'goal' => 'gaming']);
+
+        $this->assertSame(422, $response->status);
+        $this->assertPageContains('heb je minimaal', $response);
+    }
+
     public function testInputIsEscaped(): void
     {
         $response = $this->get('/aanbeveling', ['budget' => '"><script>alert(1)</script>', 'goal' => 'gaming']);

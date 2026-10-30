@@ -30,4 +30,12 @@ class WorkingBuild
     {
         unset($_SESSION[self::SESSION_KEY][$category->value]);
     }
+
+    public function replaceWith(Build $build): void
+    {
+        $_SESSION[self::SESSION_KEY] = [];
+        foreach ($build->parts() as $part) {
+            $this->choose($part);
+        }
+    }
 }

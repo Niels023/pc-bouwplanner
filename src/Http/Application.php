@@ -47,8 +47,15 @@ class Application
 
         $view = new View();
         $homePage = new HomePageController($view);
-        $buildPage = new BuildPageController($view, $parts, $builds, $checker, new WorkingBuild($parts));
-        $recommendationPage = new RecommendationPageController($view, $parts, $checker, $this->config['goals']);
+        $working = new WorkingBuild($parts);
+        $buildPage = new BuildPageController($view, $parts, $builds, $checker, $working);
+        $recommendationPage = new RecommendationPageController(
+            $view,
+            $parts,
+            $checker,
+            $working,
+            $this->config['goals'],
+        );
 
         $router = new Router();
         $router->add('GET', '/', $homePage->show(...));
@@ -60,6 +67,7 @@ class Application
         $router->add('GET', '/build/open', $buildPage->open(...));
         $router->add('GET', '/build/{code}', $buildPage->show(...));
         $router->add('GET', '/aanbeveling', $recommendationPage->show(...));
+        $router->add('POST', '/aanbeveling/overnemen', $recommendationPage->adopt(...));
         $router->add('GET', '/api/parts', $partApi->index(...));
         $router->add('GET', '/api/parts/{id}', $partApi->show(...));
         $router->add('POST', '/api/builds', $buildApi->store(...));
