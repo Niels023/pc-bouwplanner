@@ -25,6 +25,11 @@ readonly class CheckReport
         };
     }
 
+    public function hasProblems(): bool
+    {
+        return in_array($this->overallStatus(), [OverallStatus::Error, OverallStatus::Warning], true);
+    }
+
     /** @return array<string, mixed> */
     public function toArray(): array
     {

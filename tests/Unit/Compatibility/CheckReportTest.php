@@ -17,6 +17,17 @@ class CheckReportTest extends TestCase
         $this->assertSame(OverallStatus::Ok, $report->overallStatus());
     }
 
+    public function testErrorAndWarningCountAsProblems(): void
+    {
+        $this->assertTrue($this->report(true, CheckStatus::Error)->hasProblems());
+        $this->assertTrue($this->report(true, CheckStatus::Warning)->hasProblems());
+    }
+
+    public function testIncompleteBuildIsNoProblem(): void
+    {
+        $this->assertFalse($this->report(false, CheckStatus::NotChecked)->hasProblems());
+    }
+
     public function testIncompleteBuildGivesIncomplete(): void
     {
         $report = $this->report(false, CheckStatus::Ok, CheckStatus::NotChecked);
