@@ -66,7 +66,9 @@ Sockets, RAM-types en formaten staan in aparte tabellen. Daardoor kan een socket
 
 - De site werkt zonder JavaScript en ik hoef weinig JavaScript te schrijven.
 - De API maakt de controle en de aanbeveling los te testen met API-tests, zonder browser.
-- Het kleine JavaScript-bestand gebruikt de API om de totalen bij te werken zonder de pagina te herladen.
+- Andere programma's, zoals een app, kunnen de controle en de aanbeveling gebruiken zonder de website.
+
+De pagina's roepen de logica direct aan en gaan niet via de API. Dat is sneller en er is geen extra stap die fout kan gaan. Beide gebruiken dezelfde klassen, dus een regel staat nooit dubbel.
 
 **Opzet van de API:** de paden gaan over dingen (`/api/parts`, `/api/builds`), de HTTP-methode zegt wat er gebeurt (GET ophalen, POST aanmaken). De controle is `POST /api/builds/check`, omdat je daar een lijst met onderdelen meestuurt in de body. De aanbeveling is `GET /api/recommendation`, omdat die niets opslaat en met dezelfde invoer altijd hetzelfde antwoord geeft. Fouten hebben altijd dezelfde vorm (`error.code` en `error.message`), zodat de frontend ze op één manier kan tonen.
 
@@ -90,6 +92,8 @@ Sockets, RAM-types en formaten staan in aparte tabellen. Daardoor kan een socket
 **Waarom:** het doel is een build bewaren en delen. Daarvoor is geen account nodig. De code is willekeurig, zodat je niet de builds van anderen kunt vinden door een nummer op te hogen (zoals bij `/build/1`, `/build/2`). De letters i, l, o en de cijfers 0 en 1 zitten er niet in, omdat die op elkaar lijken als je een code overtypt.
 
 **Alternatief:** accounts met e-mail en wachtwoord. Dat vraagt om wachtwoorden veilig opslaan, sessies beveiligen en wachtwoord vergeten. Te veel werk voor iets wat de gebruiker niet nodig heeft.
+
+**Sessie voor de build in wording:** de build waar je mee bezig bent, staat in de PHP-sessie. Het alternatief was de onderdelen in de URL zetten, maar dan worden de links lang en lastig. Een sessie is standaard PHP. Omdat er geen accounts zijn, is er geen CSRF-token gebruikt: een aanvaller kan hooguit een onderdeel in iemands tijdelijke build zetten. De sessiecookie staat wel op `HttpOnly` en `SameSite=Lax`.
 
 ## 7. Compatibiliteit: elke regel een eigen klasse
 
@@ -153,7 +157,11 @@ Sockets, RAM-types en formaten staan in aparte tabellen. Daardoor kan een socket
 
 ## 10. Weinig JavaScript
 
-**Gekozen:** de site werkt met gewone HTML-formulieren. Na een POST stuurt de server door naar een normale pagina, zodat vernieuwen geen dubbele keuze geeft. Eén klein JavaScript-bestand werkt de totalen bij zonder herladen.
+**Gekozen:** de site werkt met gewone HTML-formulieren. Na een POST stuurt de server door naar een normale pagina, zodat vernieuwen geen dubbele keuze geeft. Eén klein JavaScript-bestand verstuurt de keuze op de achtergrond en vervangt alleen de kaartjes, de stappen en de totalen met de HTML die de server terugstuurt.
+
+**Waarom HTML terug en niet JSON van de API:** eerst was het plan dat het script de totalen via de API zou ophalen. Maar na een keuze moeten ook de kaartjes veranderen: welk onderdeel gekozen is en welke onderdelen grijs zijn. Dan had ik die logica ook in JavaScript moeten schrijven. Nu rekent PHP alles uit, net als zonder JavaScript, en is het script maar ongeveer 30 regels.
+
+**Filters in een `<details>`-blok:** op een telefoon staan de filters anders boven alle kaartjes. Een `<details>`-blok werkt zonder JavaScript en met het toetsenbord. Het alternatief was een eigen menu met JavaScript, dat is meer code en lastiger toegankelijk te maken.
 
 **Waarom:** minder JavaScript is minder code die fout kan gaan. De site werkt ook als JavaScript uit staat of niet laadt. Dat helpt ook voor de toegankelijkheid, want gewone formulieren en knoppen werken vanzelf met het toetsenbord en met schermlezers.
 

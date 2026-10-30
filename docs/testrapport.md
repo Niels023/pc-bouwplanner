@@ -172,6 +172,97 @@ Op 30 oktober 2026 heb ik 12 fouten met opzet in de aanbeveling gezet en steeds 
 - De regel "duurder is beter" klopt niet altijd. Bij € 2.000 voor gamen krijgt de Core i5-14600K (181 W) de low-profile NH-L12S, omdat die de duurste koeler binnen het deelbudget is. Een grotere koeler past beter bij deze processor. De data heeft geen koelvermogen, dus de module kan dit niet zien. Dit komt in de verbetervoorstellen.
 - Bij werken zit er altijd een losse videokaart in de build, ook al is die voor werk niet nodig. Daardoor is het minimale budget hoger dan nodig. Dit lost F-21 op, want dan kan een processor met ingebouwde graphics zonder videokaart.
 
+## Testrun 30 oktober 2026, website
+
+**Omgeving:** gelijk aan de vorige runs. Handmatige tests in Chromium-browsers, Lighthouse in Microsoft Edge.
+
+**Resultaat `composer test`:**
+
+```text
+OK (200 tests, 2037 assertions)
+```
+
+**Resultaat `composer lint`:** 0 fouten en 0 waarschuwingen.
+
+| Testsuite | Tests | Geslaagd | Mislukt |
+|---|---|---|---|
+| unit | 80 | 80 | 0 |
+| database | 15 | 15 | 0 |
+| api | 56 | 56 | 0 |
+| pages | 49 | 49 | 0 |
+
+### Resultaten per eis
+
+| Eis | Conclusie |
+|---|---|
+| F-02 Onderdelen bekijken | Voldoet. Kaartjes met merk, naam, specificaties, prijs en peildatum. |
+| F-03 Onderdelen filteren | Voldoet, ook bij combinaties, geen resultaten en foute invoer. |
+| F-04 Stap voor stap samenstellen | Voldoet. Acht stappen, kiezen, wijzigen, verwijderen en terug zonder keuzes kwijt te raken. |
+| F-12 Onverenigbare onderdelen | Voldoet. Grijs met de reden in tekst, blijven zichtbaar en te kiezen. |
+| F-13 Totaalprijs en verbruik | Voldoet. Kloppen direct na elke keuze, met en zonder JavaScript. |
+| F-14 Build opslaan | Voldoet. |
+| F-15 Build ophalen | Voldoet, met link en met code. |
+| F-16 Aanbeveling | Voldoet, ook op de pagina. |
+| F-17 Uitleg bij de aanbeveling | Voldoet. |
+| NF-01 Telefoon en desktop | Voldoet. |
+| NF-02 Toegankelijk | Voldoet. Zie de metingen hieronder. |
+| NF-03 Veilig | Voldoet. Tekst wordt ge-escaped, ook in namen, filters en het budget. |
+| NF-04 Instelbaar | Voldoet. |
+| NF-05 Nette code | Voldoet. De map `templates` valt buiten de linter, want PSR-12 is niet bedoeld voor HTML. |
+| NF-06 Getest | Voldoet. |
+| NF-07 Werkt zonder JavaScript | Voldoet. |
+| NF-08 Snel | Voldoet. |
+| NF-09 Makkelijk te installeren | Getest op een schone clone, maar nog niet door iemand anders. Dit is dus nog niet helemaal aangetoond. |
+
+### Metingen
+
+**Breedte (TC-H-01).** Op 360 en 1920 pixels breed gemeten op de startpagina, een stap, het overzicht en de aanbeveling: nergens horizontaal scrollen. Op 375, 1000 en 1200 pixels ook bekeken.
+
+**Lighthouse, toegankelijkheid (TC-H-02).**
+
+| Pagina | Score |
+|---|---|
+| Startpagina | 100 |
+| Stap Moederbord | 100 (eerst 98, zie bevindingen) |
+| Overzicht | 100 |
+| Aanbeveling | 100 |
+
+De foutpagina is niet gemeten. Lighthouse weigert pagina's met een 404.
+
+**Contrast (TC-H-03).** Uitgerekend voor 18 kleurparen uit de CSS. Het laagste is 6,17:1 (link op de achtergrond), de eis is 4,5:1.
+
+**Toetsenbord (TC-H-04).** De eerste Tab gaat naar "Ga naar de inhoud". Met Tab door het menu, de stappen en de filters naar de eerste Kies-knop, met Enter gekozen. De focus is zichtbaar en staat daarna op de knop Verwijderen van hetzelfde kaartje. Een build opslaan lukt met Enter in het naamveld.
+
+**Zonder JavaScript (TC-H-05).** De hele route is doorlopen met alleen HTTP-verzoeken, zoals een browser zonder JavaScript doet: acht onderdelen kiezen (totaal € 1.481,66, status in orde), filteren, verwijderen, opslaan en openen met de code. Alles werkte.
+
+**Met JavaScript (TC-H-06).** Na het kiezen van een videokaart gingen de totalen van € 176,82 naar € 746,83 zonder dat de pagina herlaadde. Geen fouten in de console.
+
+**Snelheid (TC-H-07).** Gemiddelde van 5 keer.
+
+| Pagina | Gemiddeld | Traagst |
+|---|---|---|
+| `/` | 24 ms | 29 ms |
+| `/bouwen/cpu` | 34 ms | 43 ms |
+| `/bouwen/psu` | 31 ms | 43 ms |
+| `/overzicht` | 33 ms | 42 ms |
+| `/build/{code}` | 30 ms | 34 ms |
+| `/aanbeveling` | 29 ms | 38 ms |
+| `/aanbeveling?budget=2000&goal=gaming` | 50 ms | 56 ms |
+| `/api/parts` | 34 ms | 43 ms |
+| `/api/recommendation` | 42 ms | 51 ms |
+
+**Installatie (TC-H-08).** Schone clone van GitHub in een andere map, met een aparte database. `composer install`, `composer seed`, `composer test` (200 tests) en `composer lint` werkten allemaal.
+
+### Bevindingen
+
+- Op de stap-pagina sloeg de kopstructuur een niveau over (h1 naar h3). Lighthouse gaf daarom 98. Opgelost met een h2 die alleen voor schermlezers zichtbaar is.
+- Onderdelen die niet passen stonden bovenaan als ze goedkoop waren. Opgelost: wat past staat nu eerst.
+- Op een telefoon duwden de filters de kaartjes ver naar beneden. Opgelost: de filters staan in een uitklapblok dat op een telefoon dicht begint.
+- De statuskolom in de controle was te smal, waardoor "Nog niet gecontroleerd" over twee regels liep. Opgelost.
+
 ## Nog niet getest
 
-- Handmatige tests en gebruikerstests: de pagina's bestaan nog niet.
+- Gebruikerstests met echte mensen (TC-G-01 t/m TC-G-08).
+- Installatie door iemand anders (NF-09).
+- Firefox en Safari. Alleen Chromium-browsers zoals Edge zijn geprobeerd.
+- Een echte telefoon. De telefoonweergave is getest met de telefoonweergave van de browser.

@@ -63,11 +63,17 @@ Start: woensdag 28 oktober 2026.
 - Op branch `feature/aanbeveling`: de `Recommender` met budgetverdeling per doel, vooruitkijken en het verdelen van restgeld, plus het endpoint `/api/recommendation` (#16, #17, #18). Budgetverdeling aangepast aan de echte prijzen.
 - Alle 144 tests slagen en de linter geeft 0 fouten. De API ook met de hand getest op een echte server. Mutatietest gedaan op de aanbeveling.
 
+- De website gebouwd op branches `feature/paginas-basis`, `feature/bouwplanner` en `feature/aanbeveling-pagina`: startpagina, acht stappen met filters en kaartjes, grijze onderdelen met uitleg, totalen, overzicht, opslaan, openen met deelcode en de aanbevelingspagina. Eén klein JavaScript-bestand om te kiezen zonder herladen.
+- Alle 200 tests slagen en de linter geeft 0 fouten. Handmatig getest: breedtes van 360 tot 1920 pixels, Lighthouse (100 op alle gemeten pagina's), contrast, toetsenbord, zonder JavaScript, snelheid en een schone installatie. Alle Must haves zijn nu gebouwd.
+- Schermafbeeldingen van de site in `docs/img/` gezet voor het verslag.
+
 **Open:**
 
-- Volgende stap: de website (F-02, F-03, F-04, F-12, F-13, F-14, F-15, F-16, F-17). De issues #2, #3, #4, #12 t/m #17 blijven open tot de pagina's er zijn.
-- F-21 (build zonder videokaart) maakt de aanbeveling voor werken goedkoper. Dit is een Should en komt na de website.
-- `verbetervoorstellen.md` nog maken. Eerste punt: de aanbeveling kijkt alleen naar prijs en niet naar koelvermogen.
+- Gebruikerstest met 2 of 3 echte mensen (`docs/testplan.md`, hoofdstuk 6). Dit moet ik zelf doen.
+- De site laten zien aan de docent en de feedback opschrijven.
+- `verbetervoorstellen.md` maken, op basis van de gebruikerstest en de feedback. Eerste punten: de aanbeveling kijkt alleen naar prijs en niet naar koelvermogen, en de site is nog niet getest in Firefox, Safari en op een echte telefoon.
+- Should haves: F-19 (aanbeveling overnemen), F-20 (sorteren) en F-21 (build zonder videokaart, maakt de aanbeveling voor werken goedkoper).
+- Eén persoon laten installeren met de README voor NF-09 (#34).
 
 **Afwijkingen en wat ik eraan gedaan heb:**
 
@@ -81,5 +87,7 @@ Start: woensdag 28 oktober 2026.
 - De eerste versie slaagde voor de tests, maar gaf vreemde uitkomsten op de echte data, zoals een koeler van € 139 op een zuinige processor en € 865 over bij € 4.000. Oplossing: geld schuift niet meer door, en restgeld gaat aan het eind naar de belangrijkste onderdelen voor het doel. Het ontwerp en `keuzes.md` zijn aangepast.
 - De budgetverdeling uit het ontwerp klopte niet met de echte prijzen. Oplossing: nieuwe percentages bepaald door de aanbeveling op de echte onderdelen te draaien bij budgetten van € 1.200 tot € 6.000.
 - De mutatietest vond twee zwakke tests. Oplossing: tests verbeterd, zie het testrapport.
+- De website gebruikt de API niet, anders dan in het ontwerp stond. Na een keuze moeten ook de kaartjes veranderen, en dan had ik die logica in JavaScript moeten schrijven. Oplossing: het script haalt de HTML van de pagina op en vervangt alleen de stukken die veranderen. Het ontwerp en `keuzes.md` zijn aangepast.
+- Bij het bekijken in de browser vielen dingen op die de tests niet zagen: onderdelen die niet passen stonden bovenaan, de filters duwden op een telefoon de kaartjes weg en een kolom was te smal. Oplossing: allemaal aangepast, zie het testrapport.
 
 **Komt de planning in gevaar?** Nee.

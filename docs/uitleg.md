@@ -15,7 +15,8 @@ Hier leg ik in gewone taal uit hoe de PC-bouwplanner in elkaar zit. Dit document
 | `src/Model/` | Klassen voor de onderdelen en de build |
 | `src/Recommendation/` | De aanbeveling op basis van budget en doel |
 | `src/Repository/` | Alle query's naar de database |
-| `public/` | `index.php`, hier komt elk verzoek binnen |
+| `public/` | `index.php`, hier komt elk verzoek binnen. Ook de CSS en het JavaScript staan hier |
+| `templates/` | De HTML van de pagina's |
 | `tests/` | Alle tests. `Unit` draait zonder database, `Database` en `Api` met een aparte testdatabase |
 | `vendor/` | Packages van Composer. Staat niet in git, je maakt het met `composer install` |
 
@@ -132,7 +133,58 @@ Dit gebeurt er bij `GET /api/parts?category=cpu`:
 
 Gaat er iets mis, dan gooit de code een `ApiException` met een statuscode en een melding. `Application::handle()` vangt die op en maakt er een nette foutmelding in JSON van. Alle andere fouten worden een 500 met een algemene melding, en de echte fout gaat naar het logbestand.
 
+## De website
+
+De pagina's gebruiken dezelfde klassen als de API, ze geven alleen HTML terug in plaats van JSON.
+
+### Templates
+
+De HTML staat in `templates/`. De klasse `View` vult een template met gegevens en zet het in `layout.php`, waar de kop en de voet van elke pagina in staan. Stukken die op meerdere pagina's staan, zoals de totaalbalk, staan in `templates/partials/`.
+
+In een template gebruik ik altijd `$this->e($tekst)` om tekst op de pagina te zetten. Die functie maakt van `<` de tekst `&lt;`. Vult iemand `<script>` in als naam van zijn build, dan wordt dat gewone tekst en geen code. Dit heet escapen en voorkomt XSS.
+
+### De build in wording
+
+Zolang je bezig bent, staat je build in de PHP-sessie, per categorie het id van het onderdeel. Daarvoor zorgt `WorkingBuild`. Pas bij "Opslaan" komt de build in de database.
+
+### Wat gebeurt er als je op Kies klikt?
+
+1. De browser stuurt een formulier met het id van het onderdeel naar `/bouwen/cpu/kiezen`.
+2. `BuildPageController::choose()` controleert of het onderdeel bestaat en bij deze stap hoort.
+3. `WorkingBuild` zet het id in de sessie.
+4. De server stuurt de browser door naar de stap met een 303. Dit heet Post/Redirect/Get: als je de pagina vernieuwt, wordt het formulier niet opnieuw verstuurd.
+5. De stap-pagina haalt alle onderdelen op en vraagt voor elk onderdeel aan de checker: welke problemen geeft dit? Zo weet de pagina wat grijs moet.
+
+### Grijze onderdelen
+
+`problemsFor()` in de `CompatibilityChecker` probeert het onderdeel in een kopie van je build en kijkt welke regels fout gaan. Geeft een regel een fout, dan krijgt het kaartje de klasse `is-conflict` en de reden erbij. Het onderdeel blijft wel te kiezen, want misschien wil je juist je eerdere keuze aanpassen.
+
+### JavaScript
+
+Er is één bestand, `public/js/live.js`. Het doet twee dingen:
+
+1. **Kiezen zonder herladen.** Het vangt het versturen van het formulier op en verstuurt het zelf met `fetch()`. De server geeft dezelfde HTML terug als anders. Het script pakt daaruit de stappen, de kaartjes en de totalen en zet die op de pagina. Daarna zet het de focus terug op het kaartje, zodat je met het toetsenbord verder kunt.
+2. **Filters inklappen op een telefoon.**
+
+Zonder JavaScript gebeurt er niets bijzonders: het formulier wordt gewoon verstuurd en de pagina herlaadt. Dit heet progressive enhancement. Alle logica blijft in PHP.
+
+### Toegankelijkheid
+
+- Elk invoerveld heeft een `<label>`.
+- De eerste Tab gaat naar "Ga naar de inhoud", zodat je het menu kunt overslaan.
+- De totaalbalk heeft `aria-live="polite"`, zodat een schermlezer de nieuwe prijs voorleest.
+- Elke Kies-knop heeft een verborgen tekst met de naam van het onderdeel, zodat een schermlezer niet acht keer alleen "Kies" zegt.
+- Een status is nooit alleen een kleur, er staat altijd tekst bij.
+
 ## Vragen die ik kan verwachten
+
+**Waarom gebruikt de website de API niet?** De pagina's en de API zijn twee ingangen naar dezelfde klassen. De website roept die klassen direct aan, dat is sneller en er kan minder misgaan. De API is er voor andere programma's en maakt de logica los te testen.
+
+**Wat is het verschil tussen een sessie en de database?** Een sessie is tijdelijk en hoort bij één bezoeker. De database is blijvend en voor iedereen. Daarom staat de build in wording in de sessie en een opgeslagen build in de database.
+
+**Hoe voorkom je XSS?** Alle tekst gaat op de pagina door `$this->e()`, dat speciale tekens onschadelijk maakt. Er zijn tests die `<script>` invullen als naam, filter en budget.
+
+**Waarom is er zo weinig JavaScript?** Alles werkt met gewone formulieren en PHP. Het script maakt het alleen vlotter. Minder JavaScript betekent minder dat kan misgaan, en de site werkt ook als JavaScript uit staat.
 
 **Hoe weet je dat de aanbeveling altijd een goede build geeft?** Er is een test die voor elk doel alle budgetten van het minimum tot € 6.000 in stappen van € 100 afloopt en controleert dat de build compleet is, in orde is en binnen het budget valt.
 

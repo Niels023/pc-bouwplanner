@@ -4,13 +4,14 @@ In dit document staat hoe de PC-bouwplanner in elkaar zit. De diagrammen zijn ge
 
 ## 1. Opbouw in lagen
 
-De applicatie heeft twee ingangen: webpagina's voor de gebruiker en een REST API die JSON teruggeeft. Allebei gebruiken ze dezelfde logica, zodat de controle en de aanbeveling maar op één plek staan.
+De applicatie heeft twee ingangen: webpagina's voor de gebruiker en een REST API die JSON teruggeeft voor andere programma's. Allebei gebruiken ze dezelfde logica, zodat de controle en de aanbeveling maar op één plek staan.
 
 ```mermaid
 flowchart TB
     browser[Browser]
+    client[Andere programma's]
     browser -->|"formulieren en links (HTML)"| pages[Paginacontrollers]
-    browser -->|"fetch vanuit JavaScript (JSON)"| api[API-controllers]
+    client -->|"verzoeken (JSON)"| api[API-controllers]
     subgraph logica [Logica]
         checker[CompatibilityChecker en regels]
         recommender[Recommender]
@@ -33,7 +34,7 @@ flowchart TB
 | Weergave | `templates/` | PHP-templates die de HTML maken. |
 | Database | `database/` | `schema.sql` met de tabellen, `seed.php` om de database te vullen en in `data/` de onderdelen zelf. |
 | Configuratie | `config/`, `.env` | Databasegegevens, voedingsmarge en budgetverdeling. |
-| Tests | `tests/Unit/`, `tests/Database/`, `tests/Api/` | PHPUnit-tests. In `tests/Support/` staan hulpklassen. |
+| Tests | `tests/Unit/`, `tests/Database/`, `tests/Api/`, `tests/Pages/` | PHPUnit-tests. In `tests/Support/` staan hulpklassen. |
 
 ## 2. Usecasediagram
 
@@ -219,6 +220,8 @@ classDiagram
         +label() string
         +withArticle() string
         +stepNumber() int
+        +previous() Category
+        +next() Category
     }
     class Part {
         <<abstract>>
@@ -230,6 +233,7 @@ classDiagram
         +int powerW
         +category() Category*
         +specs() array*
+        +description() array*
         +toArray() array
     }
     class Cpu {
@@ -281,8 +285,8 @@ classDiagram
     class Build {
         -array parts
         +withPart(Part part) Build
-        +withoutPart(Category category) Build
         +hasPart(Category category) bool
+        +partIn(Category category) Part
         +totalPriceCents() int
         +estimatedPowerW() int
         +isEmpty() bool
@@ -323,7 +327,7 @@ De klasse voor een kast heet `PcCase`, omdat `case` in PHP een gereserveerd woor
 
 `Build` heeft voor elk onderdeel een eigen methode, zoals `cpu()` en `psu()`. Een eerdere versie van dit ontwerp had één methode `part(Category)`, maar die geeft alleen een `Part` terug. Met `cpu()` weet PHP dat het om een `Cpu` gaat, dus de regels kunnen `$build->cpu()->socket` gebruiken en de editor kent de velden. Deze methodes mag je alleen aanroepen als het onderdeel gekozen is, dat controleert de `CompatibilityChecker` eerst met `hasPart()`.
 
-`withPart` en `withoutPart` geven een nieuwe `Build` terug in plaats van de bestaande te veranderen. Zo kan de controle een onderdeel "proberen" zonder de echte build van de gebruiker aan te passen. De aanbeveling gebruikt `withPart` om onderdelen te proberen, `withoutPart` komt er met F-04.
+`withPart` en `withoutPart` geven een nieuwe `Build` terug in plaats van de bestaande te veranderen. Zo kan de controle een onderdeel "proberen" zonder de echte build van de gebruiker aan te passen. De aanbeveling en de grijze onderdelen gebruiken `withPart` om een onderdeel te proberen.
 
 ### 4.2 Compatibiliteit
 
@@ -347,7 +351,7 @@ classDiagram
         -array rules
         +withAllRules(int psuMarginPercent) CompatibilityChecker$
         +check(Build build) CheckReport
-        +conflictsFor(Build build, Part candidate) array
+        +problemsFor(Build build, Part candidate) array
     }
     class CheckReport {
         +array results
@@ -362,6 +366,7 @@ classDiagram
         +string ruleName
         +CheckStatus status
         +string message
+        +isProblem() bool
     }
     class CheckStatus {
         <<enumeration>>
@@ -397,7 +402,7 @@ Elke regel is een eigen klasse met dezelfde interface. De `CompatibilityChecker`
 
 `withAllRules()` maakt een checker met alle zes de regels. De marge van de voeding komt uit `config/app.php`.
 
-`conflictsFor()` wordt gebruikt om onderdelen grijs te maken (F-12): de checker voegt het kandidaat-onderdeel toe aan een kopie van de build en geeft de fouten terug van regels waar dat onderdeel bij hoort. Deze methode komt er met F-12, net als `label()` op `CheckStatus` en `OverallStatus` voor de teksten op de pagina's.
+`problemsFor()` wordt gebruikt om onderdelen grijs te maken (F-12): de checker probeert het onderdeel in een kopie van de build en geeft de fouten en waarschuwingen terug die dat oplevert. Een probleem telt mee als de regel over dit onderdeel gaat, of als het probleem er zonder dit onderdeel niet was. Zo krijgt een videokaart die de voeding overbelast ook een melding, en krijgt een SSD niet de schuld van een verkeerde socket.
 
 ### 4.3 Aanbeveling, opslag en controllers
 
@@ -488,7 +493,7 @@ classDiagram
     RecommendationApiController --> PartRepository
 ```
 
-De paginacontrollers (`BuildPageController`, `RecommendationPageController`) gebruiken dezelfde repositories en logica als de API-controllers, maar geven HTML terug in plaats van JSON.
+De paginacontrollers (`HomePageController`, `BuildPageController`, `RecommendationPageController`) gebruiken dezelfde repositories en logica als de API-controllers, maar geven HTML terug in plaats van JSON.
 
 ### 4.4 HTTP-laag
 
@@ -526,19 +531,44 @@ classDiagram
         +json(array data, int status) Response$
         +send() void
     }
-    class ApiException {
+    class HttpException {
         +int status
         +string errorCode
+    }
+    class Input {
+        +category(string value) Category$
+        +maxPriceCents(string value) int$
+        +partFilter(Request request, Category category) PartFilter$
+        +buildName(mixed name) string$
+        +buildToSave(Build build) Build$
+        +budget(string value) int$
+        +goal(string value) Goal$
+    }
+    class View {
+        +render(string template, array data, int status) Response
+        +partial(string template, array data) string
+        +e(mixed value) string
+        +money(int cents) string
+        +date(DateTimeImmutable date) string
+    }
+    class WorkingBuild {
+        +build() Build
+        +choose(Part part) void
+        +remove(Category category) void
     }
 
     Application --> Router
     Router ..> Request
     Router ..> Response
-    Router ..> ApiException : gooit
-    Application ..> ApiException : vangt
+    Router ..> HttpException : gooit
+    Application ..> HttpException : vangt
+    Input ..> HttpException : gooit
+    View ..> Response : maakt
 ```
 
-`Application` is de enige plek waar fouten worden afgevangen. Een `ApiException` is een fout die de gebruiker mag zien, zoals een onbekende categorie. Alle andere fouten geven een 500 met een algemene melding, en de echte fout gaat naar het logbestand. Zo komen er nooit technische details bij de gebruiker terecht.
+`Application` is de enige plek waar fouten worden afgevangen. Een `HttpException` is een fout die de gebruiker mag zien, zoals een onbekende categorie. Alle andere fouten geven een 500 met een algemene melding, en de echte fout gaat naar het logbestand. Zo komen er nooit technische details bij de gebruiker terecht. Paden die met `/api/` beginnen krijgen de fout als JSON, alle andere als HTML-pagina.
+
+`Input` bevat alle controles op invoer, zodat de API en de pagina's dezelfde regels gebruiken. `View` maakt HTML van de templates in `templates/`. `e()` escapet tekst, zodat HTML die een gebruiker invult nooit als code wordt uitgevoerd. `WorkingBuild` bewaart de build waar de gebruiker mee bezig is in de sessie.
 
 ## 5. Activiteitendiagram compatibiliteitscheck
 
@@ -777,16 +807,24 @@ Voorbeeld van een foutmelding:
 | Pad | Pagina |
 |---|---|
 | `/` | Startpagina met de keuze: zelf samenstellen of een aanbeveling vragen. Ook een veld om een deelcode in te vullen. |
-| `/bouwen/{categorie}` | Eén stap van de bouwplanner, met filters en kaartjes. |
+| `/bouwen/{categorie}` | Eén stap van de bouwplanner, met filters en kaartjes. De categorie is de Engelse waarde, zoals `cpu`. |
+| `/bouwen/{categorie}/kiezen` | POST: kiest een onderdeel en stuurt terug naar de stap. |
+| `/bouwen/{categorie}/verwijderen` | POST: haalt het onderdeel weg en stuurt terug naar de stap. |
 | `/overzicht` | Alle gekozen onderdelen, het controleresultaat en het formulier om op te slaan. |
+| `/opslaan` | POST: slaat de build op en stuurt door naar de opgeslagen build. |
+| `/build/open` | Verwerkt het veld met de deelcode op de startpagina. |
 | `/build/{code}` | Een opgeslagen build. |
 | `/aanbeveling` | Formulier voor budget en doel, en daaronder het resultaat. |
 
 De build waar de gebruiker mee bezig is, staat in de PHP-sessie. Kiezen en verwijderen gaat met een gewoon formulier (POST). Daarna stuurt de server de browser door naar dezelfde stap, zodat vernieuwen de keuze niet opnieuw verstuurt. Zo werkt alles zonder JavaScript (NF-07).
 
-Er is één klein JavaScript-bestand. Als JavaScript aan staat, verstuurt het de keuze op de achtergrond en haalt het via `POST /api/builds/check` de nieuwe totaalprijs, het verbruik en de status op, zonder dat de pagina opnieuw laadt.
+Er is één klein JavaScript-bestand, `public/js/live.js`, van ongeveer 30 regels. Als JavaScript aan staat, verstuurt het de keuze op de achtergrond. De server geeft de normale pagina terug, en het script vervangt alleen de stappen, de kaartjes en de totalen. Alle logica blijft dus in PHP. De totalen staan in een `aria-live`-gebied, zodat een schermlezer de nieuwe prijs voorleest, en de focus blijft op hetzelfde kaartje. Op een telefoon klapt het script ook de filters in, die in een `<details>`-blok staan. Zonder JavaScript staat dat blok gewoon open.
+
+In een eerdere versie van dit ontwerp haalde het script de totalen op via `POST /api/builds/check`. Dat is veranderd, zie [keuzes.md](keuzes.md).
 
 ### 9.1 Schermontwerp bouwstap
+
+Dit zijn de schetsen van voor het bouwen. De echte schermen staan in [docs/img](img/), bijvoorbeeld [de stap met onderdelen die niet passen](img/scherm-onderdelen-die-niet-passen.png), [het overzicht](img/scherm-overzicht-met-fout.png), [de aanbeveling](img/scherm-aanbeveling.png) en [de telefoonweergave](img/scherm-telefoon.png).
 
 Desktop:
 
@@ -847,17 +885,17 @@ De namen op de kaartjes in deze schetsen zijn voorbeelden. De echte onderdelen k
 |---|---|
 | F-01 | ERD (§3), `database/seed.php` |
 | F-02, F-03, F-20 | `PartRepository`, `PartFilter`, pagina `/bouwen/{categorie}`, `GET /api/parts` |
-| F-04 | Pagina's (§9), `Build`, sessie |
+| F-04 | Pagina's (§9), `BuildPageController`, `WorkingBuild` |
 | F-05 t/m F-10 | Regels (§6), klassendiagram compatibiliteit (§4.2) |
 | F-11 | `CheckReport`, `CheckStatus`, `OverallStatus`, activiteitendiagram (§5) |
-| F-12 | `CompatibilityChecker::conflictsFor()` |
+| F-12 | `CompatibilityChecker::problemsFor()`, `templates/partials/part-card.php` |
 | F-13 | `Build::totalPriceCents()`, `Build::estimatedPowerW()`, JavaScript (§9) |
 | F-14, F-15 | `BuildRepository`, tabellen `builds` en `build_parts`, `POST /api/builds`, `GET /api/builds/{code}` |
 | F-16, F-17 | `Recommender` (§7), `GET /api/recommendation` |
 | F-18 | REST API (§8) |
 | F-19 | Pagina `/aanbeveling`, sessie |
 | F-21 | Extra regel `IntegratedGraphicsRule` (zelfde interface als §4.2) |
-| NF-01, NF-02 | Schermontwerp (§9.1), CSS |
+| NF-01, NF-02 | `public/css/style.css`, templates |
 | NF-03 | `PartRepository` en `BuildRepository` met prepared statements, escaping in de templates |
 | NF-04 | `config/app.php`, `.env` |
-| NF-07 | Formulieren met doorsturen na POST (§9) |
+| NF-07 | Formulieren met doorsturen na POST, `public/js/live.js` (§9) |

@@ -24,20 +24,20 @@ Alle tests moeten slagen voordat een branch naar `main` gaat.
 | Eis | Testvorm | Status testcases |
 |---|---|---|
 | F-01 | Databasetest | Uitgewerkt in hoofdstuk 3 |
-| F-02, F-03 | Databasetest, API-test en handmatig | API uitgewerkt, handmatig komt bij de pagina's |
-| F-04, F-12 | Handmatig | Komt bij de pagina's |
+| F-02, F-03 | Databasetest, API-test en paginatest | Uitgewerkt in hoofdstuk 3 en 4 |
+| F-04, F-12 | Paginatest, unit test en handmatig | Uitgewerkt in hoofdstuk 4 en 5 |
 | F-05 t/m F-11 | Unit test en API-test | Uitgewerkt in hoofdstuk 3 |
-| F-13 | Unit test en handmatig | Unit tests uitgewerkt, handmatig komt bij de pagina's |
-| F-14, F-15 | API-test en handmatig | API uitgewerkt, handmatig komt bij de pagina's |
-| F-16, F-17 | Unit test, API-test en handmatig | Unit en API uitgewerkt, handmatig komt bij de pagina's |
+| F-13 | Unit test, paginatest en handmatig | Uitgewerkt in hoofdstuk 3, 4 en 5 |
+| F-14, F-15 | API-test, paginatest en handmatig | Uitgewerkt in hoofdstuk 3, 4 en 5 |
+| F-16, F-17 | Unit test, API-test en paginatest | Uitgewerkt in hoofdstuk 3 en 4 |
 | F-18 | API-test en handmatig | Uitgewerkt in hoofdstuk 3 |
 | F-19, F-20, F-21 | Unit test en handmatig | Komt bij die eisen |
-| NF-01, NF-02, NF-07 | Handmatig en Lighthouse | Komt bij de pagina's |
-| NF-03 | API-test en code nakijken | Query's en invoer uitgewerkt, escaping komt bij de pagina's |
+| NF-01, NF-02, NF-07, NF-08 | Handmatig en Lighthouse | Uitgewerkt in hoofdstuk 5 |
+| NF-03 | API-test, paginatest en code nakijken | Uitgewerkt in hoofdstuk 3 en 4 |
 | NF-04 | Code nakijken | Uitgewerkt in hoofdstuk 3 |
 | NF-05 | PHP_CodeSniffer | Uitgewerkt in hoofdstuk 3 |
 | NF-06 | Alle testvormen | Uitgewerkt in hoofdstuk 3 |
-| NF-08, NF-09 | Handmatig | Komt aan het eind |
+| NF-09 | Handmatig | Uitgewerkt in hoofdstuk 5 |
 
 ## 3. Testcases
 
@@ -288,3 +288,134 @@ Verbruik 450 W en 30% marge, dus 585 W is nodig, tenzij de tabel iets anders zeg
 |---|---|---|
 | TC-NF06-01 | `composer test` draaien voor elke merge | Alle tests slagen |
 | TC-NF06-02 | Expres fouten in de regels bouwen, zoals `>` veranderen in `>=` | De tests falen bij elke ingebouwde fout |
+
+## 4. Paginatests
+
+Deze tests staan in `tests/Pages/`. Ze sturen een verzoek naar de applicatie, net als een browser zonder JavaScript, en controleren de HTML, de statuscode en de doorverwijzing.
+
+### F-02 en F-03 Kaartjes en filters op de pagina
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-P-01 | `/bouwen/cpu` | Stap 1 van 8, onderdeel, prijs, peildatum en socket | `testStepShowsPartsAsCards` |
+| TC-P-02 | Alle acht categorieën | Stap 1 t/m 8 in de juiste volgorde | `testAllEightStepsExistInTheRightOrder` |
+| TC-P-03 | Onbekende stap | 404 | `testUnknownStepGivesNotFound` |
+| TC-P-04 | Alle categorieën | Elke categorie toont zijn eigen specificaties | `testEveryCategoryShowsItsOwnSpecs` |
+| TC-P-05 | `brand=Intel` | Alleen Intel | `testFilterShowsOnlyMatchingParts` |
+| TC-P-06 | Merk, socket en maximale prijs | Alleen onderdelen die aan alles voldoen | `testFiltersCanBeCombined` |
+| TC-P-07 | Filters ingevuld | Filters blijven ingevuld staan | `testFiltersStayFilledIn` |
+| TC-P-08 | `max_price=1` | "Geen onderdelen gevonden met deze filters" | `testNoResultsGivesMessage` |
+| TC-P-09 | `max_price=abc` | Melding, onderdelen blijven zichtbaar | `testInvalidMaxPriceGivesMessageAndStillShowsParts` |
+| TC-P-10 | Processor en koeler | Alleen filters die bij de categorie horen | `testOnlyFiltersThatFitTheCategoryAreShown` |
+
+### F-04 Build stap voor stap samenstellen
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-P-11 | Onderdeel kiezen | Doorsturen naar de stap, onderdeel staat op gekozen | `testChoosingAPartRedirectsAndShowsIt` |
+| TC-P-12 | Kiezen met filters in de URL | Filters blijven, onbekende parameters vallen weg | `testRedirectKeepsFilters` |
+| TC-P-13 | Tweede onderdeel in dezelfde categorie | Vervangt het eerste | `testChoosingAnotherPartReplacesTheFirst` |
+| TC-P-14 | Naar een andere stap gaan | Keuze blijft bewaard | `testChoiceIsKeptOnOtherSteps` |
+| TC-P-15 | Onderdeel verwijderen | Stap is weer leeg | `testRemovingAPartEmptiesItsStep` |
+| TC-P-16 | Onbekend onderdeel of geen id | 404 | `testUnknownPartCannotBeChosen` |
+| TC-P-17 | Onderdeel van een andere categorie | 404 | `testPartOfOtherCategoryCannotBeChosen` |
+| TC-P-18 | Stap Geheugen | Links naar alle stappen, huidige stap is gemarkeerd | `testStepNavigationLinksToAllSteps` |
+| TC-P-19 | Eerste en laatste stap | Geen vorige stap, laatste gaat naar het overzicht | `testFirstAndLastStepHaveTheRightLinks` |
+
+### F-12 Onverenigbare onderdelen herkennen
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-P-20 | AM5-processor gekozen, stap Moederbord | AM4-borden zijn grijs met de reden | `testPartsThatDoNotFitAreGreyWithReason` |
+| TC-P-21 | Grijs bord kiezen | Kan wel, totaalstatus wordt Fout | `testPartsThatDoNotFitCanStillBeChosen` |
+| TC-P-22 | AM5-processor gekozen | Borden die passen staan bovenaan | `testPartsThatFitComeFirst` |
+| TC-P-23 | Niets gekozen | Niets is grijs | `testNothingIsGreyWithoutChoices` |
+| TC-P-24 | 9800X3D en ROG Astral gekozen, stap Voeding | Krappe voeding krijgt een waarschuwing | `testTightPsuGivesWarningOnCard` |
+| TC-P-25 | Unit: onderdeel dat past | Geen problemen | `testPartThatFitsHasNoProblems` |
+| TC-P-26 | Unit: onderdeel dat niet past | De fout van de juiste regel | `testPartThatDoesNotFitGivesTheProblem` |
+| TC-P-27 | Unit: krappe voeding | Waarschuwing | `testTightPsuGivesAWarning` |
+| TC-P-28 | Unit: videokaart overbelast de voeding | Videokaart krijgt de fout | `testGpuThatOverloadsThePsuGetsTheProblem` |
+| TC-P-29 | Unit: fout tussen andere onderdelen | Niet de schuld van dit onderdeel | `testProblemBetweenOtherPartsIsNotBlamedOnCandidate` |
+| TC-P-30 | Unit: onderdeel vervangen | Kijkt naar het nieuwe onderdeel | `testReplacingAPartLooksAtTheNewPart` |
+| TC-P-31 | Unit: oude fout, ander onderdeel in die regel | Fout telt nog steeds | `testOldProblemStillCountsForPartInThatRule` |
+
+### F-13 Totalen op de pagina
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-P-32 | Ryzen 5 5600 en B550M Pro4 | Totaalbalk: € 220,44 en 128 W | `testTotalsAreAddedUp` |
+
+### F-14 en F-15 Opslaan en openen
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-P-33 | Leeg overzicht | 8 keer "Nog niet gekozen" | `testEmptyOverviewShowsAllStepsAsNotChosen` |
+| TC-P-34 | Twee onderdelen die niet passen | Onderdelen en meldingen staan op het overzicht | `testChosenPartsAndCheckResultsAreShown` |
+| TC-P-35 | Opslaan met naam | Doorsturen naar de build met die naam | `testSavingRedirectsToSavedBuild` |
+| TC-P-36 | Naam met alleen spaties | 422 en melding | `testSavingWithoutNameGivesMessage` |
+| TC-P-37 | Naam van 61 tekens | 422, naam blijft ingevuld | `testTooLongNameStaysInTheField` |
+| TC-P-38 | Lege build | 422 en melding | `testEmptyBuildCannotBeSaved` |
+| TC-P-39 | Opgeslagen build openen | Naam, code, onderdelen, prijs en controle | `testSavedBuildShowsNameCodePartsAndCheck` |
+| TC-P-40 | Onbekende code | 404 "Geen build gevonden met deze code" | `testUnknownCodeGivesNotFoundPage` |
+| TC-P-41 | Code invullen op de startpagina | Doorsturen naar de build | `testCodeFormRedirectsToBuild` |
+| TC-P-42 | Leeg codeveld | Terug naar de startpagina | `testEmptyCodeFormGoesBackHome` |
+
+### F-16 en F-17 Aanbeveling op de pagina
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-P-43 | Formulier openen | Geen foutmelding | `testEmptyFormGivesNoError` |
+| TC-P-44 | € 2.000 voor gamen | Onderdelen, reden en bedrag over | `testResultShowsPartsWithReasonAndLeftover` |
+| TC-P-45 | Formulier verstuurd | Waarden blijven ingevuld | `testFormKeepsItsValues` |
+| TC-P-46 | Leeg budget | 422 en melding | `testEmptyBudgetGivesMessage` |
+| TC-P-47 | 0, -5, abc, 12.50 | Melding | `testInvalidBudgetsGiveMessage` |
+| TC-P-48 | € 1.000 voor gamen | "Voor gamen heb je minimaal € 1.172 nodig." | `testBudgetBelowMinimumNamesTheMinimum` |
+| TC-P-49 | Onbekend doel | 422 en melding | `testUnknownGoalGivesMessage` |
+
+### NF-03 Escaping en algemene pagina's
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-P-50 | `<script>` in een filter | Staat niet als code op de pagina | `testHtmlInFilterIsEscaped` |
+| TC-P-51 | `<script>` als naam van een build | Wordt `&lt;script&gt;` | `testNameIsEscaped` |
+| TC-P-52 | `<script>` als budget | Staat niet als code op de pagina | `testInputIsEscaped` |
+| TC-P-53 | Startpagina | Beide keuzes en het veld voor de deelcode | `testHomePageShowsBothChoicesAndCodeField` |
+| TC-P-54 | Startpagina | Taal, titel en link "Ga naar de inhoud" | `testPageHasLanguageTitleAndSkipLink` |
+| TC-P-55 | Onbekende pagina | 404 als HTML | `testUnknownPageGivesHtmlNotFound` |
+| TC-P-56 | Onbekend API-pad | Fout blijft JSON | `testApiPathStillGivesJsonError` |
+
+## 5. Handmatige tests
+
+| ID | Eis | Stappen | Verwacht resultaat |
+|---|---|---|---|
+| TC-H-01 | NF-01 | Alle pagina's openen op 360, 375, 1000, 1200 en 1920 pixels breed | Geen horizontaal scrollen. Kaartjes onder elkaar op een telefoon, naast elkaar op een desktop |
+| TC-H-02 | NF-02 | Lighthouse draaien op de startpagina, een stap, het overzicht en de aanbeveling | Score voor toegankelijkheid van 90 of hoger |
+| TC-H-03 | NF-02 | Contrast van alle kleurparen uit de CSS uitrekenen | Minimaal 4,5:1 |
+| TC-H-04 | NF-02 | Met alleen Tab en Enter een onderdeel kiezen en een build opslaan | Alles is bereikbaar, de focus is zichtbaar, de focus blijft op het kaartje na het kiezen |
+| TC-H-05 | NF-07 | De hele route doorlopen zonder JavaScript: acht onderdelen kiezen, filteren, verwijderen, opslaan, openen | Alles werkt en de totalen kloppen na elke stap |
+| TC-H-06 | F-13 | Met JavaScript aan een onderdeel kiezen | Pagina herlaadt niet, totalen en kaartjes veranderen direct, geen fouten in de console |
+| TC-H-07 | NF-08 | Tijd meten van alle pagina's en API-verzoeken, 5 keer per pagina | Binnen 1 seconde |
+| TC-H-08 | NF-09 | Schone clone van GitHub, stappen uit de README volgen, `composer test` draaien | Site start, alle tests slagen |
+| TC-H-09 | F-14, F-15 | In de browser een build opslaan en met de code openen | De build is hetzelfde |
+
+## 6. Gebruikerstest
+
+De gebruikerstest doe ik met 2 of 3 echte mensen, liefst iemand die weinig van PC's weet en iemand die er wel wat van weet. Ik kijk mee en help niet, tenzij iemand echt vastloopt. Ik schrijf op waar iemand twijfelt of iets niet begrijpt.
+
+| ID | Opdracht | Geslaagd als | Bij eis |
+|---|---|---|---|
+| TC-G-01 | Stel een complete PC samen waarvan alle onderdelen passen | Build heeft status "In orde" | F-04, F-12 |
+| TC-G-02 | Kies een processor van AMD onder de € 200 | Gebruikt de filters | F-03 |
+| TC-G-03 | Zoek uit waarom een grijs onderdeel niet past en leg het uit in eigen woorden | Kan de reden noemen | F-12 |
+| TC-G-04 | Hoeveel kost je build en hoeveel stroom verbruikt hij? | Vindt beide zonder hulp | F-13 |
+| TC-G-05 | Sla je build op en open hem opnieuw met de code | Build is terug | F-14, F-15 |
+| TC-G-06 | Vraag een build aan voor gamen met € 1.500. Waarom is de videokaart gekozen? | Vindt de reden | F-16, F-17 |
+| TC-G-07 | Vraag een build aan met € 500 | Begrijpt de melding | F-16 |
+| TC-G-08 | Doe opdracht 1 op een telefoon | Lukt zonder horizontaal scrollen | NF-01 |
+
+Vragen na afloop:
+
+1. Wat vond je het makkelijkst en wat het lastigst?
+2. Was er een melding of woord dat je niet begreep?
+3. Zou je deze site gebruiken als je een PC ging kopen? Waarom wel of niet?
+4. Wat zou je veranderen?
