@@ -138,13 +138,25 @@ class RecommenderTest extends TestCase
 
     public function testBoardWithTooFewRamSlotsIsNotChosen(): void
     {
-        $smallBoard = Parts::motherboard('AM4', 'DDR4', Parts::microAtx(), priceCents: 100, ramSlots: 2);
+        // Dit bord is de duurste binnen het deelbudget van 100 euro en zou anders gekozen worden.
+        $smallBoard = Parts::motherboard('AM4', 'DDR4', Parts::microAtx(), priceCents: 9000, ramSlots: 2);
         $parts = [...$this->catalog(), $smallBoard];
 
         $recommendation = (new Recommender($parts, CompatibilityChecker::withAllRules(30), self::GOALS))
-            ->recommend(self::MINIMUM_GAMING_EUR, Goal::Gaming);
+            ->recommend(1000, Goal::Gaming);
 
         $this->assertSame(4, $recommendation->build->motherboard()->ramSlots);
+    }
+
+    public function testPartThatCostsExactlyTheCategoryBudgetIsAllowed(): void
+    {
+        // Werken heeft geen upgrade voor de videokaart, dus de eerste keuze blijft staan.
+        $parts = [...$this->catalog(), Parts::gpu(lengthMm: 250, powerW: 150, priceCents: 30000)];
+
+        $recommendation = (new Recommender($parts, CompatibilityChecker::withAllRules(30), self::GOALS))
+            ->recommend(1000, Goal::Work);
+
+        $this->assertSame(40000, $recommendation->build->gpu()->priceCents);
     }
 
     public function testLeftoverGoesToWhatMattersForTheGoal(): void
