@@ -9,6 +9,11 @@ $selects = [
     'ram_type' => ['RAM-type', 'Alle types'],
     'form_factor' => ['Formaat', 'Alle formaten'],
 ];
+$sortOptions = [
+    'price_asc' => 'Prijs: laag naar hoog',
+    'price_desc' => 'Prijs: hoog naar laag',
+    'name' => 'Naam',
+];
 ?>
 <h1>Stap <?= $number ?> van <?= $total ?>: <?= $this->e(ucfirst($category->label())) ?></h1>
 
@@ -36,6 +41,14 @@ $selects = [
             <div class="field">
                 <label for="max_price">Maximale prijs in euro</label>
                 <input id="max_price" name="max_price" type="number" min="1" step="1" value="<?= $this->e($filters['max_price'] ?? '') ?>">
+            </div>
+            <div class="field">
+                <label for="sort">Sorteren</label>
+                <select id="sort" name="sort">
+                    <?php foreach ($sortOptions as $value => $label) : ?>
+                        <option value="<?= $value ?>"<?= ($filters['sort'] ?? 'price_asc') === $value ? ' selected' : '' ?>><?= $label ?></option>
+                    <?php endforeach; ?>
+                </select>
             </div>
             <button type="submit" class="button">Filters toepassen</button>
             <?php if ($filters !== []) : ?>

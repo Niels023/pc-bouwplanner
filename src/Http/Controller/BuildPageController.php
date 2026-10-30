@@ -20,7 +20,7 @@ use App\Repository\PartRepository;
 
 class BuildPageController
 {
-    private const FILTER_NAMES = ['brand', 'max_price', 'socket', 'ram_type', 'form_factor'];
+    private const FILTER_NAMES = ['brand', 'max_price', 'socket', 'ram_type', 'form_factor', 'sort'];
 
     public function __construct(
         private View $view,

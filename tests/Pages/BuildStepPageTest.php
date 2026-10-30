@@ -78,6 +78,23 @@ class BuildStepPageTest extends PageTestCase
         $this->assertStringContainsString('value="150"', $response->body);
     }
 
+    public function testSortChangesTheOrderOfTheCards(): void
+    {
+        $body = $this->get('/bouwen/gpu', ['sort' => 'price_desc'])->body;
+
+        $this->assertLessThan(strpos($body, 'RTX 5060 8G'), strpos($body, 'ROG Astral'));
+        $this->assertStringContainsString('<option value="price_desc" selected>', $body);
+    }
+
+    public function testChoosingKeepsTheSorting(): void
+    {
+        $id = $this->partId('Ryzen 5 7600 Boxed');
+
+        $response = $this->postForm('/bouwen/cpu/kiezen', ['part_id' => $id], ['sort' => 'name']);
+
+        $this->assertRedirectsTo('/bouwen/cpu?sort=name', $response);
+    }
+
     public function testNoResultsGivesMessage(): void
     {
         $response = $this->get('/bouwen/cpu', ['max_price' => '1']);
