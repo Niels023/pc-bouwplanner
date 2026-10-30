@@ -109,6 +109,39 @@ class PartApiTest extends ApiTestCase
         $this->assertSame(2, $data['count']);
     }
 
+    public function testSortByPriceHighToLow(): void
+    {
+        $data = $this->data($this->get('/api/parts', ['category' => 'gpu', 'sort' => 'price_desc']));
+
+        $prices = array_column($data['parts'], 'price_eur');
+        $sorted = $prices;
+        rsort($sorted);
+        $this->assertSame($sorted, $prices);
+    }
+
+    public function testSortByName(): void
+    {
+        $data = $this->data($this->get('/api/parts', ['category' => 'cooler', 'sort' => 'name']));
+
+        $this->assertSame('ARCTIC', $data['parts'][0]['brand']);
+        $this->assertSame('Thermalright', $data['parts'][count($data['parts']) - 1]['brand']);
+    }
+
+    public function testDefaultSortIsPriceLowToHigh(): void
+    {
+        $default = $this->data($this->get('/api/parts', ['category' => 'gpu']));
+        $sorted = $this->data($this->get('/api/parts', ['category' => 'gpu', 'sort' => 'price_asc']));
+
+        $this->assertSame($sorted['parts'], $default['parts']);
+    }
+
+    public function testUnknownSortGivesError(): void
+    {
+        $response = $this->get('/api/parts', ['sort' => 'price; DROP TABLE parts']);
+
+        $this->assertError($response, 422, 'invalid_sort');
+    }
+
     public function testNoResultsGivesEmptyList(): void
     {
         $response = $this->get('/api/parts', ['brand' => 'Bestaat niet']);

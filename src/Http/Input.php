@@ -51,7 +51,22 @@ class Input
             socket: $request->query('socket'),
             ramType: $request->query('ram_type'),
             formFactor: $request->query('form_factor'),
+            sort: self::sort($request->query('sort')),
         );
+    }
+
+    public static function sort(?string $value): string
+    {
+        if ($value === null) {
+            return PartFilter::SORT_OPTIONS[0];
+        }
+
+        if (!in_array($value, PartFilter::SORT_OPTIONS, true)) {
+            $allowed = implode(', ', PartFilter::SORT_OPTIONS);
+            throw new HttpException(422, 'invalid_sort', "Onbekende sortering '$value'. Kies uit: $allowed.");
+        }
+
+        return $value;
     }
 
     public static function buildName(mixed $name): string

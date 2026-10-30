@@ -7,6 +7,13 @@ use PDO;
 
 class PartRepository
 {
+    // Vaste lijst, dus er komt nooit tekst van een gebruiker in de ORDER BY.
+    private const ORDER_BY = [
+        'price_asc' => 'category, price_eur, name',
+        'price_desc' => 'category, price_eur DESC, name',
+        'name' => 'category, brand, name',
+    ];
+
     private PartMapper $mapper;
 
     public function __construct(private PDO $pdo)
@@ -44,7 +51,7 @@ class PartRepository
             $sql .= ' WHERE ' . implode(' AND ', $conditions);
         }
 
-        return $this->fetchParts($sql . ' ORDER BY category, price_eur, name', $values);
+        return $this->fetchParts($sql . ' ORDER BY ' . self::ORDER_BY[$filter->sort], $values);
     }
 
     /** @return array{0: string[], 1: array<int, mixed>} */
