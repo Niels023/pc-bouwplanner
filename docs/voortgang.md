@@ -8,7 +8,7 @@ Start: woensdag 28 oktober 2026.
 
 **Sprintdoel:** de repository staat klaar en de opdracht, eisen en het ontwerp zijn af en goedgekeurd, zodat ik daarna kan beginnen met bouwen.
 
-**Geselecteerde issues:** #1 (F-01, database met onderdelen). Voor de projectopzet is ook gewerkt aan #29, #30, #31 en #34.
+**Geselecteerde issues:** #1 (F-01, database met onderdelen). Voor de projectopzet is ook gewerkt aan #29, #30, #31 en #34. Op 30 oktober toegevoegd omdat het sprintdoel al gehaald was: #5 t/m #11 (compatibiliteitsregels) en #13 (totalen).
 
 ### Sessie woensdag 28 oktober 2026
 
@@ -47,3 +47,27 @@ Start: woensdag 28 oktober 2026.
 - Tweakers was niet automatisch uit te lezen. Oplossing: de Pricewatch met de hand doorzocht in de browser.
 
 **Komt de planning in gevaar?** Nee. Er is geen deadline en er is nog niets uitgelopen.
+
+### Sessie vrijdag 30 oktober 2026
+
+**Gedaan:**
+
+- Op branch `feature/compatibiliteit`: modelklassen voor alle onderdelen en de `Build`, die prijs en verbruik optelt (#13).
+- De zes compatibiliteitsregels gebouwd (#5 t/m #10), elk in een eigen klasse met unit tests. Ook de `CompatibilityChecker` en de totaalstatus (#11). De tests heb ik eerst geschreven en zien falen.
+- Alle 42 tests slagen en de linter geeft 0 fouten.
+- Mutatietest gedaan: 12 fouten expres in de code gezet. De tests vingen ze allemaal.
+- `testplan.md`, `testrapport.md` en `uitleg.md` gemaakt. Ontwerp en keuzes bijgewerkt.
+
+**Open:**
+
+- Beslissen wat de totaalstatus moet zijn als alle regels in orde zijn, maar er nog geen opslag gekozen is. Nu is dat "in orde", want geen enkele regel heeft opslag nodig.
+- De budgetverdeling van de aanbeveling opnieuw bekijken bij F-16 (zie sessie 28 oktober).
+- Volgende stap: de repositories en de REST API (F-02, F-03, F-14, F-15, F-18).
+
+**Afwijkingen en wat ik eraan gedaan heb:**
+
+- `Build` heeft geen methode `part(Category)` gekregen zoals in het ontwerp stond, maar een methode per onderdeel. Reden: dan weet de editor welke velden er zijn. Het ontwerp en `keuzes.md` zijn aangepast.
+- `category` is geen veld van `Part` geworden, maar een methode die elke subklasse zelf invult. Het ontwerp is aangepast.
+- Mijn hulpfunctie `result()` in een test gaf een fatale fout, omdat PHPUnit al een methode met die naam heeft. Oplossing: hernoemd naar `resultFor()`.
+
+**Komt de planning in gevaar?** Nee.

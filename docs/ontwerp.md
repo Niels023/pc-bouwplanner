@@ -213,21 +213,22 @@ classDiagram
         Ram
         Gpu
         Cooler
-        Case
+        PcCase
         Storage
         Psu
+        +withArticle() string
         +label() string
         +stepNumber() int
     }
     class Part {
         <<abstract>>
         +int id
-        +Category category
         +string brand
         +string name
         +int priceCents
         +DateTimeImmutable priceDate
         +int powerW
+        +category() Category*
     }
     class Cpu {
         +string socket
@@ -279,11 +280,17 @@ classDiagram
         -array parts
         +withPart(Part part) Build
         +withoutPart(Category category) Build
-        +part(Category category) Part
         +hasPart(Category category) bool
         +totalPriceCents() int
         +estimatedPowerW() int
         +isEmpty() bool
+        +cpu() Cpu
+        +motherboard() Motherboard
+        +ram() RamKit
+        +gpu() Gpu
+        +cooler() Cooler
+        +pcCase() PcCase
+        +psu() Psu
     }
     class SavedBuild {
         +string shareCode
@@ -307,7 +314,11 @@ classDiagram
     SavedBuild --> Build
 ```
 
-De klasse voor een kast heet `PcCase`, omdat `case` in PHP een gereserveerd woord is. `withPart` en `withoutPart` geven een nieuwe `Build` terug in plaats van de bestaande te veranderen. Zo kan de controle een onderdeel "proberen" zonder de echte build van de gebruiker aan te passen.
+De klasse voor een kast heet `PcCase`, omdat `case` in PHP een gereserveerd woord is. Elke subklasse geeft met `category()` zelf aan bij welke categorie hij hoort.
+
+`Build` heeft voor elk onderdeel een eigen methode, zoals `cpu()` en `psu()`. Een eerdere versie van dit ontwerp had één methode `part(Category)`, maar die geeft alleen een `Part` terug. Met `cpu()` weet PHP dat het om een `Cpu` gaat, dus de regels kunnen `$build->cpu()->socket` gebruiken en de editor kent de velden. Deze methodes mag je alleen aanroepen als het onderdeel gekozen is, dat controleert de `CompatibilityChecker` eerst met `hasPart()`.
+
+`withPart` en `withoutPart` geven een nieuwe `Build` terug in plaats van de bestaande te veranderen. Zo kan de controle een onderdeel "proberen" zonder de echte build van de gebruiker aan te passen. Deze twee methodes en `isEmpty()` komen er pas bij met F-04, F-12 en F-14.
 
 ### 4.2 Compatibiliteit
 
@@ -323,12 +334,13 @@ classDiagram
     class RamTypeRule
     class FormFactorRule
     class PsuWattageRule {
-        -float marginPercent
+        -int marginPercent
     }
     class GpuLengthRule
     class CoolerHeightRule
     class CompatibilityChecker {
         -array rules
+        +withAllRules(int psuMarginPercent) CompatibilityChecker$
         +check(Build build) CheckReport
         +conflictsFor(Build build, Part candidate) array
     }
@@ -375,7 +387,9 @@ classDiagram
 
 Elke regel is een eigen klasse met dezelfde interface. De `CompatibilityChecker` kijkt eerst met `requiredCategories()` of de onderdelen voor een regel gekozen zijn. Is dat niet zo, dan maakt de checker zelf een resultaat "nog niet gecontroleerd". Pas als alles er is, roept hij `evaluate()` aan. Zo staat de controle op ontbrekende onderdelen maar op één plek. Een nieuwe regel toevoegen (zoals F-21) betekent: één nieuwe klasse schrijven en die aan de lijst van de checker toevoegen.
 
-`conflictsFor()` wordt gebruikt om onderdelen grijs te maken (F-12): de checker voegt het kandidaat-onderdeel toe aan een kopie van de build en geeft de fouten terug van regels waar dat onderdeel bij hoort.
+`withAllRules()` maakt een checker met alle zes de regels. De marge van de voeding komt uit `config/app.php`.
+
+`conflictsFor()` wordt gebruikt om onderdelen grijs te maken (F-12): de checker voegt het kandidaat-onderdeel toe aan een kopie van de build en geeft de fouten terug van regels waar dat onderdeel bij hoort. Deze methode komt er met F-12, net als `label()` op `CheckStatus` en `OverallStatus` voor de teksten op de pagina's.
 
 ### 4.3 Aanbeveling, opslag en controllers
 
