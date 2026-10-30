@@ -2,10 +2,10 @@
 
 namespace Tests\Database;
 
-use App\Database\Connection;
 use App\Database\Seeder;
 use PDO;
 use PHPUnit\Framework\TestCase;
+use Tests\Support\TestDatabase;
 
 class SeedTest extends TestCase
 {
@@ -13,15 +13,7 @@ class SeedTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        $config = require __DIR__ . '/../../config/app.php';
-        Connection::createDatabase($config['db']);
-        self::$pdo = Connection::connect($config['db']);
-
-        (new Seeder(self::$pdo))->run(
-            file_get_contents(__DIR__ . '/../../database/schema.sql'),
-            require __DIR__ . '/../../database/data/lookups.php',
-            require __DIR__ . '/../../database/data/parts.php',
-        );
+        self::$pdo = TestDatabase::seeded();
     }
 
     public function testDatabaseHasBetween40And60Parts(): void
