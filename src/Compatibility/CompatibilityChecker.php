@@ -5,6 +5,7 @@ namespace App\Compatibility;
 use App\Compatibility\Rules\CoolerHeightRule;
 use App\Compatibility\Rules\FormFactorRule;
 use App\Compatibility\Rules\GpuLengthRule;
+use App\Compatibility\Rules\IntegratedGraphicsRule;
 use App\Compatibility\Rules\PsuWattageRule;
 use App\Compatibility\Rules\RamTypeRule;
 use App\Compatibility\Rules\SocketRule;
@@ -28,6 +29,7 @@ class CompatibilityChecker
             new PsuWattageRule($psuMarginPercent),
             new GpuLengthRule(),
             new CoolerHeightRule(),
+            new IntegratedGraphicsRule(),
         ]);
     }
 

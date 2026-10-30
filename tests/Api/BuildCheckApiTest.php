@@ -26,7 +26,7 @@ class BuildCheckApiTest extends ApiTestCase
         $data = $this->data($response);
         $this->assertSame('incomplete', $data['overall_status']);
         $this->assertSame(0, $data['total_price_eur']);
-        $this->assertCount(6, $data['results']);
+        $this->assertCount(7, $data['results']);
     }
 
     public function testCompleteBuildThatFitsIsOk(): void
@@ -94,6 +94,33 @@ class BuildCheckApiTest extends ApiTestCase
 
         $this->assertSame(583, $data['estimated_power_w']);
         $this->assertSame('warning', $this->resultFor($data, 'psu_wattage')['status']);
+    }
+
+    public function testBuildWithoutGpuCanBeOk(): void
+    {
+        $parts = self::COMPLETE_BUILD;
+        unset($parts[3]);
+
+        $data = $this->data($this->check(array_values($parts)));
+
+        $this->assertSame('ok', $data['overall_status']);
+    }
+
+    public function testBuildWithoutGpuOrIntegratedGraphicsIsAnError(): void
+    {
+        $parts = [
+            'Ryzen 5 5600 Boxed',
+            'B550M Pro4',
+            'FURY Beast 16GB (2x8GB) DDR4-3200',
+            'AK400',
+            'Lancool 216',
+            'NV3 M.2 2280 1TB',
+            'CX550 (2023)',
+        ];
+
+        $data = $this->data($this->check($parts));
+
+        $this->assertSame('error', $this->resultFor($data, 'graphics')['status']);
     }
 
     public function testInvalidJsonGivesBadRequest(): void

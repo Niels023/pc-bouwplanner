@@ -33,9 +33,15 @@ class Parts
         return new FormFactor('Mini-ITX', 1);
     }
 
-    public static function cpu(string $socket = 'AM5', int $powerW = 100, int $priceCents = 20000): Cpu
-    {
-        return new Cpu(1, 'AMD', 'Test CPU', $priceCents, self::date(), $powerW, $socket, 6, 12, 5.1, true);
+    public static function cpu(
+        string $socket = 'AM5',
+        int $powerW = 100,
+        int $priceCents = 20000,
+        bool $hasIntegratedGraphics = true,
+    ): Cpu {
+        $date = self::date();
+
+        return new Cpu(1, 'AMD', 'Test CPU', $priceCents, $date, $powerW, $socket, 6, 12, 5.1, $hasIntegratedGraphics);
     }
 
     public static function motherboard(

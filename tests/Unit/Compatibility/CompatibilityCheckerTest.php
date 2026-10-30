@@ -25,7 +25,7 @@ class CompatibilityCheckerTest extends TestCase
     {
         $report = $this->checker->check(new Build());
 
-        $this->assertCount(6, $report->results);
+        $this->assertCount(7, $report->results);
         foreach ($report->results as $result) {
             $this->assertSame(CheckStatus::NotChecked, $result->status);
         }
@@ -83,6 +83,36 @@ class CompatibilityCheckerTest extends TestCase
             $this->assertSame(CheckStatus::Ok, $result->status, $result->message);
         }
         $this->assertSame(OverallStatus::Incomplete, $report->overallStatus());
+    }
+
+    public function testBuildWithoutGpuIsOkWithIntegratedGraphics(): void
+    {
+        $build = new Build(
+            Parts::cpu(hasIntegratedGraphics: true),
+            Parts::motherboard(),
+            Parts::ram(),
+            Parts::cooler(),
+            Parts::pcCase(),
+            Parts::storage(),
+            Parts::psu(),
+        );
+
+        $this->assertSame(OverallStatus::Ok, $this->checker->check($build)->overallStatus());
+    }
+
+    public function testBuildWithoutGpuIsAnErrorWithoutIntegratedGraphics(): void
+    {
+        $build = new Build(
+            Parts::cpu(hasIntegratedGraphics: false),
+            Parts::motherboard(),
+            Parts::ram(),
+            Parts::cooler(),
+            Parts::pcCase(),
+            Parts::storage(),
+            Parts::psu(),
+        );
+
+        $this->assertSame(OverallStatus::Error, $this->checker->check($build)->overallStatus());
     }
 
     public function testOneProblemMakesTheWholeBuildAnError(): void

@@ -36,9 +36,21 @@ readonly class Build
         return $this->parts === [];
     }
 
+    // Een videokaart is niet verplicht als de processor ingebouwde graphics heeft.
     public function isComplete(): bool
     {
-        return count($this->parts) === count(Category::cases());
+        return $this->hasAllExceptGpu() && ($this->hasPart(Category::Gpu) || $this->cpu()->hasIntegratedGraphics);
+    }
+
+    public function hasAllExceptGpu(): bool
+    {
+        foreach (Category::cases() as $category) {
+            if ($category !== Category::Gpu && !$this->hasPart($category)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /** @return Part[] */
