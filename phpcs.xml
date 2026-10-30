@@ -6,6 +6,8 @@
 
     <exclude-pattern>*/vendor/*</exclude-pattern>
     <exclude-pattern>*/node_modules/*</exclude-pattern>
+    <!-- Templates zijn vooral HTML, daar is PSR-12 niet voor bedoeld -->
+    <exclude-pattern>*/templates/*</exclude-pattern>
 
     <arg name="colors"/>
     <arg name="extensions" value="php"/>
