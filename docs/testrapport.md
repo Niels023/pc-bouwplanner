@@ -62,7 +62,47 @@ Op 30 oktober 2026 heb ik 12 fouten met opzet in de code gezet en steeds de unit
 
 - Een build zonder opslag kon de totaalstatus "in orde" krijgen, omdat geen enkele regel opslag nodig heeft. Dit klopte met het toenmalige acceptatiecriterium van F-11, maar is niet wat een gebruiker verwacht. Opgelost op 30 oktober: F-11 is aangepast en een build is nu pas "in orde" met alle acht onderdelen.
 
+## Testrun 30 oktober 2026, REST API
+
+**Omgeving:** gelijk aan de vorige run. Branch `feature/rest-api`.
+
+**Resultaat `composer test`:**
+
+```text
+OK (105 tests, 341 assertions)
+```
+
+**Resultaat `composer lint`:** 0 fouten en 0 waarschuwingen.
+
+| Testsuite | Tests | Geslaagd | Mislukt |
+|---|---|---|---|
+| unit | 44 | 44 | 0 |
+| database | 15 | 15 | 0 |
+| api | 46 | 46 | 0 |
+
+### Resultaten per eis
+
+| Eis | Conclusie |
+|---|---|
+| F-02 Onderdelen bekijken | De API en de database voldoen. De kaartjes op de pagina moeten nog. |
+| F-03 Onderdelen filteren | De API voldoet, ook bij combinaties, grenswaarden en foute invoer. De filters op de pagina moeten nog. |
+| F-11 Resultaat van de controle | Voldoet, ook via de API. Een build is pas "in orde" met alle acht onderdelen. |
+| F-14 Build opslaan | De API voldoet, ook bij namen van precies 60 en 61 tekens. Het formulier moet nog. |
+| F-15 Build ophalen | De API voldoet. De pagina moet nog. |
+| F-18 REST API | Voldoet voor onderdelen en builds. Het endpoint voor de aanbeveling moet nog. |
+| NF-03 Veilig | Query's en invoercontrole voldoen. SQL-injectie via een filter heeft geen effect. Escapen op de pagina's moet nog getest worden. |
+
+### Handmatige test met curl
+
+Op 30 oktober 2026 heb ik de server gestart en de API getest met curl. Getest: filteren, onbekende categorie (422), onbekend pad (404), verkeerde methode (405), kapotte JSON (400), controleren, opslaan (201) en ophalen met de code (200). Na het vullen van de database met `composer seed` gaf alles het verwachte antwoord. Ook `composer start` is getest en geeft een 200 op `/api/parts`.
+
+### Bevindingen
+
+- Bij de eerste handmatige test gaf `/api/parts` een 500, terwijl alle PHPUnit-tests slaagden. Oorzaak: mijn eigen database was gevuld voor de view `part_details` bestond. De testdatabase wordt bij elke testrun opnieuw gemaakt, dus daar viel het niet op. Opgelost met `composer seed`, en de README zegt nu dat je dit moet doen als het schema verandert. Dit laat zien dat handmatig testen naast de automatische tests nuttig is.
+- De foutafhandeling werkte daarbij goed: de gebruiker kreeg een algemene melding en de echte fout stond in de log.
+- `composer seed` maakt alle tabellen opnieuw, dus opgeslagen builds zijn daarna weg. Dat is geen probleem zolang de site lokaal draait, maar het staat nu wel in de README.
+
 ## Nog niet getest
 
-- API-tests: de API bestaat nog niet.
+- De aanbeveling (F-16, F-17): die bestaat nog niet.
 - Handmatige tests en gebruikerstests: de pagina's bestaan nog niet.
