@@ -3,7 +3,8 @@
 namespace App\Http\Controller;
 
 use App\Compatibility\CompatibilityChecker;
-use App\Http\ApiException;
+use App\Http\HttpException;
+use App\Http\Input;
 use App\Http\Request;
 use App\Http\Response;
 use App\Model\Build;
@@ -14,8 +15,6 @@ use App\Repository\PartRepository;
 
 class BuildApiController
 {
-    private const MAX_NAME_LENGTH = 60;
-
     public function __construct(
         private PartRepository $parts,
         private BuildRepository $builds,
@@ -26,11 +25,11 @@ class BuildApiController
     public function store(Request $request): Response
     {
         $data = $request->json();
-        $name = $this->validName($data['name'] ?? null);
+        $name = Input::buildName($data['name'] ?? null);
         $build = $this->buildFromIds($data['part_ids'] ?? null);
 
         if ($build->isEmpty()) {
-            throw new ApiException(422, 'empty_build', 'Kies minstens één onderdeel voordat je de build opslaat.');
+            throw new HttpException(422, 'empty_build', 'Kies minstens één onderdeel voordat je de build opslaat.');
         }
 
         return Response::json($this->savedBuildToArray($this->builds->save($name, $build)), 201);
@@ -41,7 +40,7 @@ class BuildApiController
         $saved = $this->builds->findByShareCode($request->routeParams['code']);
 
         if ($saved === null) {
-            throw new ApiException(404, 'build_not_found', 'Geen build gevonden met deze code.');
+            throw new HttpException(404, 'build_not_found', 'Geen build gevonden met deze code.');
         }
 
         return Response::json($this->savedBuildToArray($saved));
@@ -54,22 +53,10 @@ class BuildApiController
         return Response::json($this->checker->check($build)->toArray());
     }
 
-    private function validName(mixed $name): string
-    {
-        $name = is_string($name) ? trim($name) : '';
-
-        if ($name === '' || mb_strlen($name) > self::MAX_NAME_LENGTH) {
-            $message = 'Geef de build een naam van 1 tot ' . self::MAX_NAME_LENGTH . ' tekens.';
-            throw new ApiException(422, 'invalid_name', $message);
-        }
-
-        return $name;
-    }
-
     private function buildFromIds(mixed $ids): Build
     {
         if (!$this->isListOfIds($ids)) {
-            throw new ApiException(422, 'invalid_part_ids', 'part_ids moet een lijst met id\'s van onderdelen zijn.');
+            throw new HttpException(422, 'invalid_part_ids', 'part_ids moet een lijst met id\'s van onderdelen zijn.');
         }
 
         $ids = array_values(array_unique($ids));
@@ -78,12 +65,12 @@ class BuildApiController
         $unknownIds = array_diff($ids, array_map(fn (Part $part) => $part->id, $parts));
         if ($unknownIds !== []) {
             $list = implode(', ', $unknownIds);
-            throw new ApiException(422, 'unknown_part', "Deze onderdelen bestaan niet: $list.");
+            throw new HttpException(422, 'unknown_part', "Deze onderdelen bestaan niet: $list.");
         }
 
         $categories = array_map(fn (Part $part) => $part->category()->value, $parts);
         if (count($categories) !== count(array_unique($categories))) {
-            throw new ApiException(422, 'duplicate_category', 'Je kunt maar één onderdeel per categorie kiezen.');
+            throw new HttpException(422, 'duplicate_category', 'Je kunt maar één onderdeel per categorie kiezen.');
         }
 
         return new Build(...$parts);

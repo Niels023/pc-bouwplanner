@@ -41,7 +41,7 @@ readonly class Request
         $data = json_decode($this->body, true);
 
         if (!is_array($data)) {
-            throw new ApiException(400, 'invalid_json', 'De body is geen geldige JSON.');
+            throw new HttpException(400, 'invalid_json', 'De body is geen geldige JSON.');
         }
 
         return $data;

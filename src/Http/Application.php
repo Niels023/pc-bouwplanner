@@ -21,7 +21,7 @@ class Application
     {
         try {
             return $this->createRouter()->dispatch($request);
-        } catch (ApiException $e) {
+        } catch (HttpException $e) {
             return $this->errorResponse($e->status, $e->errorCode, $e->getMessage());
         } catch (Throwable $e) {
             error_log((string) $e);
