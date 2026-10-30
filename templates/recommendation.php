@@ -39,5 +39,8 @@
             <?php endforeach; ?>
         </ul>
         <?= $this->partial('partials/check-results', ['report' => $report]) ?>
+        <form action="/aanbeveling/overnemen?<?= $this->e($query) ?>" method="post">
+            <button type="submit" class="button">Overnemen en zelf aanpassen</button>
+        </form>
     </section>
 <?php endif; ?>
