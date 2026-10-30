@@ -2,7 +2,7 @@
 
 Een website waarop je zelf een PC samenstelt. Je kiest per stap een onderdeel (processor, moederbord, geheugen, videokaart, koeler, kast, opslag en voeding). De site controleert of de onderdelen bij elkaar passen, telt de prijs en het geschatte stroomverbruik op en kan op basis van je budget en doel (gamen, werken of streamen) zelf een build voorstellen.
 
-Het project is in ontwikkeling. Op dit moment zijn de database, de compatibiliteitsregels en de REST API voor onderdelen en builds af. De aanbeveling en de website komen nog.
+Het project is in ontwikkeling. Op dit moment zijn de database, de compatibiliteitsregels, de aanbeveling en de REST API af. De website komt nog.
 
 ## Techniek
 
@@ -48,6 +48,7 @@ De site draait dan op http://localhost:8000. Op dit moment is alleen de API er:
 | POST | `/api/builds/check` | Onderdelen controleren, body: `{"part_ids": [1, 2]}` |
 | POST | `/api/builds` | Build opslaan, body: `{"name": "Mijn pc", "part_ids": [1, 2]}` |
 | GET | `/api/builds/{code}` | Opgeslagen build ophalen |
+| GET | `/api/recommendation` | Aanbeveling, bijvoorbeeld `?budget=2000&goal=gaming`. Doelen: `gaming`, `work`, `streaming` |
 
 ## Tests en codestijl
 
