@@ -2,7 +2,7 @@
 
 Een website waarop je zelf een PC samenstelt. Je kiest per stap een onderdeel (processor, moederbord, geheugen, videokaart, koeler, kast, opslag en voeding). De site controleert of de onderdelen bij elkaar passen, telt de prijs en het geschatte stroomverbruik op en kan op basis van je budget en doel (gamen, werken of streamen) zelf een build voorstellen.
 
-Het project is in ontwikkeling. Op dit moment zijn de database, de compatibiliteitsregels, de aanbeveling en de REST API af. De website komt nog.
+De basisversie is af: je kunt een PC samenstellen, je build opslaan en een aanbeveling vragen. De site werkt op telefoon en desktop, ook zonder JavaScript.
 
 ## Techniek
 
@@ -39,7 +39,7 @@ Je hebt nodig: PHP 8.2 of hoger, MySQL of MariaDB en [Composer](https://getcompo
 composer start
 ```
 
-De site draait dan op http://localhost:8000. Op dit moment is alleen de API er:
+De site draait dan op http://localhost:8000. Naast de website is er een REST API:
 
 | Methode | Pad | Wat |
 |---|---|---|
@@ -57,7 +57,7 @@ composer test
 composer lint
 ```
 
-`composer test` draait alle PHPUnit-tests. De databasetests gebruiken een aparte database, `pc_bouwplanner_test`, zodat je eigen data blijft staan. MySQL moet daarvoor wel draaien. Alleen de unit tests draaien kan zonder MySQL:
+`composer test` draait alle PHPUnit-tests: unit tests, databasetests, API-tests en paginatests. De tests met een database gebruiken een aparte database, `pc_bouwplanner_test`, zodat je eigen data blijft staan. MySQL moet daarvoor wel draaien. Alleen de unit tests draaien kan zonder MySQL:
 
 ```bash
 vendor/bin/phpunit --testsuite unit
