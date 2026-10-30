@@ -18,6 +18,17 @@ readonly class Response
         return new self($status, $body, ['Content-Type' => 'application/json; charset=utf-8']);
     }
 
+    public static function html(string $body, int $status = 200): self
+    {
+        return new self($status, $body, ['Content-Type' => 'text/html; charset=utf-8']);
+    }
+
+    // 303: de browser doet daarna een GET, dus vernieuwen verstuurt het formulier niet opnieuw.
+    public static function redirect(string $location): self
+    {
+        return new self(303, '', ['Location' => $location]);
+    }
+
     public function send(): void
     {
         http_response_code($this->status);
