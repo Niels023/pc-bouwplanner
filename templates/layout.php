@@ -6,6 +6,7 @@
     <title><?= $this->e($title) ?> | PC-bouwplanner</title>
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/live.js" defer></script>
 </head>
 <body>
     <a class="skip-link" href="#inhoud">Ga naar de inhoud</a>
