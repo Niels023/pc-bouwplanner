@@ -26,4 +26,15 @@ readonly class Cpu extends Part
     {
         return Category::Cpu;
     }
+
+    public function specs(): array
+    {
+        return [
+            'socket' => $this->socket,
+            'cores' => $this->cores,
+            'threads' => $this->threads,
+            'boost_clock_ghz' => $this->boostClockGhz,
+            'has_integrated_graphics' => $this->hasIntegratedGraphics,
+        ];
+    }
 }

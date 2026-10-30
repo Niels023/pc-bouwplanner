@@ -24,4 +24,13 @@ readonly class Gpu extends Part
     {
         return Category::Gpu;
     }
+
+    public function specs(): array
+    {
+        return [
+            'chip' => $this->chip,
+            'vram_gb' => $this->vramGb,
+            'length_mm' => $this->lengthMm,
+        ];
+    }
 }

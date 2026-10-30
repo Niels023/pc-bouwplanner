@@ -23,4 +23,12 @@ readonly class StorageDrive extends Part
     {
         return Category::Storage;
     }
+
+    public function specs(): array
+    {
+        return [
+            'type' => $this->type,
+            'capacity_gb' => $this->capacityGb,
+        ];
+    }
 }

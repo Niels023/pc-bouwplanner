@@ -23,4 +23,12 @@ readonly class Psu extends Part
     {
         return Category::Psu;
     }
+
+    public function specs(): array
+    {
+        return [
+            'wattage_w' => $this->wattageW,
+            'efficiency_rating' => $this->efficiencyRating,
+        ];
+    }
 }

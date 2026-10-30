@@ -25,4 +25,14 @@ readonly class RamKit extends Part
     {
         return Category::Ram;
     }
+
+    public function specs(): array
+    {
+        return [
+            'ram_type' => $this->ramType,
+            'capacity_gb' => $this->capacityGb,
+            'module_count' => $this->moduleCount,
+            'speed_mts' => $this->speedMts,
+        ];
+    }
 }

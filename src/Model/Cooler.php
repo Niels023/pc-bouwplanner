@@ -22,4 +22,11 @@ readonly class Cooler extends Part
     {
         return Category::Cooler;
     }
+
+    public function specs(): array
+    {
+        return [
+            'height_mm' => $this->heightMm,
+        ];
+    }
 }

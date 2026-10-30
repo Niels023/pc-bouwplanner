@@ -25,4 +25,13 @@ readonly class PcCase extends Part
     {
         return Category::PcCase;
     }
+
+    public function specs(): array
+    {
+        return [
+            'max_form_factor' => $this->maxFormFactor->name,
+            'max_gpu_length_mm' => $this->maxGpuLengthMm,
+            'max_cooler_height_mm' => $this->maxCoolerHeightMm,
+        ];
+    }
 }
