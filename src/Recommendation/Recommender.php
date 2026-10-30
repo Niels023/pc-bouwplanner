@@ -6,6 +6,7 @@ use App\Compatibility\CompatibilityChecker;
 use App\Model\Build;
 use App\Model\Category;
 use App\Model\Cpu;
+use App\Model\Gpu;
 use App\Model\Motherboard;
 use App\Model\Part;
 use App\Model\RamKit;
@@ -32,6 +33,14 @@ class Recommender
     /** @var Category[] De categorieën voor dit doel, in de volgorde waarin ze gekozen worden */
     private array $order = [];
 
+    private Goal $goal;
+
+    private array $settings = [];
+
+    private ?GameTarget $target = null;
+
+    private bool $budgetGiven = true;
+
     /**
      * @param Part[] $parts
      * @param array<string, array<string, mixed>> $goals Instellingen per doel uit config/app.php
@@ -43,32 +52,45 @@ class Recommender
     ) {
     }
 
-    public function recommend(int $budgetEuro, Goal $goal): Recommendation
+    public function recommend(?int $budgetEuro, Goal $goal, ?GameTarget $target = null): Recommendation
     {
-        $settings = $this->goals[$goal->value];
-        $this->order = $this->orderFor($settings);
-        $this->candidates = $this->candidatesFor($settings);
+        $this->goal = $goal;
+        $this->settings = $this->goals[$goal->value];
+        $this->target = $target;
+        $this->budgetGiven = $budgetEuro !== null;
+        $this->order = $this->orderFor();
+        $this->candidates = $this->candidatesFor();
 
-        $budgetCents = $budgetEuro * 100;
         $minimumCents = $this->cheapestFinish(new Build(), $this->order, PHP_INT_MAX);
+        if ($minimumCents === null) {
+            throw new NoBuildPossibleException();
+        }
+
+        $budgetCents = $budgetEuro === null ? $minimumCents : $budgetEuro * 100;
         if ($minimumCents > $budgetCents) {
-            throw new BudgetTooLowException($minimumCents, $goal);
+            throw new BudgetTooLowException($minimumCents, $goal, $target);
         }
 
         $withoutPsu = array_slice($this->order, 0, -1);
 
         // De voeding als laatste: een upgrade van de videokaart kan een zwaardere voeding nodig maken.
-        $choices = $this->chooseParts([], $withoutPsu, $budgetCents, $goal, $settings);
-        $choices = $this->spendLeftover($choices, $budgetCents, $settings['upgrade_order']);
-        $choices = $this->chooseParts($choices, [Category::Psu], $budgetCents, $goal, $settings);
+        $choices = $this->chooseParts([], $withoutPsu, $budgetCents);
+        $choices = $this->spendLeftover($choices, $budgetCents);
+        $choices = $this->chooseParts($choices, [Category::Psu], $budgetCents);
 
-        return new Recommendation($this->buildFrom($choices), array_values($choices), $budgetCents);
+        return new Recommendation(
+            $this->buildFrom($choices),
+            array_values($choices),
+            $budgetCents,
+            $this->budgetGiven,
+            $target,
+        );
     }
 
     /** @return Category[] */
-    private function orderFor(array $settings): array
+    private function orderFor(): array
     {
-        if ($this->needsGpu($settings)) {
+        if ($this->needsGpu()) {
             return self::CATEGORY_ORDER;
         }
 
@@ -76,17 +98,17 @@ class Recommender
     }
 
     // Een doel zonder deel van het budget voor de videokaart krijgt er ook geen.
-    private function needsGpu(array $settings): bool
+    private function needsGpu(): bool
     {
-        return $settings['shares'][Category::Gpu->value] > 0;
+        return $this->settings['shares'][Category::Gpu->value] > 0;
     }
 
     /** @return array<string, Part[]> */
-    private function candidatesFor(array $settings): array
+    private function candidatesFor(): array
     {
-        $candidates = [];
+        $candidates = array_fill_keys(array_column(Category::cases(), 'value'), []);
         foreach ($this->parts as $part) {
-            if ($this->meetsMinimum($part, $settings)) {
+            if ($this->meetsMinimum($part)) {
                 $candidates[$part->category()->value][] = $part;
             }
         }
@@ -98,13 +120,14 @@ class Recommender
         return $candidates;
     }
 
-    private function meetsMinimum(Part $part, array $settings): bool
+    private function meetsMinimum(Part $part): bool
     {
         return match (true) {
-            $part instanceof RamKit => $part->capacityGb >= $settings['min_ram_gb'],
-            $part instanceof StorageDrive => $part->capacityGb >= $settings['min_storage_gb'],
-            $part instanceof Motherboard => $part->ramSlots >= $settings['min_ram_slots'],
-            $part instanceof Cpu => $this->needsGpu($settings) || $part->hasIntegratedGraphics,
+            $part instanceof RamKit => $part->capacityGb >= $this->settings['min_ram_gb'],
+            $part instanceof StorageDrive => $part->capacityGb >= $this->settings['min_storage_gb'],
+            $part instanceof Motherboard => $part->ramSlots >= $this->settings['min_ram_slots'],
+            $part instanceof Cpu => $this->needsGpu() || $part->hasIntegratedGraphics,
+            $part instanceof Gpu => $this->target === null || $this->target->fits($part),
             default => true,
         };
     }
@@ -114,24 +137,18 @@ class Recommender
      * @param Category[] $categories
      * @return array<string, RecommendedChoice>
      */
-    private function chooseParts(
-        array $choices,
-        array $categories,
-        int $budgetCents,
-        Goal $goal,
-        array $settings,
-    ): array {
+    private function chooseParts(array $choices, array $categories, int $budgetCents): array
+    {
         foreach ($categories as $category) {
             $build = $this->buildFrom($choices);
-            $limitCents = (int) round($budgetCents * $settings['shares'][$category->value] / 100);
+            $limitCents = (int) round($budgetCents * $this->settings['shares'][$category->value] / 100);
             $remaining = $this->categoriesAfter($build, $category);
             $moneyLeftCents = $budgetCents - $build->totalPriceCents();
 
             $part = $this->bestPart($build, $category, $limitCents, $remaining, $moneyLeftCents)
                 ?? $this->cheapestPart($build, $category, $remaining, $moneyLeftCents);
 
-            $reason = $this->reason($part, $limitCents, $goal, $settings);
-            $choices[$category->value] = new RecommendedChoice($part, $limitCents, $reason);
+            $choices[$category->value] = new RecommendedChoice($part, $limitCents, $this->reason($part, $limitCents));
         }
 
         return $choices;
@@ -229,12 +246,11 @@ class Recommender
      * Besteedt wat over is aan de onderdelen die voor dit doel het belangrijkst zijn.
      *
      * @param array<string, RecommendedChoice> $choices
-     * @param string[] $upgradeOrder
      * @return array<string, RecommendedChoice>
      */
-    private function spendLeftover(array $choices, int $budgetCents, array $upgradeOrder): array
+    private function spendLeftover(array $choices, int $budgetCents): array
     {
-        foreach ($upgradeOrder as $category) {
+        foreach ($this->settings['upgrade_order'] as $category) {
             $current = $choices[$category];
             $better = $this->upgradeFor($this->buildFrom($choices), $current->part, $budgetCents);
 
@@ -272,21 +288,29 @@ class Recommender
         return new Build(...array_map(fn (RecommendedChoice $choice) => $choice->part, array_values($choices)));
     }
 
-    private function reason(Part $part, int $limitCents, Goal $goal, array $settings): string
+    private function reason(Part $part, int $limitCents): string
     {
-        $category = $part->category();
         $budget = $this->euros($limitCents);
+        $cheapest = 'de goedkoopste keuze die past';
 
-        if ($part->priceCents > $limitCents) {
-            return "Het deelbudget van $budget was te krap, daarom de goedkoopste keuze die past.";
-        }
+        $reason = match (true) {
+            !$this->budgetGiven => ucfirst($cheapest),
+            $part->priceCents > $limitCents => "Het deelbudget van $budget was te krap, daarom $cheapest",
+            default => "Beste {$part->category()->label()} binnen het deelbudget van $budget",
+        };
 
-        return match ($category) {
-            Category::Ram => "Beste {$category->label()} binnen het deelbudget van $budget, "
-                . "met minimaal {$settings['min_ram_gb']} GB voor {$goal->label()}.",
-            Category::Storage => "Beste {$category->label()} binnen het deelbudget van $budget, "
-                . "met minimaal {$settings['min_storage_gb']} GB voor {$goal->label()}.",
-            default => "Beste {$category->label()} binnen het deelbudget van $budget.",
+        return $reason . $this->goalNote($part) . '.';
+    }
+
+    private function goalNote(Part $part): string
+    {
+        $goal = $this->goal->label();
+
+        return match (true) {
+            $part instanceof RamKit => ", met minimaal {$this->settings['min_ram_gb']} GB voor $goal",
+            $part instanceof StorageDrive => ", met minimaal {$this->settings['min_storage_gb']} GB voor $goal",
+            $part instanceof Gpu && $this->target !== null => ", geschikt voor {$this->target->label()}",
+            default => '',
         };
     }
 
