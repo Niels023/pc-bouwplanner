@@ -21,6 +21,11 @@ readonly class Build
         return isset($this->parts[$category->value]);
     }
 
+    public function isComplete(): bool
+    {
+        return count($this->parts) === count(Category::cases());
+    }
+
     public function totalPriceCents(): int
     {
         return array_sum(array_map(fn (Part $part) => $part->priceCents, $this->parts));

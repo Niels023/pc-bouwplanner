@@ -39,6 +39,37 @@ class BuildTest extends TestCase
         $this->assertFalse($build->hasPart(Category::Gpu));
     }
 
+    public function testBuildIsCompleteWithAllEightParts(): void
+    {
+        $build = new Build(
+            Parts::cpu(),
+            Parts::motherboard(),
+            Parts::ram(),
+            Parts::gpu(),
+            Parts::cooler(),
+            Parts::pcCase(),
+            Parts::storage(),
+            Parts::psu(),
+        );
+
+        $this->assertTrue($build->isComplete());
+    }
+
+    public function testBuildIsNotCompleteWithMissingPart(): void
+    {
+        $build = new Build(
+            Parts::cpu(),
+            Parts::motherboard(),
+            Parts::ram(),
+            Parts::gpu(),
+            Parts::cooler(),
+            Parts::pcCase(),
+            Parts::psu(),
+        );
+
+        $this->assertFalse($build->isComplete());
+    }
+
     public function testNewPartReplacesPartInSameCategory(): void
     {
         $build = new Build(Parts::cpu(socket: 'AM4'), Parts::cpu(socket: 'AM5'));
