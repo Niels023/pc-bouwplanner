@@ -47,7 +47,7 @@ class Recommender
         $budgetCents = $budgetEuro * 100;
         $minimumCents = $this->cheapestFinish(new Build(), self::CATEGORY_ORDER, PHP_INT_MAX);
         if ($minimumCents > $budgetCents) {
-            throw new BudgetTooLowException($minimumCents);
+            throw new BudgetTooLowException($minimumCents, $goal);
         }
 
         $withoutPsu = array_slice(self::CATEGORY_ORDER, 0, -1);

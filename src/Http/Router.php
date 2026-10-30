@@ -31,9 +31,9 @@ class Router
         }
 
         if ($pathExists) {
-            throw new ApiException(405, 'method_not_allowed', 'Dit pad bestaat, maar niet met deze methode.');
+            throw new HttpException(405, 'method_not_allowed', 'Dit pad bestaat, maar niet met deze methode.');
         }
 
-        throw new ApiException(404, 'not_found', 'Dit pad bestaat niet.');
+        throw new HttpException(404, 'not_found', 'Deze pagina bestaat niet.');
     }
 }
