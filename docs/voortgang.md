@@ -57,11 +57,15 @@ Start: woensdag 28 oktober 2026.
 - Alle 42 tests slagen en de linter geeft 0 fouten.
 - Mutatietest gedaan: 12 fouten expres in de code gezet. De tests vingen ze allemaal.
 - `testplan.md`, `testrapport.md` en `uitleg.md` gemaakt. Ontwerp en keuzes bijgewerkt.
+- F-11 aangepast: een build is pas "in orde" als alle acht onderdelen gekozen zijn.
+- Op branch `feature/onderdelen-ophalen`: view `part_details`, `PartRepository` en `PartMapper`.
+- Op branch `feature/rest-api`: router, `Request`, `Response` en foutafhandeling, plus de endpoints voor onderdelen, build opslaan, build ophalen en build controleren (#3, #14, #15, #18).
+- Alle 105 tests slagen en de linter geeft 0 fouten. De API ook met de hand getest met curl op een echte server.
 
 **Open:**
 
 - De budgetverdeling van de aanbeveling opnieuw bekijken bij F-16 (zie sessie 28 oktober).
-- Volgende stap: de repositories en de REST API (F-02, F-03, F-14, F-15, F-18).
+- Volgende stap: de aanbeveling (F-16, F-17) met het laatste endpoint van de API.
 
 **Afwijkingen en wat ik eraan gedaan heb:**
 
@@ -69,5 +73,7 @@ Start: woensdag 28 oktober 2026.
 - `category` is geen veld van `Part` geworden, maar een methode die elke subklasse zelf invult. Het ontwerp is aangepast.
 - Mijn hulpfunctie `result()` in een test gaf een fatale fout, omdat PHPUnit al een methode met die naam heeft. Oplossing: hernoemd naar `resultFor()`.
 - Een build zonder opslag kreeg de totaalstatus "in orde", omdat geen enkele regel opslag nodig heeft. Oplossing: F-11 aangepast. Een build is nu pas "in orde" als alle acht onderdelen gekozen zijn.
+- De API gaf op de echte server een 500, terwijl alle tests slaagden. Mijn eigen database was gevuld voordat de view bestond. Oplossing: `composer seed` gedraaid en in de README gezet dat dit nodig is na een wijziging in het schema.
+- `sort` staat in het ontwerp bij de filters, maar is nog niet gebouwd. Dat hoort bij F-20 (Should) en komt later.
 
 **Komt de planning in gevaar?** Nee.
