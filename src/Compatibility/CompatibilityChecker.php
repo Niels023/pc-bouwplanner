@@ -10,6 +10,7 @@ use App\Compatibility\Rules\RamTypeRule;
 use App\Compatibility\Rules\SocketRule;
 use App\Model\Build;
 use App\Model\Category;
+use App\Model\Part;
 
 class CompatibilityChecker
 {
@@ -35,6 +36,32 @@ class CompatibilityChecker
         $results = array_map(fn (CompatibilityRule $rule) => $this->runRule($rule, $build), $this->rules);
 
         return new CheckReport($results, $build->isComplete(), $build->totalPriceCents(), $build->estimatedPowerW());
+    }
+
+    /**
+     * De fouten en waarschuwingen die dit onderdeel zou geven als je het kiest.
+     *
+     * @return RuleResult[]
+     */
+    public function problemsFor(Build $build, Part $candidate): array
+    {
+        $withCandidate = $build->withPart($candidate);
+        $problems = [];
+
+        foreach ($this->rules as $rule) {
+            $result = $this->runRule($rule, $withCandidate);
+            if (!$result->isProblem()) {
+                continue;
+            }
+
+            // Een probleem tussen andere onderdelen ligt niet aan dit onderdeel.
+            $usesCandidate = in_array($candidate->category(), $rule->requiredCategories(), true);
+            if ($usesCandidate || !$this->runRule($rule, $build)->isProblem()) {
+                $problems[] = $result;
+            }
+        }
+
+        return $problems;
     }
 
     private function runRule(CompatibilityRule $rule, Build $build): RuleResult

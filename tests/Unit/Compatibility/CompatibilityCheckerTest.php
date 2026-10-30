@@ -103,6 +103,68 @@ class CompatibilityCheckerTest extends TestCase
         $this->assertSame($build->estimatedPowerW(), $report->estimatedPowerW);
     }
 
+    public function testPartThatFitsHasNoProblems(): void
+    {
+        $build = new Build(Parts::cpu(socket: 'AM5'));
+
+        $this->assertSame([], $this->checker->problemsFor($build, Parts::motherboard(socket: 'AM5')));
+    }
+
+    public function testPartThatDoesNotFitGivesTheProblem(): void
+    {
+        $build = new Build(Parts::cpu(socket: 'AM5'));
+
+        $problems = $this->checker->problemsFor($build, Parts::motherboard(socket: 'AM4'));
+
+        $this->assertCount(1, $problems);
+        $this->assertSame('socket', $problems[0]->ruleName);
+        $this->assertSame(CheckStatus::Error, $problems[0]->status);
+    }
+
+    public function testTightPsuGivesAWarning(): void
+    {
+        $build = new Build(Parts::cpu(powerW: 450));
+
+        $problems = $this->checker->problemsFor($build, Parts::psu(wattageW: 500));
+
+        $this->assertSame(CheckStatus::Warning, $problems[0]->status);
+    }
+
+    public function testGpuThatOverloadsThePsuGetsTheProblem(): void
+    {
+        $build = new Build(Parts::cpu(powerW: 100), Parts::psu(wattageW: 300));
+
+        $problems = $this->checker->problemsFor($build, Parts::gpu(powerW: 300));
+
+        $this->assertSame('psu_wattage', $problems[0]->ruleName);
+        $this->assertSame(CheckStatus::Error, $problems[0]->status);
+    }
+
+    public function testProblemBetweenOtherPartsIsNotBlamedOnCandidate(): void
+    {
+        $build = new Build(Parts::cpu(socket: 'AM4'), Parts::motherboard(socket: 'AM5'));
+
+        $this->assertSame([], $this->checker->problemsFor($build, Parts::storage()));
+    }
+
+    public function testReplacingAPartLooksAtTheNewPart(): void
+    {
+        $build = new Build(Parts::cpu(socket: 'AM5'), Parts::motherboard(socket: 'AM5'));
+
+        $problems = $this->checker->problemsFor($build, Parts::cpu(socket: 'AM4'));
+
+        $this->assertSame('socket', $problems[0]->ruleName);
+    }
+
+    public function testOldProblemStillCountsForPartInThatRule(): void
+    {
+        $build = new Build(Parts::cpu(socket: 'AM4'), Parts::motherboard(socket: 'AM5'));
+
+        $problems = $this->checker->problemsFor($build, Parts::cpu(socket: 'LGA1700'));
+
+        $this->assertSame('socket', $problems[0]->ruleName);
+    }
+
     private function completeBuild(): Build
     {
         return new Build(
