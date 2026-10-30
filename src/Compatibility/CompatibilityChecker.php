@@ -34,7 +34,7 @@ class CompatibilityChecker
     {
         $results = array_map(fn (CompatibilityRule $rule) => $this->runRule($rule, $build), $this->rules);
 
-        return new CheckReport($results, $build->totalPriceCents(), $build->estimatedPowerW());
+        return new CheckReport($results, $build->isComplete(), $build->totalPriceCents(), $build->estimatedPowerW());
     }
 
     private function runRule(CompatibilityRule $rule, Build $build): RuleResult
