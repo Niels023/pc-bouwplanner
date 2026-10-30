@@ -6,6 +6,7 @@ use App\Compatibility\CompatibilityChecker;
 use App\Database\Connection;
 use App\Http\Controller\BuildApiController;
 use App\Http\Controller\PartApiController;
+use App\Http\Controller\RecommendationApiController;
 use App\Repository\BuildRepository;
 use App\Repository\PartRepository;
 use Throwable;
@@ -39,6 +40,7 @@ class Application
 
         $partApi = new PartApiController($parts);
         $buildApi = new BuildApiController($parts, $builds, $checker);
+        $recommendationApi = new RecommendationApiController($parts, $checker, $this->config['goals']);
 
         $router = new Router();
         $router->add('GET', '/api/parts', $partApi->index(...));
@@ -46,6 +48,7 @@ class Application
         $router->add('POST', '/api/builds', $buildApi->store(...));
         $router->add('POST', '/api/builds/check', $buildApi->check(...));
         $router->add('GET', '/api/builds/{code}', $buildApi->show(...));
+        $router->add('GET', '/api/recommendation', $recommendationApi->show(...));
 
         return $router;
     }

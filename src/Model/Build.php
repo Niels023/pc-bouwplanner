@@ -16,6 +16,11 @@ readonly class Build
         $this->parts = $byCategory;
     }
 
+    public function withPart(Part $part): self
+    {
+        return new self(...[...$this->parts(), $part]);
+    }
+
     public function hasPart(Category $category): bool
     {
         return isset($this->parts[$category->value]);
@@ -75,6 +80,11 @@ readonly class Build
     public function pcCase(): PcCase
     {
         return $this->parts[Category::PcCase->value];
+    }
+
+    public function storage(): StorageDrive
+    {
+        return $this->parts[Category::Storage->value];
     }
 
     public function psu(): Psu

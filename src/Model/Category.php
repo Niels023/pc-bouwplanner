@@ -13,6 +13,20 @@ enum Category: string
     case Storage = 'storage';
     case Psu = 'psu';
 
+    public function label(): string
+    {
+        return match ($this) {
+            self::Cpu => 'processor',
+            self::Motherboard => 'moederbord',
+            self::Ram => 'geheugen',
+            self::Gpu => 'videokaart',
+            self::Cooler => 'koeler',
+            self::PcCase => 'kast',
+            self::Storage => 'opslag',
+            self::Psu => 'voeding',
+        };
+    }
+
     public function withArticle(): string
     {
         return match ($this) {

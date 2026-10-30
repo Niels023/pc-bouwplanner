@@ -29,8 +29,8 @@ Alle tests moeten slagen voordat een branch naar `main` gaat.
 | F-05 t/m F-11 | Unit test en API-test | Uitgewerkt in hoofdstuk 3 |
 | F-13 | Unit test en handmatig | Unit tests uitgewerkt, handmatig komt bij de pagina's |
 | F-14, F-15 | API-test en handmatig | API uitgewerkt, handmatig komt bij de pagina's |
-| F-16, F-17 | Unit test en API-test | Komt bij de aanbeveling |
-| F-18 | API-test en curl | Uitgewerkt in hoofdstuk 3, behalve de aanbeveling |
+| F-16, F-17 | Unit test, API-test en handmatig | Unit en API uitgewerkt, handmatig komt bij de pagina's |
+| F-18 | API-test en handmatig | Uitgewerkt in hoofdstuk 3 |
 | F-19, F-20, F-21 | Unit test en handmatig | Komt bij die eisen |
 | NF-01, NF-02, NF-07 | Handmatig en Lighthouse | Komt bij de pagina's |
 | NF-03 | API-test en code nakijken | Query's en invoer uitgewerkt, escaping komt bij de pagina's |
@@ -132,6 +132,49 @@ Behalve de testcases bij F-02, F-03, F-14 en F-15:
 | TC-F18-16 | `DELETE /api/parts` | 405 `method_not_allowed` | `testWrongMethodGivesMethodNotAllowed` |
 | TC-F18-17 | Database niet bereikbaar | 500 `server_error`, geen technische details | `testDatabaseProblemGivesGeneralMessage` |
 | TC-F18-18 | Met de hand: server starten en met curl filteren, controleren, opslaan en ophalen | Dezelfde antwoorden als in de API-tests | Handmatig |
+
+### F-16 Aanbeveling op basis van budget en doel
+
+Bij de unit tests gebruikt de test een kleine eigen catalogus. Daarin kost de goedkoopste build voor gamen precies € 920. De API-tests gebruiken de echte onderdelen.
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-F16-01 | Budget € 919 | Te laag, minimum is € 920 | `testBudgetBelowMinimumGivesMinimumAmount` |
+| TC-F16-02 | Budget € 0 | Te laag | `testEmptyBudgetIsTooLow` |
+| TC-F16-03 | Budget € 920 (grenswaarde) | Goedkoopste build, niets over | `testExactlyMinimumBudgetGivesCheapestBuild` |
+| TC-F16-04 | Budget € 920 voor streamen | Te laag, streamen heeft 32 GB nodig | `testMinimumDependsOnGoal` |
+| TC-F16-05 | Elk doel, budget € 1.020 tot € 4.000 | Altijd compleet, zonder problemen en binnen budget | `testEveryBudgetGivesCompleteCompatibleBuildWithinBudget` |
+| TC-F16-06 | Budget € 3.000 | Duurste videokaart binnen het deelbudget | `testPicksBestPartWithinCategoryBudget` |
+| TC-F16-07 | Onderdeel van precies het deelbudget | Wordt gekozen (grenswaarde) | `testPartThatCostsExactlyTheCategoryBudgetIsAllowed` |
+| TC-F16-08 | AM5-processor past in deelbudget, DDR5 is niet te betalen | AM4-processor wordt gekozen | `testSkipsCpuWhenBuildCouldNotBeFinishedAfterwards` |
+| TC-F16-09 | Gamen en streamen | 16 GB en 32 GB geheugen | `testMemoryMeetsMinimumOfGoal` |
+| TC-F16-10 | Werken en gamen | 500 GB en 1000 GB opslag | `testStorageMeetsMinimumOfGoal` |
+| TC-F16-11 | Bord met 2 sloten is de duurste in het deelbudget | Wordt niet gekozen | `testBoardWithTooFewRamSlotsIsNotChosen` |
+| TC-F16-12 | Budget € 1.800, gamen en werken | Bij gamen gaat restgeld naar de videokaart, bij werken niet | `testLeftoverGoesToWhatMattersForTheGoal` |
+| TC-F16-13 | Upgrade naar videokaart van 300 W | Voeding van 850 W wordt gekozen | `testBetterGpuGetsAStrongerPsu` |
+| TC-F16-14 | Twee keer dezelfde invoer | Precies dezelfde uitkomst | `testSameInputGivesSameResult` |
+| TC-F16-15 | Budget 0, -5, abc, 12.50, 1e3, 100001, leeg (API) | 422 `invalid_budget` | `testInvalidBudgetGivesError` |
+| TC-F16-16 | Geen budget (API) | 422 `invalid_budget` | `testMissingBudgetGivesError` |
+| TC-F16-17 | Doel `wandelen` (API) | 422 `invalid_goal`, melding noemt de opties | `testUnknownGoalGivesErrorWithOptions` |
+| TC-F16-18 | Geen doel (API) | 422 `invalid_goal` | `testMissingGoalGivesError` |
+| TC-F16-19 | Budget € 1 (API) | 422 `budget_too_low`, melding noemt het minimum | `testBudgetTooLowNamesMinimumAmount` |
+| TC-F16-20 | Minimum uit de melding, en 1 euro minder (API) | Minimum geeft 200, 1 euro minder geeft 422 | `testMinimumAmountInMessageIsCorrect` |
+| TC-F16-21 | Elk doel, van het minimum tot € 6.000 in stappen van € 100 (API) | Altijd status ok en binnen budget | `testEveryBudgetGivesCompleteBuildWithinBudget` |
+| TC-F16-22 | € 2.500 voor gamen en werken (API) | Gamen besteedt meer aan de videokaart | `testGamingSpendsMoreOnGpuThanWork` |
+| TC-F16-23 | Twee keer dezelfde vraag (API) | Hetzelfde antwoord | `testSameRequestGivesSameAnswer` |
+| TC-F16-24 | `config/app.php` | Percentages tellen op tot 100, elke categorie heeft een deel | `GoalConfigTest` |
+
+### F-17 Uitleg bij de aanbeveling
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-F17-01 | Videokaart binnen het deelbudget | "Beste videokaart binnen het deelbudget van € 440." | `testReasonNamesCategoryAndBudget` |
+| TC-F17-02 | Geheugen bij streamen | Melding noemt minimaal 32 GB voor streamen | `testReasonForMemoryNamesMinimumForGoal` |
+| TC-F17-03 | Deelbudget te laag | "Het deelbudget van € 46 was te krap, daarom de goedkoopste keuze die past." | `testReasonSaysWhenCategoryBudgetWasTooLow` |
+| TC-F17-04 | Betere videokaart door restgeld | Melding noemt het deelbudget en de betere videokaart | `testReasonSaysWhenLeftoverPaidForUpgrade` |
+| TC-F17-05 | Budget € 1.000 | Over = budget min totaal | `testLeftoverIsBudgetMinusTotal` |
+| TC-F17-06 | Budget € 1.500 | Acht keuzes, voor elke categorie één | `testEveryCategoryHasOneChoice` |
+| TC-F17-07 | € 2.000 voor gamen (API) | Acht keuzes met naam, deelbudget en reden, plus bedrag over | `testResponseHasBuildReasonsAndLeftover` |
 
 ### F-05 Controle socket
 

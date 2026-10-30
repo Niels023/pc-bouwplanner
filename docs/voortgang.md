@@ -60,12 +60,14 @@ Start: woensdag 28 oktober 2026.
 - F-11 aangepast: een build is pas "in orde" als alle acht onderdelen gekozen zijn.
 - Op branch `feature/onderdelen-ophalen`: view `part_details`, `PartRepository` en `PartMapper`.
 - Op branch `feature/rest-api`: router, `Request`, `Response` en foutafhandeling, plus de endpoints voor onderdelen, build opslaan, build ophalen en build controleren (#3, #14, #15, #18).
-- Alle 105 tests slagen en de linter geeft 0 fouten. De API ook met de hand getest met curl op een echte server.
+- Op branch `feature/aanbeveling`: de `Recommender` met budgetverdeling per doel, vooruitkijken en het verdelen van restgeld, plus het endpoint `/api/recommendation` (#16, #17, #18). Budgetverdeling aangepast aan de echte prijzen.
+- Alle 144 tests slagen en de linter geeft 0 fouten. De API ook met de hand getest op een echte server. Mutatietest gedaan op de aanbeveling.
 
 **Open:**
 
-- De budgetverdeling van de aanbeveling opnieuw bekijken bij F-16 (zie sessie 28 oktober).
-- Volgende stap: de aanbeveling (F-16, F-17) met het laatste endpoint van de API.
+- Volgende stap: de website (F-02, F-03, F-04, F-12, F-13, F-14, F-15, F-16, F-17). De issues #2, #3, #4, #12 t/m #17 blijven open tot de pagina's er zijn.
+- F-21 (build zonder videokaart) maakt de aanbeveling voor werken goedkoper. Dit is een Should en komt na de website.
+- `verbetervoorstellen.md` nog maken. Eerste punt: de aanbeveling kijkt alleen naar prijs en niet naar koelvermogen.
 
 **Afwijkingen en wat ik eraan gedaan heb:**
 
@@ -75,5 +77,9 @@ Start: woensdag 28 oktober 2026.
 - Een build zonder opslag kreeg de totaalstatus "in orde", omdat geen enkele regel opslag nodig heeft. Oplossing: F-11 aangepast. Een build is nu pas "in orde" als alle acht onderdelen gekozen zijn.
 - De API gaf op de echte server een 500, terwijl alle tests slaagden. Mijn eigen database was gevuld voordat de view bestond. Oplossing: `composer seed` gedraaid en in de README gezet dat dit nodig is na een wijziging in het schema.
 - `sort` staat in het ontwerp bij de filters, maar is nog niet gebouwd. Dat hoort bij F-20 (Should) en komt later.
+- De aanbeveling uit het ontwerp bleek te simpel. Reserveren voor het goedkoopste onderdeel per categorie werkt niet, omdat onderdelen van elkaar afhangen: een AM5-processor dwingt je tot duur DDR5. Oplossing: bij elke keuze vooruitkijken of de build nog af kan.
+- De eerste versie slaagde voor de tests, maar gaf vreemde uitkomsten op de echte data, zoals een koeler van € 139 op een zuinige processor en € 865 over bij € 4.000. Oplossing: geld schuift niet meer door, en restgeld gaat aan het eind naar de belangrijkste onderdelen voor het doel. Het ontwerp en `keuzes.md` zijn aangepast.
+- De budgetverdeling uit het ontwerp klopte niet met de echte prijzen. Oplossing: nieuwe percentages bepaald door de aanbeveling op de echte onderdelen te draaien bij budgetten van € 1.200 tot € 6.000.
+- De mutatietest vond twee zwakke tests. Oplossing: tests verbeterd, zie het testrapport.
 
 **Komt de planning in gevaar?** Nee.

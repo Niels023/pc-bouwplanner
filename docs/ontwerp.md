@@ -19,7 +19,6 @@ flowchart TB
     api --> logica
     pages --> repos[Repositories]
     api --> repos
-    recommender --> repos
     repos --> db[(MySQL-database)]
 ```
 
@@ -217,8 +216,8 @@ classDiagram
         PcCase
         Storage
         Psu
-        +withArticle() string
         +label() string
+        +withArticle() string
         +stepNumber() int
     }
     class Part {
@@ -288,12 +287,14 @@ classDiagram
         +estimatedPowerW() int
         +isEmpty() bool
         +isComplete() bool
+        +parts() array
         +cpu() Cpu
         +motherboard() Motherboard
         +ram() RamKit
         +gpu() Gpu
         +cooler() Cooler
         +pcCase() PcCase
+        +storage() StorageDrive
         +psu() Psu
     }
     class SavedBuild {
@@ -322,7 +323,7 @@ De klasse voor een kast heet `PcCase`, omdat `case` in PHP een gereserveerd woor
 
 `Build` heeft voor elk onderdeel een eigen methode, zoals `cpu()` en `psu()`. Een eerdere versie van dit ontwerp had één methode `part(Category)`, maar die geeft alleen een `Part` terug. Met `cpu()` weet PHP dat het om een `Cpu` gaat, dus de regels kunnen `$build->cpu()->socket` gebruiken en de editor kent de velden. Deze methodes mag je alleen aanroepen als het onderdeel gekozen is, dat controleert de `CompatibilityChecker` eerst met `hasPart()`.
 
-`withPart` en `withoutPart` geven een nieuwe `Build` terug in plaats van de bestaande te veranderen. Zo kan de controle een onderdeel "proberen" zonder de echte build van de gebruiker aan te passen. Deze twee methodes en `isEmpty()` komen er pas bij met F-04, F-12 en F-14.
+`withPart` en `withoutPart` geven een nieuwe `Build` terug in plaats van de bestaande te veranderen. Zo kan de controle een onderdeel "proberen" zonder de echte build van de gebruiker aan te passen. De aanbeveling gebruikt `withPart` om onderdelen te proberen, `withoutPart` komt er met F-04.
 
 ### 4.2 Compatibiliteit
 
@@ -354,6 +355,8 @@ classDiagram
         +int totalPriceCents
         +int estimatedPowerW
         +overallStatus() OverallStatus
+        +hasProblems() bool
+        +toArray() array
     }
     class RuleResult {
         +string ruleName
@@ -408,12 +411,14 @@ classDiagram
         +label() string
     }
     class Recommender {
-        -PartRepository parts
+        -array parts
         -CompatibilityChecker checker
-        -array budgetShares
+        -array goals
         +recommend(int budgetEuro, Goal goal) Recommendation
-        -chooseForCategory(Category category, Build build, int limitCents) RecommendedChoice
-        -cheapestCompleteBuildCents() int
+        -chooseParts(array choices, array categories, int budgetCents, Goal goal, array settings) array
+        -spendLeftover(array choices, int budgetCents, array upgradeOrder) array
+        -canFinish(Build build, Part part, array remaining, int moneyLeftCents) bool
+        -cheapestFinish(Build build, array remaining, int limitCents) int
     }
     class Recommendation {
         +Build build
@@ -467,7 +472,6 @@ classDiagram
         +show(Request request) Response
     }
 
-    Recommender --> PartRepository
     Recommender --> CompatibilityChecker
     Recommender ..> Recommendation : maakt
     Recommender ..> BudgetTooLowException : gooit
@@ -481,6 +485,7 @@ classDiagram
     BuildApiController --> CompatibilityChecker
     BuildRepository --> PartRepository
     RecommendationApiController --> Recommender
+    RecommendationApiController --> PartRepository
 ```
 
 De paginacontrollers (`BuildPageController`, `RecommendationPageController`) gebruiken dezelfde repositories en logica als de API-controllers, maar geven HTML terug in plaats van JSON.
@@ -612,42 +617,51 @@ De voedingsregel heeft naast de voeding ook de processor nodig. Zonder processor
 
 ## 7. Aanbeveling
 
-De aanbeveling werkt met vaste regels. Er is geen AI of willekeur: dezelfde invoer geeft altijd dezelfde build.
+De aanbeveling werkt met vaste regels. Er is geen AI of willekeur: dezelfde invoer geeft altijd dezelfde build. De `Recommender` kent geen database, hij krijgt de lijst met onderdelen mee. Daardoor is hij goed te testen.
 
-### 7.1 Budgetverdeling per doel
+### 7.1 Instellingen per doel
 
 Het budget wordt per doel over de categorieën verdeeld. Deze percentages staan in `config/app.php`, zodat ik ze kan aanpassen zonder de code te veranderen.
 
 | Categorie | Gamen | Werken | Streamen |
 |---|---|---|---|
-| Processor | 20% | 32% | 28% |
-| Moederbord | 12% | 14% | 12% |
-| Geheugen | 8% | 14% | 10% |
-| Videokaart | 38% | 10% | 28% |
-| Koeler | 4% | 5% | 5% |
-| Kast | 6% | 8% | 6% |
-| Opslag | 6% | 10% | 6% |
-| Voeding | 6% | 7% | 5% |
+| Processor | 14% | 28% | 20% |
+| Moederbord | 6% | 9% | 7% |
+| Geheugen | 13% | 22% | 20% |
+| Videokaart | 50% | 20% | 38% |
+| Koeler | 3% | 3% | 3% |
+| Kast | 4% | 5% | 4% |
+| Opslag | 7% | 9% | 5% |
+| Voeding | 3% | 4% | 3% |
 
-Daarnaast heeft elk doel minimumeisen:
+De eerste versie van deze tabel gaf geheugen 8 tot 14%. Met de echte prijzen van oktober 2026 was dat te weinig, want 16 GB kost nu minimaal € 169. De percentages zijn aangepast nadat ik de aanbeveling op de echte onderdelen had gedraaid, zie het [testrapport](testrapport.md).
 
-| Doel | Minimaal geheugen | Minimale opslag |
-|---|---|---|
-| Gamen | 16 GB | 1000 GB |
-| Werken | 16 GB | 500 GB |
-| Streamen | 32 GB | 1000 GB |
+Daarnaast heeft elk doel minimumeisen en een eigen volgorde voor het restgeld:
+
+| Doel | Minimaal geheugen | Minimale opslag | Restgeld gaat naar |
+|---|---|---|---|
+| Gamen | 16 GB | 1000 GB | videokaart, processor, geheugen, opslag |
+| Werken | 16 GB | 500 GB | processor, geheugen, opslag |
+| Streamen | 32 GB | 1000 GB | processor, videokaart, geheugen, opslag |
+
+Bij werken krijgt de videokaart geen restgeld, want dat levert daar niets op. Je houdt dan liever geld over. Een moederbord moet minimaal 4 geheugensloten hebben, zodat je later geheugen kunt bijplaatsen. Daardoor kiest de aanbeveling geen Mini-ITX-borden: die zijn duur, maar niet sneller.
 
 ### 7.2 Stappen
 
-1. Controleer de invoer. Het budget moet een geheel getal groter dan 0 zijn en het doel moet bestaan. Anders volgt een foutmelding.
-2. Bereken wat de goedkoopste complete build kost. Is het budget lager, dan stopt de aanbeveling met de melding hoeveel er minimaal nodig is.
-3. Kies de onderdelen in deze volgorde: processor, moederbord, geheugen, videokaart, koeler, kast, opslag, voeding. De kast komt na de videokaart en de koeler omdat die er allebei in moeten passen. De voeding komt als laatste, omdat dan het verbruik van alle andere onderdelen bekend is.
-4. Per categorie:
-   1. **Kandidaten**: alle onderdelen in die categorie die geen fout geven met de onderdelen die al gekozen zijn. Dit gebruikt dezelfde `CompatibilityChecker` als de bouwplanner. Voor geheugen en opslag tellen alleen onderdelen die aan de minimumeisen van het doel voldoen.
-   2. **Limiet**: het deelbudget van de categorie, plus wat er bij eerdere categorieën over is gebleven. De limiet is nooit zo hoog dat er voor de categorieën die nog komen geen geld meer is voor het goedkoopste onderdeel.
-   3. **Keuze**: het duurste onderdeel dat binnen de limiet valt. Binnen een categorie is een duurder onderdeel meestal sneller of beter. Past er niets binnen de limiet, dan het goedkoopste kandidaat-onderdeel.
-   4. **Uitleg**: een zin met de reden, bijvoorbeeld "Gekozen omdat dit de beste videokaart is binnen het deelbudget van € 456 (38% van € 1.200)."
-5. Controleer de complete build nog één keer met de `CompatibilityChecker` en kijk of het totaal binnen het budget valt. Geef de build, de uitleg per onderdeel en het overgebleven bedrag terug.
+1. **Invoer controleren.** Het budget moet een geheel getal van 1 tot 100.000 zijn en het doel moet bestaan. Anders volgt een foutmelding.
+2. **Minimum bepalen.** `cheapestFinish()` rekent uit wat de goedkoopste complete build kost die aan de eisen van het doel voldoet. Is het budget lager, dan stopt de aanbeveling met het bedrag dat minimaal nodig is.
+3. **Onderdelen kiezen.** In deze volgorde: processor, moederbord, geheugen, videokaart, koeler, kast, opslag. De kast komt na de videokaart en de koeler omdat die er allebei in moeten passen. Per categorie:
+   1. **Kandidaten:** alle onderdelen die aan de minimumeisen voldoen en geen fout of waarschuwing geven met wat al gekozen is. Dit gebruikt dezelfde `CompatibilityChecker` als de bouwplanner.
+   2. **Deelbudget:** het percentage van het budget voor deze categorie.
+   3. **Vooruitkijken:** een onderdeel mag alleen als de build daarna nog af kan binnen het budget (`canFinish()`). Dit is nodig omdat keuzes elkaar beïnvloeden. Een AM5-processor kan in zijn deelbudget passen, maar dwingt je tot duur DDR5-geheugen.
+   4. **Keuze:** het duurste onderdeel binnen het deelbudget. Binnen een categorie is een duurder onderdeel meestal sneller of beter. Past er niets, dan het goedkoopste onderdeel waarmee de build nog af kan.
+   5. **Uitleg:** een zin met de reden, bijvoorbeeld "Beste videokaart binnen het deelbudget van € 1.000."
+4. **Restgeld besteden.** Wat over is gaat naar de onderdelen die voor dit doel het belangrijkst zijn. Per onderdeel uit de volgorde van het doel kijkt de `Recommender` of een duurder onderdeel past en betaalbaar is.
+5. **Voeding kiezen.** De voeding komt als laatste, omdat dan het verbruik vaststaat. Een betere videokaart kan een zwaardere voeding nodig hebben. Daar houdt stap 4 rekening mee.
+
+De uitkomst is de build, de uitleg per onderdeel en het bedrag dat over is.
+
+`cheapestFinish()` probeert de combinaties van de categorieën die nog over zijn, van goedkoop naar duur. Is een pad duurder dan de beste oplossing tot nu toe, dan stopt het op dat pad. Alle combinaties proberen zou ruim 2 miljoen mogelijkheden zijn, zo blijft een aanbeveling onder de 20 milliseconden.
 
 ## 8. REST API
 
@@ -690,6 +704,9 @@ Foutcodes die de API teruggeeft:
 | 422 | `duplicate_category` | Twee onderdelen in dezelfde categorie |
 | 422 | `invalid_name` | Naam is leeg of langer dan 60 tekens |
 | 422 | `empty_build` | Build zonder onderdelen opslaan |
+| 422 | `invalid_budget` | Budget is geen geheel getal van 1 tot 100.000 |
+| 422 | `invalid_goal` | Doel ontbreekt of bestaat niet |
+| 422 | `budget_too_low` | Budget is lager dan de goedkoopste complete build |
 | 500 | `server_error` | Onverwachte fout op de server |
 
 Een onderdeel in een antwoord ziet er zo uit. Wat in `specs` staat, hangt af van de categorie:
@@ -713,7 +730,7 @@ Een onderdeel in een antwoord ziet er zo uit. Wat in `specs` staat, hangt af van
 }
 ```
 
-`GET /api/parts` geeft `count` en een lijst `parts` terug. Zijn er geen resultaten, dan is dat gewoon een 200 met `count` 0. `POST /api/builds` en `GET /api/builds/{code}` geven `share_code`, `url`, `name`, `created_at`, `parts` en `check` terug, waarbij `check` hetzelfde is als het antwoord van de controle hieronder.
+`GET /api/parts` geeft `count` en een lijst `parts` terug. Zijn er geen resultaten, dan is dat gewoon een 200 met `count` 0. `POST /api/builds` en `GET /api/builds/{code}` geven `share_code`, `url`, `name`, `created_at`, `parts` en `check` terug, waarbij `check` hetzelfde is als het antwoord van de controle hieronder. `GET /api/recommendation` geeft `goal`, `budget_eur`, `leftover_eur`, `choices` en `check` terug. Elke keuze in `choices` heeft `part`, `category_budget_eur` en `reason`.
 
 Voorbeeld van een controle:
 

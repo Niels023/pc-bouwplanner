@@ -44,6 +44,7 @@ class Parts
         ?FormFactor $formFactor = null,
         int $powerW = 40,
         int $priceCents = 15000,
+        int $ramSlots = 4,
     ): Motherboard {
         $formFactor ??= self::atx();
 
@@ -58,23 +59,29 @@ class Parts
             $ramType,
             $formFactor,
             'B850',
-            4,
+            $ramSlots,
         );
     }
 
-    public static function ram(string $ramType = 'DDR5', int $powerW = 6): RamKit
-    {
-        return new RamKit(3, 'Kingston', 'Test RAM', 10000, self::date(), $powerW, $ramType, 32, 2, 6000);
+    public static function ram(
+        string $ramType = 'DDR5',
+        int $powerW = 6,
+        int $capacityGb = 32,
+        int $priceCents = 10000,
+    ): RamKit {
+        $date = self::date();
+
+        return new RamKit(3, 'Kingston', 'Test RAM', $priceCents, $date, $powerW, $ramType, $capacityGb, 2, 6000);
     }
 
-    public static function gpu(int $lengthMm = 250, int $powerW = 200): Gpu
+    public static function gpu(int $lengthMm = 250, int $powerW = 200, int $priceCents = 50000): Gpu
     {
-        return new Gpu(4, 'MSI', 'Test GPU', 50000, self::date(), $powerW, 'Test chip', 12, $lengthMm);
+        return new Gpu(4, 'MSI', 'Test GPU', $priceCents, self::date(), $powerW, 'Test chip', 12, $lengthMm);
     }
 
-    public static function cooler(int $heightMm = 150, int $powerW = 5): Cooler
+    public static function cooler(int $heightMm = 150, int $powerW = 5, int $priceCents = 5000): Cooler
     {
-        return new Cooler(5, 'Noctua', 'Test koeler', 5000, self::date(), $powerW, $heightMm);
+        return new Cooler(5, 'Noctua', 'Test koeler', $priceCents, self::date(), $powerW, $heightMm);
     }
 
     public static function pcCase(
@@ -82,6 +89,7 @@ class Parts
         int $maxGpuLengthMm = 350,
         int $maxCoolerHeightMm = 170,
         int $powerW = 5,
+        int $priceCents = 10000,
     ): PcCase {
         $maxFormFactor ??= self::atx();
 
@@ -89,7 +97,7 @@ class Parts
             6,
             'Fractal Design',
             'Test kast',
-            10000,
+            $priceCents,
             self::date(),
             $powerW,
             $maxFormFactor,
@@ -98,14 +106,14 @@ class Parts
         );
     }
 
-    public static function storage(int $powerW = 5): StorageDrive
+    public static function storage(int $powerW = 5, int $capacityGb = 1000, int $priceCents = 10000): StorageDrive
     {
-        return new StorageDrive(7, 'Samsung', 'Test SSD', 10000, self::date(), $powerW, 'NVMe', 1000);
+        return new StorageDrive(7, 'Samsung', 'Test SSD', $priceCents, self::date(), $powerW, 'NVMe', $capacityGb);
     }
 
-    public static function psu(int $wattageW = 650): Psu
+    public static function psu(int $wattageW = 650, int $priceCents = 8000): Psu
     {
-        return new Psu(8, 'Corsair', 'Test voeding', 8000, self::date(), 0, $wattageW, '80 Plus Gold');
+        return new Psu(8, 'Corsair', 'Test voeding', $priceCents, self::date(), 0, $wattageW, '80 Plus Gold');
     }
 
     private static function date(): DateTimeImmutable

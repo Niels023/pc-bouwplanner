@@ -13,6 +13,7 @@ Hier leg ik in gewone taal uit hoe de PC-bouwplanner in elkaar zit. Dit document
 | `src/Database/` | Verbinding met de database en de `Seeder` |
 | `src/Http/` | De router, verzoeken en antwoorden, en de controllers |
 | `src/Model/` | Klassen voor de onderdelen en de build |
+| `src/Recommendation/` | De aanbeveling op basis van budget en doel |
 | `src/Repository/` | Alle query's naar de database |
 | `public/` | `index.php`, hier komt elk verzoek binnen |
 | `tests/` | Alle tests. `Unit` draait zonder database, `Database` en `Api` met een aparte testdatabase |
@@ -82,6 +83,33 @@ Het resultaat rond ik met `ceil` naar boven af. Bij 583 W is 757,9 W nodig, en e
 
 De regel heeft ook een processor nodig. Anders is het verbruik bijna 0 en lijkt elke voeding goed.
 
+## De aanbeveling
+
+De aanbeveling staat in `src/Recommendation/Recommender.php`. Net als de controle kent deze klasse geen database, hij krijgt de lijst met onderdelen mee. De percentages en minimumeisen per doel staan in `config/app.php`.
+
+`recommend($budget, $goal)` werkt in vier stappen:
+
+1. **Minimum uitrekenen.** Wat kost de goedkoopste build die werkt? Is het budget lager, dan volgt een `BudgetTooLowException` met dat bedrag.
+2. **Onderdelen kiezen, behalve de voeding.** Elke categorie krijgt een deelbudget, bijvoorbeeld 50% voor de videokaart bij gamen. Ik neem het duurste onderdeel dat binnen het deelbudget valt en waarmee de build nog af kan.
+3. **Restgeld besteden.** Wat over is gaat naar de onderdelen die voor dit doel het belangrijkst zijn. Bij gamen eerst de videokaart, bij werken eerst de processor.
+4. **Voeding kiezen.** Pas nu is het verbruik bekend.
+
+### Vooruitkijken
+
+Dit is het lastigste stuk. Stel je hebt € 1.200 en de AM5-processor past in zijn deelbudget. Als ik die kies, moet ik ook een AM5-bord en DDR5-geheugen kopen, en dan is het budget te laag voor de rest. Ik loop dan vast.
+
+Daarom kijkt `canFinish()` bij elke keuze vooruit. Die vraagt aan `cheapestFinish()`: wat kost het om de build hierna af te maken? Past dat niet in het geld dat over is, dan valt dit onderdeel af.
+
+`cheapestFinish()` is een recursieve functie, hij roept zichzelf aan. Voor de eerste categorie die nog open is probeert hij de onderdelen van goedkoop naar duur, en voor elk onderdeel rekent hij weer de categorieën daarna uit. Is een pad duurder dan de beste oplossing tot nu toe, dan stopt hij op dat pad. Zo hoeft hij niet alle 2 miljoen combinaties te proberen.
+
+### De uitleg bij een onderdeel
+
+Bij elke keuze hoort een `RecommendedChoice` met het onderdeel, het deelbudget en een zin met de reden. Er zijn drie soorten zinnen:
+
+- Het onderdeel past: "Beste videokaart binnen het deelbudget van € 1.000."
+- Niets past binnen het deelbudget: "Het deelbudget van € 60 was te krap, daarom de goedkoopste keuze die past."
+- Het onderdeel is betaald uit het restgeld: "Het deelbudget was € 140, maar er bleef genoeg over voor deze betere opslag."
+
 ## Onderdelen uit de database halen
 
 De klasse `PartRepository` haalt onderdelen op. De query's lezen uit de view `part_details`, die alle tabellen van een onderdeel samenvoegt tot één rij. `PartMapper` maakt van zo'n rij het juiste object: bij categorie `cpu` een `Cpu`, bij `gpu` een `Gpu`.
@@ -105,6 +133,14 @@ Dit gebeurt er bij `GET /api/parts?category=cpu`:
 Gaat er iets mis, dan gooit de code een `ApiException` met een statuscode en een melding. `Application::handle()` vangt die op en maakt er een nette foutmelding in JSON van. Alle andere fouten worden een 500 met een algemene melding, en de echte fout gaat naar het logbestand.
 
 ## Vragen die ik kan verwachten
+
+**Hoe weet je dat de aanbeveling altijd een goede build geeft?** Er is een test die voor elk doel alle budgetten van het minimum tot € 6.000 in stappen van € 100 afloopt en controleert dat de build compleet is, in orde is en binnen het budget valt.
+
+**Waarom is de duurste het beste?** Binnen een categorie is duurder meestal sneller of beter. Dat klopt niet altijd, bijvoorbeeld bij een low-profile koeler. Benchmarks zouden beter zijn, maar die kan ik niet zelf controleren. Daarom staat dit in de verbetervoorstellen.
+
+**Waarom blijft er bij werken zoveel geld over?** Bij werken krijgt de videokaart geen restgeld, want dat levert niets op. Ik vind het beter als de gebruiker geld overhoudt dan dat de site het uitgeeft omdat het kan.
+
+**Waarom staat de voeding als laatste?** Pas als alle andere onderdelen vaststaan, is het verbruik bekend. Een upgrade van de videokaart kan een zwaardere voeding nodig maken.
 
 **Wat is het verschil tussen 400, 404 en 422?** 400: het verzoek is kapot, de JSON klopt niet. 404: wat je vraagt bestaat niet. 422: het verzoek is goed leesbaar, maar de inhoud klopt niet, zoals een onbekende categorie.
 
