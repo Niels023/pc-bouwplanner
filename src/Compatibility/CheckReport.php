@@ -24,4 +24,19 @@ readonly class CheckReport
             default => OverallStatus::Ok,
         };
     }
+
+    /** @return array<string, mixed> */
+    public function toArray(): array
+    {
+        return [
+            'overall_status' => $this->overallStatus()->value,
+            'total_price_eur' => $this->totalPriceCents / 100,
+            'estimated_power_w' => $this->estimatedPowerW,
+            'results' => array_map(fn (RuleResult $result) => [
+                'rule' => $result->ruleName,
+                'status' => $result->status->value,
+                'message' => $result->message,
+            ], $this->results),
+        ];
+    }
 }
