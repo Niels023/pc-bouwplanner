@@ -12,7 +12,7 @@ Prijzen veranderen snel. Werkwijze om ze bij te werken:
 
 1. De prijs opzoeken in de Tweakers Pricewatch.
 2. `price_eur` aanpassen in `database/data/parts.php` en `price_date` op de datum van de controle zetten.
-3. `composer seed` draaien.
+3. `composer seed` draaien. Let op: dit maakt alle tabellen opnieuw, dus opgeslagen builds zijn daarna weg.
 
 ### Processors
 
