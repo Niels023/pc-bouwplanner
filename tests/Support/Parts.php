@@ -80,9 +80,28 @@ class Parts
         return new RamKit(3, 'Kingston', 'Test RAM', $priceCents, $date, $powerW, $ramType, $capacityGb, 2, 6000);
     }
 
-    public static function gpu(int $lengthMm = 250, int $powerW = 200, int $priceCents = 50000): Gpu
-    {
-        return new Gpu(4, 'MSI', 'Test GPU', $priceCents, self::date(), $powerW, 'Test chip', 12, $lengthMm);
+    public static function gpu(
+        int $lengthMm = 250,
+        int $powerW = 200,
+        int $priceCents = 50000,
+        int $fps1080p = 100,
+        int $fps1440p = 70,
+        int $fps4k = 40,
+    ): Gpu {
+        return new Gpu(
+            4,
+            'MSI',
+            'Test GPU',
+            $priceCents,
+            self::date(),
+            $powerW,
+            'Test chip',
+            12,
+            $lengthMm,
+            $fps1080p,
+            $fps1440p,
+            $fps4k,
+        );
     }
 
     public static function cooler(int $heightMm = 150, int $powerW = 5, int $priceCents = 5000): Cooler
