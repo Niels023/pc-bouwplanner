@@ -12,36 +12,43 @@ class CheckReportTest extends TestCase
 {
     public function testAllOkGivesOk(): void
     {
-        $report = $this->report(CheckStatus::Ok, CheckStatus::Ok);
+        $report = $this->report(true, CheckStatus::Ok, CheckStatus::Ok);
 
         $this->assertSame(OverallStatus::Ok, $report->overallStatus());
     }
 
-    public function testNotCheckedGivesIncomplete(): void
+    public function testIncompleteBuildGivesIncomplete(): void
     {
-        $report = $this->report(CheckStatus::Ok, CheckStatus::NotChecked);
+        $report = $this->report(false, CheckStatus::Ok, CheckStatus::NotChecked);
+
+        $this->assertSame(OverallStatus::Incomplete, $report->overallStatus());
+    }
+
+    public function testIncompleteBuildWithAllRulesOkIsStillIncomplete(): void
+    {
+        $report = $this->report(false, CheckStatus::Ok, CheckStatus::Ok);
 
         $this->assertSame(OverallStatus::Incomplete, $report->overallStatus());
     }
 
     public function testWarningGoesBeforeIncomplete(): void
     {
-        $report = $this->report(CheckStatus::NotChecked, CheckStatus::Warning);
+        $report = $this->report(false, CheckStatus::NotChecked, CheckStatus::Warning);
 
         $this->assertSame(OverallStatus::Warning, $report->overallStatus());
     }
 
     public function testErrorGoesBeforeEverythingElse(): void
     {
-        $report = $this->report(CheckStatus::Warning, CheckStatus::NotChecked, CheckStatus::Error, CheckStatus::Ok);
+        $report = $this->report(false, CheckStatus::Warning, CheckStatus::NotChecked, CheckStatus::Error);
 
         $this->assertSame(OverallStatus::Error, $report->overallStatus());
     }
 
-    private function report(CheckStatus ...$statuses): CheckReport
+    private function report(bool $buildComplete, CheckStatus ...$statuses): CheckReport
     {
         $results = array_map(fn (CheckStatus $status) => new RuleResult('test', $status, 'melding'), $statuses);
 
-        return new CheckReport($results, 0, 0);
+        return new CheckReport($results, $buildComplete, 0, 0);
     }
 }

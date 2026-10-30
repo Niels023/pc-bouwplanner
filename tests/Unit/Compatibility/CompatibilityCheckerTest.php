@@ -65,6 +65,26 @@ class CompatibilityCheckerTest extends TestCase
         }
     }
 
+    public function testBuildWithoutStorageIsNotComplete(): void
+    {
+        $build = new Build(
+            Parts::cpu(),
+            Parts::motherboard(),
+            Parts::ram(),
+            Parts::gpu(),
+            Parts::cooler(),
+            Parts::pcCase(),
+            Parts::psu(),
+        );
+
+        $report = $this->checker->check($build);
+
+        foreach ($report->results as $result) {
+            $this->assertSame(CheckStatus::Ok, $result->status, $result->message);
+        }
+        $this->assertSame(OverallStatus::Incomplete, $report->overallStatus());
+    }
+
     public function testOneProblemMakesTheWholeBuildAnError(): void
     {
         $report = $this->checker->check(new Build(Parts::cpu(socket: 'AM4'), Parts::motherboard(socket: 'AM5')));

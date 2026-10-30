@@ -116,11 +116,15 @@ Verbruik 450 W en 30% marge, dus 585 W is nodig, tenzij de tabel iets anders zeg
 | TC-F11-04 | Alleen een voeding | Voedingsregel nog niet gecontroleerd | `testPsuWithoutCpuIsNotChecked` |
 | TC-F11-05 | Complete build die past | Alle regels in orde, totaalstatus in orde | `testCompleteBuildThatFitsIsOk` |
 | TC-F11-06 | Build met verkeerde socket | Totaalstatus fout | `testOneProblemMakesTheWholeBuildAnError` |
-| TC-F11-07 | Resultaten in orde en nog niet gecontroleerd | Totaalstatus nog niet compleet | `testNotCheckedGivesIncomplete` |
-| TC-F11-08 | Waarschuwing en nog niet gecontroleerd | Totaalstatus waarschuwing | `testWarningGoesBeforeIncomplete` |
-| TC-F11-09 | Fout, waarschuwing, nog niet gecontroleerd en in orde | Totaalstatus fout | `testErrorGoesBeforeEverythingElse` |
-| TC-F11-10 | Alleen resultaten in orde | Totaalstatus in orde | `testAllOkGivesOk` |
+| TC-F11-07 | Onvolledige build, resultaten in orde en nog niet gecontroleerd | Totaalstatus nog niet compleet | `testIncompleteBuildGivesIncomplete` |
+| TC-F11-08 | Onvolledige build, waarschuwing en nog niet gecontroleerd | Totaalstatus waarschuwing | `testWarningGoesBeforeIncomplete` |
+| TC-F11-09 | Onvolledige build, fout, waarschuwing en nog niet gecontroleerd | Totaalstatus fout | `testErrorGoesBeforeEverythingElse` |
+| TC-F11-10 | Complete build, alleen resultaten in orde | Totaalstatus in orde | `testAllOkGivesOk` |
 | TC-F11-11 | Build met alleen een processor | De build weet welke onderdelen gekozen zijn | `testHasPartOnlyForChosenCategories` |
+| TC-F11-12 | Onvolledige build waarvan alle regels in orde zijn | Totaalstatus nog niet compleet | `testIncompleteBuildWithAllRulesOkIsStillIncomplete` |
+| TC-F11-13 | Build met alles behalve opslag | Alle regels in orde, totaalstatus nog niet compleet | `testBuildWithoutStorageIsNotComplete` |
+| TC-F11-14 | Build met alle acht onderdelen | De build is compleet | `testBuildIsCompleteWithAllEightParts` |
+| TC-F11-15 | Build zonder opslag | De build is niet compleet | `testBuildIsNotCompleteWithMissingPart` |
 
 ### F-13 Totaalprijs en geschat verbruik
 

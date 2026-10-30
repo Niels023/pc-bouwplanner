@@ -284,6 +284,7 @@ classDiagram
         +totalPriceCents() int
         +estimatedPowerW() int
         +isEmpty() bool
+        +isComplete() bool
         +cpu() Cpu
         +motherboard() Motherboard
         +ram() RamKit
@@ -346,6 +347,7 @@ classDiagram
     }
     class CheckReport {
         +array results
+        +bool buildComplete
         +int totalPriceCents
         +int estimatedPowerW
         +overallStatus() OverallStatus
@@ -514,7 +516,7 @@ De totaalstatus volgt uit de resultaten van alle regels, in deze volgorde:
 
 1. Eén of meer regels fout: **fout**.
 2. Anders één of meer waarschuwingen: **waarschuwing**.
-3. Anders één of meer regels nog niet gecontroleerd: **nog niet compleet**.
+3. Anders, als er nog een onderdeel ontbreekt: **nog niet compleet**. Dit geldt ook voor opslag, ook al heeft geen enkele regel opslag nodig.
 4. Anders: **in orde**.
 
 ### 5.1 Detail: regel voor de voeding

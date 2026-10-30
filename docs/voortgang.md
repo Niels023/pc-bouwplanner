@@ -60,7 +60,6 @@ Start: woensdag 28 oktober 2026.
 
 **Open:**
 
-- Beslissen wat de totaalstatus moet zijn als alle regels in orde zijn, maar er nog geen opslag gekozen is. Nu is dat "in orde", want geen enkele regel heeft opslag nodig.
 - De budgetverdeling van de aanbeveling opnieuw bekijken bij F-16 (zie sessie 28 oktober).
 - Volgende stap: de repositories en de REST API (F-02, F-03, F-14, F-15, F-18).
 
@@ -69,5 +68,6 @@ Start: woensdag 28 oktober 2026.
 - `Build` heeft geen methode `part(Category)` gekregen zoals in het ontwerp stond, maar een methode per onderdeel. Reden: dan weet de editor welke velden er zijn. Het ontwerp en `keuzes.md` zijn aangepast.
 - `category` is geen veld van `Part` geworden, maar een methode die elke subklasse zelf invult. Het ontwerp is aangepast.
 - Mijn hulpfunctie `result()` in een test gaf een fatale fout, omdat PHPUnit al een methode met die naam heeft. Oplossing: hernoemd naar `resultFor()`.
+- Een build zonder opslag kreeg de totaalstatus "in orde", omdat geen enkele regel opslag nodig heeft. Oplossing: F-11 aangepast. Een build is nu pas "in orde" als alle acht onderdelen gekozen zijn.
 
 **Komt de planning in gevaar?** Nee.
