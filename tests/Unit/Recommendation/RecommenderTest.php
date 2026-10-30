@@ -103,6 +103,30 @@ class RecommenderTest extends TestCase
         }
     }
 
+    public function testGoalWithoutGpuShareGetsNoGpu(): void
+    {
+        $goals = self::GOALS;
+        $goals['work']['shares']['gpu'] = 0;
+
+        $recommendation = $this->recommender($goals)->recommend(1500, Goal::Work);
+
+        $this->assertFalse($recommendation->build->hasPart(Category::Gpu));
+        $this->assertTrue($recommendation->build->isComplete());
+        $this->assertCount(7, $recommendation->choices);
+    }
+
+    public function testGoalWithoutGpuOnlyPicksCpuWithIntegratedGraphics(): void
+    {
+        $goals = self::GOALS;
+        $goals['work']['shares']['gpu'] = 0;
+        $parts = [...$this->catalog(), Parts::cpu('AM4', powerW: 65, priceCents: 5000, hasIntegratedGraphics: false)];
+
+        $recommendation = (new Recommender($parts, CompatibilityChecker::withAllRules(30), $goals))
+            ->recommend(1500, Goal::Work);
+
+        $this->assertTrue($recommendation->build->cpu()->hasIntegratedGraphics);
+    }
+
     public function testPicksBestPartWithinCategoryBudget(): void
     {
         $recommendation = $this->recommend(3000);
