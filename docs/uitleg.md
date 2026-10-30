@@ -59,7 +59,7 @@ De `CompatibilityChecker` heeft een lijst met alle regels. Bij `check($build)` d
 2. Ontbreekt er iets, dan maakt de checker zelf een resultaat `NotChecked` met de melding "Kies eerst een moederbord."
 3. Is alles er, dan roept hij `evaluate()` van de regel aan.
 
-Alle resultaten komen samen met de totaalprijs en het verbruik in een `CheckReport`. `overallStatus()` bepaalt daaruit de totaalstatus: eerst kijken of er een fout is, dan een waarschuwing, dan iets wat nog niet gecontroleerd is, en anders is alles in orde.
+Alle resultaten komen samen met de totaalprijs en het verbruik in een `CheckReport`. `overallStatus()` bepaalt daaruit de totaalstatus: eerst kijken of er een fout is, dan een waarschuwing, dan of de build nog niet alle acht onderdelen heeft, en anders is alles in orde. Ook zonder opslag is een build dus nog niet compleet, al heeft geen enkele regel opslag nodig.
 
 ### De voedingsregel
 

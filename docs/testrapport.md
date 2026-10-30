@@ -60,7 +60,7 @@ Op 30 oktober 2026 heb ik 12 fouten met opzet in de code gezet en steeds de unit
 
 ### Bevindingen
 
-- Een build zonder opslag kan de totaalstatus "in orde" krijgen, omdat geen enkele regel opslag nodig heeft. Dit klopt met het acceptatiecriterium van F-11, maar is misschien niet wat een gebruiker verwacht. Dit staat als open punt in [voortgang.md](voortgang.md).
+- Een build zonder opslag kon de totaalstatus "in orde" krijgen, omdat geen enkele regel opslag nodig heeft. Dit klopte met het toenmalige acceptatiecriterium van F-11, maar is niet wat een gebruiker verwacht. Opgelost op 30 oktober: F-11 is aangepast en een build is nu pas "in orde" met alle acht onderdelen.
 
 ## Nog niet getest
 
