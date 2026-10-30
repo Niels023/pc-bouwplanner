@@ -44,7 +44,8 @@ $selects = [
         </form>
     </details>
 
-    <section aria-label="Onderdelen">
+    <section aria-labelledby="parts-title">
+        <h2 id="parts-title" class="visually-hidden">Onderdelen</h2>
         <?php if ($filterError !== null) : ?>
             <p class="message message-error" role="alert"><?= $this->e($filterError) ?></p>
         <?php endif; ?>
