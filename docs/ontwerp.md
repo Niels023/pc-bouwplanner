@@ -196,6 +196,7 @@ Toelichting:
 - **Formaat** heeft een `size_rank`: Mini-ITX = 1, Micro-ATX = 2, ATX = 3, E-ATX = 4. Een kast slaat alleen het grootste formaat op dat erin past. Een moederbord past als zijn `size_rank` kleiner of gelijk is aan die van de kast.
 - **Verbruik** (`power_w`) staat bij elk onderdeel. Voor processors en videokaarten is dat het maximale vermogen volgens de fabrikant, voor de andere categorieën een vaste schatting. Zie [keuzes.md](keuzes.md).
 - **Build en onderdelen** is een veel-op-veel-relatie via `build_parts`. Dat er per categorie maar één onderdeel in een build zit, controleert de code bij het opslaan.
+- **View `part_details`:** een onderdeel staat verdeeld over `parts`, de tabel van de categorie en de opzoektabellen. De view voegt die samen tot één rij per onderdeel. De PHP-code leest altijd uit deze view, zodat de lange reeks joins op één plek staat (`database/schema.sql`). Velden van een andere categorie zijn in die rij leeg (NULL). De view staat niet in het ERD, omdat hij geen eigen gegevens bevat.
 - **Geen M.2-sloten:** in de eerste versie van het ontwerp had een moederbord ook `m2_slots`. Dat veld is eruit gehaald, omdat geen enkele regel het gebruikt en ik het aantal per moederbord niet zeker wist.
 
 ## 4. Klassendiagram
@@ -229,6 +230,8 @@ classDiagram
         +DateTimeImmutable priceDate
         +int powerW
         +category() Category*
+        +specs() array*
+        +toArray() array
     }
     class Cpu {
         +string socket
@@ -432,6 +435,9 @@ classDiagram
         +findByIds(array ids) array
         +findByFilter(PartFilter filter) array
     }
+    class PartMapper {
+        +fromRow(array row) Part
+    }
     class PartFilter {
         +Category category
         +string brand
@@ -466,6 +472,7 @@ classDiagram
     Recommender --> Goal
     Recommendation *-- RecommendedChoice
     PartRepository ..> PartFilter
+    PartRepository --> PartMapper
     PartApiController --> PartRepository
     BuildApiController --> BuildRepository
     BuildApiController --> CompatibilityChecker
