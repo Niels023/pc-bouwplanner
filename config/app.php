@@ -10,6 +10,12 @@ return [
     ],
     // Hoeveel procent de voeding meer moet kunnen leveren dan het geschatte verbruik
     'psu_margin_percent' => 30,
+    // Minimale FPS op het gekozen scherm, gemeten in zware games. Lichte games halen makkelijk het
+    // dubbele, dus daarvoor is 30 FPS in deze test genoeg.
+    'game_types' => [
+        'light' => ['min_fps' => 30],
+        'heavy' => ['min_fps' => 60],
+    ],
     // Instellingen van de aanbeveling per doel. shares is het deel van het budget per categorie in
     // procenten (samen 100), upgrade_order zegt welke onderdelen beter worden als er geld over is.
     'goals' => [
