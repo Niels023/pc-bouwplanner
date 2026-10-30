@@ -9,6 +9,7 @@ use App\Http\Controller\BuildPageController;
 use App\Http\Controller\HomePageController;
 use App\Http\Controller\PartApiController;
 use App\Http\Controller\RecommendationApiController;
+use App\Http\Controller\RecommendationPageController;
 use App\Repository\BuildRepository;
 use App\Repository\PartRepository;
 use Throwable;
@@ -47,6 +48,7 @@ class Application
         $view = new View();
         $homePage = new HomePageController($view);
         $buildPage = new BuildPageController($view, $parts, $builds, $checker, new WorkingBuild($parts));
+        $recommendationPage = new RecommendationPageController($view, $parts, $checker, $this->config['goals']);
 
         $router = new Router();
         $router->add('GET', '/', $homePage->show(...));
@@ -57,6 +59,7 @@ class Application
         $router->add('POST', '/opslaan', $buildPage->save(...));
         $router->add('GET', '/build/open', $buildPage->open(...));
         $router->add('GET', '/build/{code}', $buildPage->show(...));
+        $router->add('GET', '/aanbeveling', $recommendationPage->show(...));
         $router->add('GET', '/api/parts', $partApi->index(...));
         $router->add('GET', '/api/parts/{id}', $partApi->show(...));
         $router->add('POST', '/api/builds', $buildApi->store(...));
