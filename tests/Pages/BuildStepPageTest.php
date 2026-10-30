@@ -246,6 +246,20 @@ class BuildStepPageTest extends PageTestCase
         $this->assertPageContains('href="/overzicht"', $this->get('/bouwen/psu'));
     }
 
+    public function testGpuStepSaysWhenAGpuIsOptional(): void
+    {
+        $this->choose('cpu', 'Ryzen 5 7600 Boxed');
+
+        $this->assertPageContains('is een videokaart niet nodig', $this->get('/bouwen/gpu'));
+    }
+
+    public function testGpuStepDoesNotSayThatWithoutIntegratedGraphics(): void
+    {
+        $this->choose('cpu', 'Ryzen 5 5600 Boxed');
+
+        $this->assertPageNotContains('is een videokaart niet nodig', $this->get('/bouwen/gpu'));
+    }
+
     public function testHtmlInFilterIsEscaped(): void
     {
         $response = $this->get('/bouwen/cpu', ['max_price' => '"><script>alert(1)</script>']);

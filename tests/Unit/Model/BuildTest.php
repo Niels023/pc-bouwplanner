@@ -87,6 +87,36 @@ class BuildTest extends TestCase
         $this->assertTrue($build->isComplete());
     }
 
+    public function testBuildWithoutGpuIsCompleteWithIntegratedGraphics(): void
+    {
+        $build = new Build(
+            Parts::cpu(hasIntegratedGraphics: true),
+            Parts::motherboard(),
+            Parts::ram(),
+            Parts::cooler(),
+            Parts::pcCase(),
+            Parts::storage(),
+            Parts::psu(),
+        );
+
+        $this->assertTrue($build->isComplete());
+    }
+
+    public function testBuildWithoutGpuIsNotCompleteWithoutIntegratedGraphics(): void
+    {
+        $build = new Build(
+            Parts::cpu(hasIntegratedGraphics: false),
+            Parts::motherboard(),
+            Parts::ram(),
+            Parts::cooler(),
+            Parts::pcCase(),
+            Parts::storage(),
+            Parts::psu(),
+        );
+
+        $this->assertFalse($build->isComplete());
+    }
+
     public function testBuildIsNotCompleteWithMissingPart(): void
     {
         $build = new Build(

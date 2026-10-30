@@ -84,12 +84,18 @@ class RecommendationApiTest extends ApiTestCase
         }
     }
 
-    public function testGamingSpendsMoreOnGpuThanWork(): void
+    public function testWorkGetsNoGpu(): void
     {
-        $gaming = $this->gpuPrice($this->recommendation(['budget' => '2500', 'goal' => 'gaming']));
-        $work = $this->gpuPrice($this->recommendation(['budget' => '2500', 'goal' => 'work']));
+        $data = $this->data($this->recommendation(['budget' => '2500', 'goal' => 'work']));
 
-        $this->assertGreaterThan($work, $gaming);
+        $categories = array_map(fn (array $choice) => $choice['part']['category'], $data['choices']);
+        $this->assertNotContains('gpu', $categories);
+        $this->assertSame('ok', $data['check']['overall_status']);
+    }
+
+    public function testWorkIsCheaperThanGaming(): void
+    {
+        $this->assertLessThan($this->minimumFor(Goal::Gaming), $this->minimumFor(Goal::Work));
     }
 
     public function testSameRequestGivesSameAnswer(): void
@@ -110,16 +116,5 @@ class RecommendationApiTest extends ApiTestCase
         preg_match('/€ ([\d.]+)/', $this->data($response)['error']['message'], $matches);
 
         return (int) str_replace('.', '', $matches[1]);
-    }
-
-    private function gpuPrice(Response $response): float
-    {
-        foreach ($this->data($response)['choices'] as $choice) {
-            if ($choice['part']['category'] === 'gpu') {
-                return $choice['part']['price_eur'];
-            }
-        }
-
-        $this->fail('Geen videokaart in de aanbeveling');
     }
 }

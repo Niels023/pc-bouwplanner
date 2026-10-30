@@ -59,6 +59,9 @@ $sortOptions = [
 
     <section aria-labelledby="parts-title">
         <h2 id="parts-title" class="visually-hidden">Onderdelen</h2>
+        <?php if ($category === $category::Gpu && $build->hasPart($category::Cpu) && $build->cpu()->hasIntegratedGraphics) : ?>
+            <p class="message message-info">Je processor heeft ingebouwde graphics. Voor internetten en werken is een videokaart niet nodig, voor games wel.</p>
+        <?php endif; ?>
         <?php if ($filterError !== null) : ?>
             <p class="message message-error" role="alert"><?= $this->e($filterError) ?></p>
         <?php endif; ?>

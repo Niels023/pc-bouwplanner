@@ -5,6 +5,7 @@ namespace App\Recommendation;
 use App\Compatibility\CompatibilityChecker;
 use App\Model\Build;
 use App\Model\Category;
+use App\Model\Cpu;
 use App\Model\Motherboard;
 use App\Model\Part;
 use App\Model\RamKit;
@@ -28,6 +29,9 @@ class Recommender
     /** @var array<string, Part[]> Per categorie, van goedkoop naar duur */
     private array $candidates = [];
 
+    /** @var Category[] De categorieën voor dit doel, in de volgorde waarin ze gekozen worden */
+    private array $order = [];
+
     /**
      * @param Part[] $parts
      * @param array<string, array<string, mixed>> $goals Instellingen per doel uit config/app.php
@@ -42,15 +46,16 @@ class Recommender
     public function recommend(int $budgetEuro, Goal $goal): Recommendation
     {
         $settings = $this->goals[$goal->value];
+        $this->order = $this->orderFor($settings);
         $this->candidates = $this->candidatesFor($settings);
 
         $budgetCents = $budgetEuro * 100;
-        $minimumCents = $this->cheapestFinish(new Build(), self::CATEGORY_ORDER, PHP_INT_MAX);
+        $minimumCents = $this->cheapestFinish(new Build(), $this->order, PHP_INT_MAX);
         if ($minimumCents > $budgetCents) {
             throw new BudgetTooLowException($minimumCents, $goal);
         }
 
-        $withoutPsu = array_slice(self::CATEGORY_ORDER, 0, -1);
+        $withoutPsu = array_slice($this->order, 0, -1);
 
         // De voeding als laatste: een upgrade van de videokaart kan een zwaardere voeding nodig maken.
         $choices = $this->chooseParts([], $withoutPsu, $budgetCents, $goal, $settings);
@@ -58,6 +63,22 @@ class Recommender
         $choices = $this->chooseParts($choices, [Category::Psu], $budgetCents, $goal, $settings);
 
         return new Recommendation($this->buildFrom($choices), array_values($choices), $budgetCents);
+    }
+
+    /** @return Category[] */
+    private function orderFor(array $settings): array
+    {
+        if ($this->needsGpu($settings)) {
+            return self::CATEGORY_ORDER;
+        }
+
+        return array_values(array_filter(self::CATEGORY_ORDER, fn (Category $c) => $c !== Category::Gpu));
+    }
+
+    // Een doel zonder deel van het budget voor de videokaart krijgt er ook geen.
+    private function needsGpu(array $settings): bool
+    {
+        return $settings['shares'][Category::Gpu->value] > 0;
     }
 
     /** @return array<string, Part[]> */
@@ -83,6 +104,7 @@ class Recommender
             $part instanceof RamKit => $part->capacityGb >= $settings['min_ram_gb'],
             $part instanceof StorageDrive => $part->capacityGb >= $settings['min_storage_gb'],
             $part instanceof Motherboard => $part->ramSlots >= $settings['min_ram_slots'],
+            $part instanceof Cpu => $this->needsGpu($settings) || $part->hasIntegratedGraphics,
             default => true,
         };
     }
@@ -119,7 +141,7 @@ class Recommender
     private function categoriesAfter(Build $build, Category $category): array
     {
         return array_filter(
-            self::CATEGORY_ORDER,
+            $this->order,
             fn (Category $other) => $other !== $category && !$build->hasPart($other),
         );
     }

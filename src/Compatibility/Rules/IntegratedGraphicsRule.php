@@ -23,7 +23,9 @@ class IntegratedGraphicsRule implements CompatibilityRule
     public function evaluate(Build $build): RuleResult
     {
         if ($build->hasPart(Category::Gpu)) {
-            return new RuleResult($this->name(), CheckStatus::Ok, 'Er is een videokaart gekozen, dus de PC geeft beeld.');
+            $message = 'Er is een videokaart gekozen, dus de PC geeft beeld.';
+
+            return new RuleResult($this->name(), CheckStatus::Ok, $message);
         }
 
         if ($build->cpu()->hasIntegratedGraphics) {

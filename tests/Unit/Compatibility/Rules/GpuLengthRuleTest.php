@@ -10,6 +10,13 @@ use Tests\Support\Parts;
 
 class GpuLengthRuleTest extends TestCase
 {
+    public function testNoGpuIsFine(): void
+    {
+        $result = (new GpuLengthRule())->evaluate(new Build(Parts::pcCase()));
+
+        $this->assertSame(CheckStatus::Ok, $result->status);
+    }
+
     public function testShorterCardFits(): void
     {
         $build = new Build(Parts::gpu(lengthMm: 300), Parts::pcCase(maxGpuLengthMm: 355));

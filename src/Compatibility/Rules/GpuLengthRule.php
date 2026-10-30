@@ -17,11 +17,15 @@ class GpuLengthRule implements CompatibilityRule
 
     public function requiredCategories(): array
     {
-        return [Category::Gpu, Category::PcCase];
+        return [Category::PcCase];
     }
 
     public function evaluate(Build $build): RuleResult
     {
+        if (!$build->hasPart(Category::Gpu)) {
+            return new RuleResult($this->name(), CheckStatus::Ok, 'Er is geen videokaart gekozen die moet passen.');
+        }
+
         $length = $build->gpu()->lengthMm;
         $maxLength = $build->pcCase()->maxGpuLengthMm;
 
