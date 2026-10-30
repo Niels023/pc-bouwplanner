@@ -13,6 +13,9 @@
         <testsuite name="database">
             <directory>tests/Database</directory>
         </testsuite>
+        <testsuite name="api">
+            <directory>tests/Api</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>

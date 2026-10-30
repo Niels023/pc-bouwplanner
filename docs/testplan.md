@@ -24,15 +24,16 @@ Alle tests moeten slagen voordat een branch naar `main` gaat.
 | Eis | Testvorm | Status testcases |
 |---|---|---|
 | F-01 | Databasetest | Uitgewerkt in hoofdstuk 3 |
-| F-02, F-03, F-04, F-12 | API-test en handmatig | Komt bij de pagina's |
-| F-05 t/m F-11 | Unit test | Uitgewerkt in hoofdstuk 3 |
+| F-02, F-03 | Databasetest, API-test en handmatig | API uitgewerkt, handmatig komt bij de pagina's |
+| F-04, F-12 | Handmatig | Komt bij de pagina's |
+| F-05 t/m F-11 | Unit test en API-test | Uitgewerkt in hoofdstuk 3 |
 | F-13 | Unit test en handmatig | Unit tests uitgewerkt, handmatig komt bij de pagina's |
-| F-14, F-15 | API-test en handmatig | Komt bij het opslaan van builds |
+| F-14, F-15 | API-test en handmatig | API uitgewerkt, handmatig komt bij de pagina's |
 | F-16, F-17 | Unit test en API-test | Komt bij de aanbeveling |
-| F-18 | API-test | Komt bij de API |
+| F-18 | API-test en curl | Uitgewerkt in hoofdstuk 3, behalve de aanbeveling |
 | F-19, F-20, F-21 | Unit test en handmatig | Komt bij die eisen |
 | NF-01, NF-02, NF-07 | Handmatig en Lighthouse | Komt bij de pagina's |
-| NF-03 | API-test en code nakijken | Komt bij de API |
+| NF-03 | API-test en code nakijken | Query's en invoer uitgewerkt, escaping komt bij de pagina's |
 | NF-04 | Code nakijken | Uitgewerkt in hoofdstuk 3 |
 | NF-05 | PHP_CodeSniffer | Uitgewerkt in hoofdstuk 3 |
 | NF-06 | Alle testvormen | Uitgewerkt in hoofdstuk 3 |
@@ -52,6 +53,85 @@ Stappen: `composer test` maakt de testdatabase, vult die met het seed-script en 
 | TC-F01-02 | Seed-data | 8 categorieën, elk minimaal 4 onderdelen | `testEveryCategoryHasAtLeastFourParts` |
 | TC-F01-03 | Seed-data | Elk onderdeel heeft een rij in de tabel van zijn categorie | `testEveryPartHasSpecificationsForItsCategory` |
 | TC-F01-04 | Seed-data | Elk onderdeel heeft een prijs boven 0 en een peildatum | `testEveryPartHasPriceAndPriceDate` |
+
+### F-02 Onderdelen per categorie bekijken (API)
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-F02-01 | `GET /api/parts` | 200, JSON, alle onderdelen en een `count` | `testListGivesAllPartsAsJson` |
+| TC-F02-02 | `GET /api/parts/{id}` van de Ryzen 5 7600 | Categorie, merk, prijs 176,82, peildatum en socket AM5 | `testPartHasPriceDateAndSpecs` |
+| TC-F02-03 | Data uit de testdatabase | Elke categorie wordt de juiste klasse | `testEveryCategoryBecomesTheRightClass` |
+| TC-F02-04 | Ryzen 5 7600 uit de database | Alle velden kloppen, prijs is 17682 cent | `testCpuHasAllItsFields` |
+| TC-F02-05 | B850M DS3H en NR200P V3 | Formaat is ingevuld en te vergelijken | `testBoardAndCaseGetTheirFormFactor` |
+| TC-F02-06 | Kit van 32 GB en SSD van 2 TB | Elk onderdeel krijgt zijn eigen capaciteit | `testRamAndStorageGetTheirOwnCapacity` |
+| TC-F02-07 | Filter op categorie `gpu` | Onderdelen staan op prijs, laag naar hoog | `testPartsAreSortedByCategoryAndPrice` |
+
+### F-03 Onderdelen filteren (API)
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-F03-01 | `category=gpu` | Alleen videokaarten | `testFilterByCategory` |
+| TC-F03-02 | `category=toetsenbord` | 422 `invalid_category`, melding noemt de waarde | `testUnknownCategoryGivesError` |
+| TC-F03-03 | `socket=AM4` | Processors en moederborden met AM4 | `testFilterBySocketFindsCpusAndBoards` |
+| TC-F03-04 | `ram_type=DDR4&category=ram` | Alleen DDR4-geheugen | `testFilterByRamType` |
+| TC-F03-05 | `form_factor=Mini-ITX` | Moederborden en kasten | `testFilterByFormFactorFindsBoardsAndCases` |
+| TC-F03-06 | `brand=Noctua` | Alleen Noctua | `testFilterByBrand` |
+| TC-F03-07 | `max_price=176.82` | De duurste is precies 176,82 (grenswaarde) | `testMaxPriceInEuros` |
+| TC-F03-08 | `max_price=abc`, `0`, `-10` | 422 `invalid_max_price` | `testInvalidMaxPriceGivesError` |
+| TC-F03-09 | Vier filters tegelijk | Alleen onderdelen die aan alles voldoen | `testFiltersCanBeCombined` |
+| TC-F03-10 | `brand=Bestaat niet` | 200 met een lege lijst | `testNoResultsGivesEmptyList` |
+| TC-F03-11 | Lege filters | Worden genegeerd | `testEmptyFilterIsIgnored` |
+| TC-F03-12 | `category[]=cpu&category[]=gpu` | Geen fout | `testFilterAsArrayIsIgnored` |
+
+De filters zijn ook getest op de `PartRepository`: `testFiltersCanBeCombined`, `testMaxPriceIsInclusive` en `testFormFactorFilterFindsBoardsAndCases` in `PartRepositoryTest`. De melding "Geen onderdelen gevonden met deze filters" komt op de pagina en wordt daar getest.
+
+### F-14 Build opslaan (API)
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-F14-01 | Naam en onderdelen | 201, code van 8 tekens en een url | `testSavedBuildGetsShareCodeAndUrl` |
+| TC-F14-02 | Twee builds opslaan | Twee verschillende codes | `testEveryBuildGetsItsOwnCode` |
+| TC-F14-03 | Naam leeg, alleen spaties of ontbreekt | 422 `invalid_name` | `testNameIsRequired` |
+| TC-F14-04 | Naam van 60 tekens | 201 (grenswaarde) | `testNameOfSixtyCharactersIsAllowed` |
+| TC-F14-05 | Naam van 61 tekens | 422 `invalid_name` | `testNameOfSixtyOneCharactersIsNotAllowed` |
+| TC-F14-06 | Naam van 60 keer "é" | 201, tekens tellen en geen bytes | `testNameLengthCountsCharactersNotBytes` |
+| TC-F14-07 | Naam met spaties eromheen | Spaties worden weggehaald | `testNameIsTrimmed` |
+| TC-F14-08 | Naam is een getal | 422 `invalid_name` | `testNameThatIsNotTextGivesError` |
+| TC-F14-09 | Geen onderdelen | 422 `empty_build` | `testBuildWithoutPartsCannotBeSaved` |
+| TC-F14-10 | Onderdeel bestaat niet | 422 `unknown_part` | `testInvalidPartsCannotBeSaved` |
+
+### F-15 Opgeslagen build ophalen (API)
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-F15-01 | Code van een opgeslagen build | Naam, onderdelen, totaalprijs en controleresultaat | `testSavedBuildCanBeOpenedWithCode` |
+| TC-F15-02 | Code in hoofdletters | Build wordt gevonden | `testCodeInCapitalsAlsoWorks` |
+| TC-F15-03 | Onbekende code | 404 "Geen build gevonden met deze code." | `testUnknownCodeGivesNotFound` |
+
+### F-18 REST API
+
+Behalve de testcases bij F-02, F-03, F-14 en F-15:
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-F18-01 | Lege lijst naar `/api/builds/check` | 200, totaalstatus incomplete, 6 regels | `testEmptyListGivesIncomplete` |
+| TC-F18-02 | Complete build die past | Totaalstatus ok | `testCompleteBuildThatFitsIsOk` |
+| TC-F18-03 | Ryzen 5 5600 en B550M Pro4 | Totaal 220,44 en 128 W | `testTotalsAreCalculated` |
+| TC-F18-04 | AM4-processor op AM5-bord | Fout met de juiste melding | `testWrongSocketGivesErrorWithMessage` |
+| TC-F18-05 | Alleen een processor | Socketregel `not_checked` | `testMissingPartGivesNotChecked` |
+| TC-F18-06 | NH-L12S in NR200P V3, ROG Astral in North en in Q300L V2 | In orde, fout en in orde (echte onderdelen op de grens) | `testRealPartsOnTheEdgeOfFitting` |
+| TC-F18-07 | 9800X3D en ROG Astral met 750 W | 583 W verbruik, waarschuwing | `testHighEndBuildOnSmallPsuGivesWarning` |
+| TC-F18-08 | Kapotte JSON | 400 `invalid_json` | `testInvalidJsonGivesBadRequest` |
+| TC-F18-09 | Geen `part_ids` | 422 `invalid_part_ids` | `testMissingPartIdsGivesError` |
+| TC-F18-10 | `part_ids` is 5, tekst, 0, -1, 1.5 of een object | 422 `invalid_part_ids` | `testPartIdsMustBeAListOfPositiveNumbers` |
+| TC-F18-11 | Onderdeel 999999 | 422 `unknown_part`, melding noemt het id | `testUnknownPartGivesErrorWithId` |
+| TC-F18-12 | Twee processors | 422 `duplicate_category` | `testTwoPartsInSameCategoryGivesError` |
+| TC-F18-13 | `/api/parts/999999` | 404 `part_not_found` | `testUnknownPartGivesNotFound` |
+| TC-F18-14 | `/api/parts/abc` | 404 `part_not_found` | `testIdThatIsNotANumberGivesNotFound` |
+| TC-F18-15 | Onbekend pad | 404 `not_found` | `testUnknownPathGivesNotFound` |
+| TC-F18-16 | `DELETE /api/parts` | 405 `method_not_allowed` | `testWrongMethodGivesMethodNotAllowed` |
+| TC-F18-17 | Database niet bereikbaar | 500 `server_error`, geen technische details | `testDatabaseProblemGivesGeneralMessage` |
+| TC-F18-18 | Met de hand: server starten en met curl filteren, controleren, opslaan en ophalen | Dezelfde antwoorden als in de API-tests | Handmatig |
 
 ### F-05 Controle socket
 
@@ -136,6 +216,15 @@ Verbruik 450 W en 30% marge, dus 585 W is nodig, tenzij de tabel iets anders zeg
 | TC-F13-04 | Opslag van 5 W en € 100 | Opslag telt mee in prijs en verbruik | `testStorageCountsTowardsTotals` |
 | TC-F13-05 | Twee processors in dezelfde build | De laatste vervangt de eerste | `testNewPartReplacesPartInSameCategory` |
 | TC-F13-06 | Complete build | Het rapport van de controle bevat dezelfde totalen als de build | `testReportContainsTotals` |
+
+### NF-03 Veilig
+
+| ID | Stappen | Verwacht resultaat |
+|---|---|---|
+| TC-NF03-01 | `brand=' OR '1'='1` naar `/api/parts` sturen (`testSqlInjectionInFilterDoesNothing`) | 0 resultaten, de tekst wordt niet als SQL uitgevoerd |
+| TC-NF03-02 | Naam met `<script>` opslaan (`testHtmlInNameIsStoredAsPlainText`) | De tekst wordt ongewijzigd opgeslagen. Escapen gebeurt op de pagina |
+| TC-NF03-03 | Alle query's in `src/Repository` nakijken | Alleen prepared statements met `?` |
+| TC-NF03-04 | Repository nakijken op wachtwoorden | Geen wachtwoorden, `.env` staat in `.gitignore` |
 
 ### NF-04 Instelbaar zonder code aan te passen
 

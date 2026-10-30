@@ -70,6 +70,12 @@ Sockets, RAM-types en formaten staan in aparte tabellen. Daardoor kan een socket
 
 **Opzet van de API:** de paden gaan over dingen (`/api/parts`, `/api/builds`), de HTTP-methode zegt wat er gebeurt (GET ophalen, POST aanmaken). De controle is `POST /api/builds/check`, omdat je daar een lijst met onderdelen meestuurt in de body. De aanbeveling is `GET /api/recommendation`, omdat die niets opslaat en met dezelfde invoer altijd hetzelfde antwoord geeft. Fouten hebben altijd dezelfde vorm (`error.code` en `error.message`), zodat de frontend ze op één manier kan tonen.
 
+**Eigen router:** de router is ongeveer 40 regels PHP. Het alternatief was een package zoals FastRoute. Dat werkt ook, maar ik heb maar een paar routes nodig en met een eigen router kan ik precies uitleggen hoe een verzoek bij de juiste controller komt.
+
+**422 of 400:** 400 gebruik ik alleen als de body geen geldige JSON is. Is de JSON wel goed maar de inhoud fout, zoals een onbekende categorie, dan geef ik 422. Zo kan een gebruiker van de API zien of het verzoek kapot is of de inhoud niet klopt.
+
+**Geen resultaten is geen fout:** een filter zonder resultaten geeft een 200 met een lege lijst. Het verzoek was goed, er zijn alleen geen onderdelen die eraan voldoen. Het alternatief, een 404, zou betekenen dat het pad niet bestaat.
+
 **Alternatieven:**
 
 | Alternatief | Waarom niet |
@@ -81,7 +87,7 @@ Sockets, RAM-types en formaten staan in aparte tabellen. Daardoor kan een socket
 
 **Gekozen:** een opgeslagen build krijgt een willekeurige code van 8 tekens. Met die code of de link kan iedereen de build openen.
 
-**Waarom:** het doel is een build bewaren en delen. Daarvoor is geen account nodig. De code is willekeurig, zodat je niet de builds van anderen kunt vinden door een nummer op te hogen (zoals bij `/build/1`, `/build/2`).
+**Waarom:** het doel is een build bewaren en delen. Daarvoor is geen account nodig. De code is willekeurig, zodat je niet de builds van anderen kunt vinden door een nummer op te hogen (zoals bij `/build/1`, `/build/2`). De letters i, l, o en de cijfers 0 en 1 zitten er niet in, omdat die op elkaar lijken als je een code overtypt.
 
 **Alternatief:** accounts met e-mail en wachtwoord. Dat vraagt om wachtwoorden veilig opslaan, sessies beveiligen en wachtwoord vergeten. Te veel werk voor iets wat de gebruiker niet nodig heeft.
 
@@ -150,6 +156,8 @@ Sockets, RAM-types en formaten staan in aparte tabellen. Daardoor kan een socket
 **Gekozen:** PHPUnit voor unit tests (regels, checker, aanbeveling) en voor API-tests (verzoeken naar de router met een testdatabase).
 
 **Waarom:** PHPUnit is de standaard voor PHP en werkt met Composer. De regels en de aanbeveling kennen geen database, dus die test ik met onderdelen die ik in de test zelf aanmaak. Zo kan ik precies de randgevallen maken die ik wil, zoals een voeding met precies genoeg vermogen.
+
+De API-tests maken een `Request`-object en geven dat direct aan `Application`, zonder webserver. Dat is sneller en je hoeft geen server te starten. Het nadeel is dat een fout in de webserver of in `public/index.php` niet opvalt. Daarom test ik de API daarnaast met de hand met curl.
 
 **Alternatief:** Pest. Dat is een laagje bovenop PHPUnit met een kortere schrijfwijze, maar het voegt voor dit project niets toe.
 

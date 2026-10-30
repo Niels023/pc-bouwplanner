@@ -34,7 +34,7 @@ flowchart TB
 | Weergave | `templates/` | PHP-templates die de HTML maken. |
 | Database | `database/` | `schema.sql` met de tabellen, `seed.php` om de database te vullen en in `data/` de onderdelen zelf. |
 | Configuratie | `config/`, `.env` | Databasegegevens, voedingsmarge en budgetverdeling. |
-| Tests | `tests/Unit/`, `tests/Api/` | PHPUnit-tests. |
+| Tests | `tests/Unit/`, `tests/Database/`, `tests/Api/` | PHPUnit-tests. In `tests/Support/` staan hulpklassen. |
 
 ## 2. Usecasediagram
 
@@ -449,8 +449,10 @@ classDiagram
     }
     class BuildRepository {
         -PDO pdo
+        -PartRepository parts
         +save(string name, Build build) SavedBuild
         +findByShareCode(string code) SavedBuild
+        -newShareCode() string
     }
     class PartApiController {
         +index(Request request) Response
@@ -474,12 +476,64 @@ classDiagram
     PartRepository ..> PartFilter
     PartRepository --> PartMapper
     PartApiController --> PartRepository
+    BuildApiController --> PartRepository
     BuildApiController --> BuildRepository
     BuildApiController --> CompatibilityChecker
+    BuildRepository --> PartRepository
     RecommendationApiController --> Recommender
 ```
 
 De paginacontrollers (`BuildPageController`, `RecommendationPageController`) gebruiken dezelfde repositories en logica als de API-controllers, maar geven HTML terug in plaats van JSON.
+
+### 4.4 HTTP-laag
+
+Elk verzoek komt binnen in `public/index.php`. Dat maakt een `Request`, geeft die aan `Application` en stuurt de `Response` terug naar de browser.
+
+```mermaid
+classDiagram
+    direction LR
+    class Application {
+        -array config
+        +handle(Request request) Response
+        -createRouter() Router
+        -errorResponse(int status, string code, string message) Response
+    }
+    class Router {
+        -array routes
+        +add(string method, string path, callable handler) void
+        +dispatch(Request request) Response
+    }
+    class Request {
+        +string method
+        +string path
+        +array queryParams
+        +string body
+        +array routeParams
+        +fromGlobals() Request$
+        +withRouteParams(array routeParams) Request
+        +query(string name) string
+        +json() array
+    }
+    class Response {
+        +int status
+        +string body
+        +array headers
+        +json(array data, int status) Response$
+        +send() void
+    }
+    class ApiException {
+        +int status
+        +string errorCode
+    }
+
+    Application --> Router
+    Router ..> Request
+    Router ..> Response
+    Router ..> ApiException : gooit
+    Application ..> ApiException : vangt
+```
+
+`Application` is de enige plek waar fouten worden afgevangen. Een `ApiException` is een fout die de gebruiker mag zien, zoals een onbekende categorie. Alle andere fouten geven een 500 met een algemene melding, en de echte fout gaat naar het logbestand. Zo komen er nooit technische details bij de gebruiker terecht.
 
 ## 5. Activiteitendiagram compatibiliteitscheck
 
@@ -620,20 +674,61 @@ Betekenis van de statuscodes:
 | 422 | De invoer is wel JSON, maar klopt niet, zoals een onbekende categorie of een budget van 0. |
 | 500 | Onverwachte fout op de server. De gebruiker ziet een algemene melding, de details komen in het logbestand. |
 
+Foutcodes die de API teruggeeft:
+
+| Status | Code | Wanneer |
+|---|---|---|
+| 400 | `invalid_json` | De body is geen geldige JSON |
+| 404 | `not_found` | Het pad bestaat niet |
+| 404 | `part_not_found` | Onderdeel met dit id bestaat niet |
+| 404 | `build_not_found` | Geen build met deze code |
+| 405 | `method_not_allowed` | Het pad bestaat, maar niet met deze methode |
+| 422 | `invalid_category` | Onbekende categorie in het filter |
+| 422 | `invalid_max_price` | Maximale prijs is geen getal boven 0 |
+| 422 | `invalid_part_ids` | `part_ids` is geen lijst met positieve gehele getallen |
+| 422 | `unknown_part` | Een onderdeel uit de lijst bestaat niet |
+| 422 | `duplicate_category` | Twee onderdelen in dezelfde categorie |
+| 422 | `invalid_name` | Naam is leeg of langer dan 60 tekens |
+| 422 | `empty_build` | Build zonder onderdelen opslaan |
+| 500 | `server_error` | Onverwachte fout op de server |
+
+Een onderdeel in een antwoord ziet er zo uit. Wat in `specs` staat, hangt af van de categorie:
+
+```json
+{
+  "id": 3,
+  "category": "cpu",
+  "brand": "AMD",
+  "name": "Ryzen 5 7600 Boxed",
+  "price_eur": 176.82,
+  "price_date": "2026-10-28",
+  "power_w": 88,
+  "specs": {
+    "socket": "AM5",
+    "cores": 6,
+    "threads": 12,
+    "boost_clock_ghz": 5.1,
+    "has_integrated_graphics": true
+  }
+}
+```
+
+`GET /api/parts` geeft `count` en een lijst `parts` terug. Zijn er geen resultaten, dan is dat gewoon een 200 met `count` 0. `POST /api/builds` en `GET /api/builds/{code}` geven `share_code`, `url`, `name`, `created_at`, `parts` en `check` terug, waarbij `check` hetzelfde is als het antwoord van de controle hieronder.
+
 Voorbeeld van een controle:
 
 ```http
 POST /api/builds/check
 Content-Type: application/json
 
-{ "part_ids": [3, 12, 21] }
+{ "part_ids": [3, 2] }
 ```
 
 ```json
 {
   "overall_status": "error",
-  "total_price_eur": 478.00,
-  "estimated_power_w": 212,
+  "total_price_eur": 272.3,
+  "estimated_power_w": 128,
   "results": [
     {
       "rule": "socket",
@@ -654,8 +749,8 @@ Voorbeeld van een foutmelding:
 ```json
 {
   "error": {
-    "code": "invalid_budget",
-    "message": "Vul een budget in van minimaal 1 euro."
+    "code": "unknown_part",
+    "message": "Deze onderdelen bestaan niet: 999."
   }
 }
 ```

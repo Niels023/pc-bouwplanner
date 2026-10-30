@@ -2,7 +2,7 @@
 
 Een website waarop je zelf een PC samenstelt. Je kiest per stap een onderdeel (processor, moederbord, geheugen, videokaart, koeler, kast, opslag en voeding). De site controleert of de onderdelen bij elkaar passen, telt de prijs en het geschatte stroomverbruik op en kan op basis van je budget en doel (gamen, werken of streamen) zelf een build voorstellen.
 
-Het project is in ontwikkeling. Op dit moment zijn de database, het seed-script en de compatibiliteitsregels af. De API en de website komen nog.
+Het project is in ontwikkeling. Op dit moment zijn de database, de compatibiliteitsregels en de REST API voor onderdelen en builds af. De aanbeveling en de website komen nog.
 
 ## Techniek
 
@@ -31,7 +31,23 @@ Je hebt nodig: PHP 8.2 of hoger, MySQL of MariaDB en [Composer](https://getcompo
    composer seed
    ```
 
-   Dit maakt de database `pc_bouwplanner` aan als die nog niet bestaat, maakt alle tabellen opnieuw en vult ze met de onderdelen uit `database/data/`.
+   Dit maakt de database `pc_bouwplanner` aan als die nog niet bestaat, maakt alle tabellen opnieuw en vult ze met de onderdelen uit `database/data/`. Draai dit ook als `database/schema.sql` veranderd is. Let op: opgeslagen builds zijn daarna weg.
+
+## Starten
+
+```bash
+composer start
+```
+
+De site draait dan op http://localhost:8000. Op dit moment is alleen de API er:
+
+| Methode | Pad | Wat |
+|---|---|---|
+| GET | `/api/parts` | Onderdelen ophalen. Filters: `category`, `brand`, `max_price`, `socket`, `ram_type`, `form_factor` |
+| GET | `/api/parts/{id}` | Eén onderdeel ophalen |
+| POST | `/api/builds/check` | Onderdelen controleren, body: `{"part_ids": [1, 2]}` |
+| POST | `/api/builds` | Build opslaan, body: `{"name": "Mijn pc", "part_ids": [1, 2]}` |
+| GET | `/api/builds/{code}` | Opgeslagen build ophalen |
 
 ## Tests en codestijl
 

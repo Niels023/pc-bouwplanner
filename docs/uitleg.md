@@ -11,8 +11,11 @@ Hier leg ik in gewone taal uit hoe de PC-bouwplanner in elkaar zit. Dit document
 | `docs/` | Alle documentatie |
 | `src/Compatibility/` | De controle of onderdelen bij elkaar passen |
 | `src/Database/` | Verbinding met de database en de `Seeder` |
+| `src/Http/` | De router, verzoeken en antwoorden, en de controllers |
 | `src/Model/` | Klassen voor de onderdelen en de build |
-| `tests/` | Alle tests. `Unit` draait zonder database, `Database` met een aparte testdatabase |
+| `src/Repository/` | Alle query's naar de database |
+| `public/` | `index.php`, hier komt elk verzoek binnen |
+| `tests/` | Alle tests. `Unit` draait zonder database, `Database` en `Api` met een aparte testdatabase |
 | `vendor/` | Packages van Composer. Staat niet in git, je maakt het met `composer install` |
 
 `bootstrap.php` laadt de autoloader van Composer en de instellingen uit `.env`. Elk script begint daarmee.
@@ -79,7 +82,39 @@ Het resultaat rond ik met `ceil` naar boven af. Bij 583 W is 757,9 W nodig, en e
 
 De regel heeft ook een processor nodig. Anders is het verbruik bijna 0 en lijkt elke voeding goed.
 
+## Onderdelen uit de database halen
+
+De klasse `PartRepository` haalt onderdelen op. De query's lezen uit de view `part_details`, die alle tabellen van een onderdeel samenvoegt tot één rij. `PartMapper` maakt van zo'n rij het juiste object: bij categorie `cpu` een `Cpu`, bij `gpu` een `Gpu`.
+
+Filters staan in een `PartFilter`. `findByFilter()` bouwt daarmee de `WHERE` op: voor elk ingevuld filter komt er een stukje `kolom = ?` bij, en de waarde gaat apart mee. Dat is een prepared statement. De waarde wordt nooit in de SQL geplakt, dus SQL-injectie werkt niet.
+
+`BuildRepository` slaat een build op in `builds` en `build_parts`. Dat gebeurt in een transactie: lukt één insert niet, dan wordt er niets opgeslagen. De deelcode bestaat uit 8 willekeurige tekens, gemaakt met `random_int()`.
+
+## Van verzoek naar antwoord
+
+Dit gebeurt er bij `GET /api/parts?category=cpu`:
+
+1. De webserver start `public/index.php`.
+2. `Request::fromGlobals()` maakt een `Request`-object met de methode, het pad en de filters.
+3. `Application::handle()` maakt de `Router` met alle routes en de controllers.
+4. De `Router` zoekt de route die bij `GET /api/parts` hoort en roept `PartApiController::index()` aan.
+5. De controller controleert de invoer, maakt een `PartFilter` en vraagt de onderdelen op bij de `PartRepository`.
+6. De controller geeft een `Response` terug met JSON.
+7. `index.php` stuurt het antwoord naar de browser met `send()`.
+
+Gaat er iets mis, dan gooit de code een `ApiException` met een statuscode en een melding. `Application::handle()` vangt die op en maakt er een nette foutmelding in JSON van. Alle andere fouten worden een 500 met een algemene melding, en de echte fout gaat naar het logbestand.
+
 ## Vragen die ik kan verwachten
+
+**Wat is het verschil tussen 400, 404 en 422?** 400: het verzoek is kapot, de JSON klopt niet. 404: wat je vraagt bestaat niet. 422: het verzoek is goed leesbaar, maar de inhoud klopt niet, zoals een onbekende categorie.
+
+**Hoe voorkom je SQL-injectie?** Met prepared statements. In de query staat een `?` en de waarde wordt apart naar de database gestuurd. Er is ook een test die `' OR '1'='1` als filter meestuurt.
+
+**Waarom krijgt de gebruiker bij een 500 geen foutmelding met details?** Details zoals tabelnamen helpen een aanvaller en de gebruiker heeft er niets aan. De echte fout staat in het logbestand.
+
+**Waarom gebruik je een view?** Een onderdeel staat in meerdere tabellen. Zonder view zou ik die lange query in elke functie nodig hebben. Nu staat hij op één plek.
+
+**Waarom testen de API-tests zonder webserver?** Dat is sneller. Ik maak zelf een `Request` en geef die aan `Application`, en controleer de `Response`. Daarnaast heb ik met curl getest of het ook via een echte server werkt, en dat vond meteen een probleem: mijn eigen database miste de view.
 
 **Waarom is elke regel een eigen klasse?** Elke regel is klein en apart te testen. Een nieuwe regel toevoegen is één nieuwe klasse maken en die aan de lijst in `withAllRules()` toevoegen. De rest van de code hoeft niet te veranderen.
 

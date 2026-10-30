@@ -21,9 +21,20 @@ readonly class Build
         return isset($this->parts[$category->value]);
     }
 
+    public function isEmpty(): bool
+    {
+        return $this->parts === [];
+    }
+
     public function isComplete(): bool
     {
         return count($this->parts) === count(Category::cases());
+    }
+
+    /** @return Part[] */
+    public function parts(): array
+    {
+        return array_values($this->parts);
     }
 
     public function totalPriceCents(): int
