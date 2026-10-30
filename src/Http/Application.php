@@ -2,8 +2,11 @@
 
 namespace App\Http;
 
+use App\Compatibility\CompatibilityChecker;
 use App\Database\Connection;
+use App\Http\Controller\BuildApiController;
 use App\Http\Controller\PartApiController;
+use App\Repository\BuildRepository;
 use App\Repository\PartRepository;
 use Throwable;
 
@@ -31,12 +34,18 @@ class Application
     {
         $pdo = Connection::connect($this->config['db']);
         $parts = new PartRepository($pdo);
+        $builds = new BuildRepository($pdo, $parts);
+        $checker = CompatibilityChecker::withAllRules($this->config['psu_margin_percent']);
 
         $partApi = new PartApiController($parts);
+        $buildApi = new BuildApiController($parts, $builds, $checker);
 
         $router = new Router();
         $router->add('GET', '/api/parts', $partApi->index(...));
         $router->add('GET', '/api/parts/{id}', $partApi->show(...));
+        $router->add('POST', '/api/builds', $buildApi->store(...));
+        $router->add('POST', '/api/builds/check', $buildApi->check(...));
+        $router->add('GET', '/api/builds/{code}', $buildApi->show(...));
 
         return $router;
     }
