@@ -39,6 +39,20 @@ class BuildTest extends TestCase
         $this->assertFalse($build->hasPart(Category::Gpu));
     }
 
+    public function testBuildWithoutPartsIsEmpty(): void
+    {
+        $this->assertTrue((new Build())->isEmpty());
+        $this->assertFalse((new Build(Parts::cpu()))->isEmpty());
+    }
+
+    public function testPartsGivesAllChosenParts(): void
+    {
+        $cpu = Parts::cpu();
+        $gpu = Parts::gpu();
+
+        $this->assertSame([$cpu, $gpu], (new Build($cpu, $gpu))->parts());
+    }
+
     public function testBuildIsCompleteWithAllEightParts(): void
     {
         $build = new Build(
