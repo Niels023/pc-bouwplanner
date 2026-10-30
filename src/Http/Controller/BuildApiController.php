@@ -26,11 +26,7 @@ class BuildApiController
     {
         $data = $request->json();
         $name = Input::buildName($data['name'] ?? null);
-        $build = $this->buildFromIds($data['part_ids'] ?? null);
-
-        if ($build->isEmpty()) {
-            throw new HttpException(422, 'empty_build', 'Kies minstens één onderdeel voordat je de build opslaat.');
-        }
+        $build = Input::buildToSave($this->buildFromIds($data['part_ids'] ?? null));
 
         return Response::json($this->savedBuildToArray($this->builds->save($name, $build)), 201);
     }
