@@ -26,6 +26,11 @@ readonly class Build
         return isset($this->parts[$category->value]);
     }
 
+    public function partIn(Category $category): ?Part
+    {
+        return $this->parts[$category->value] ?? null;
+    }
+
     public function isEmpty(): bool
     {
         return $this->parts === [];

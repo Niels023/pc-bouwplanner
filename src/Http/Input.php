@@ -2,6 +2,7 @@
 
 namespace App\Http;
 
+use App\Model\Build;
 use App\Model\Category;
 use App\Recommendation\Goal;
 use App\Repository\PartFilter;
@@ -63,6 +64,15 @@ class Input
         }
 
         return $name;
+    }
+
+    public static function buildToSave(Build $build): Build
+    {
+        if ($build->isEmpty()) {
+            throw new HttpException(422, 'empty_build', 'Kies minstens één onderdeel voordat je de build opslaat.');
+        }
+
+        return $build;
     }
 
     public static function budget(?string $value): int

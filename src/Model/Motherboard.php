@@ -37,4 +37,15 @@ readonly class Motherboard extends Part
             'ram_slots' => $this->ramSlots,
         ];
     }
+
+    public function description(): array
+    {
+        return [
+            "Socket {$this->socket}",
+            $this->ramType,
+            "Formaat {$this->formFactor->name}",
+            "Chipset {$this->chipset}",
+            "{$this->ramSlots} geheugensloten",
+        ];
+    }
 }

@@ -31,4 +31,12 @@ readonly class StorageDrive extends Part
             'capacity_gb' => $this->capacityGb,
         ];
     }
+
+    public function description(): array
+    {
+        return [
+            $this->type,
+            "{$this->capacityGb} GB",
+        ];
+    }
 }
