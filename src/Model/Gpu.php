@@ -33,4 +33,13 @@ readonly class Gpu extends Part
             'length_mm' => $this->lengthMm,
         ];
     }
+
+    public function description(): array
+    {
+        return [
+            $this->chip,
+            "{$this->vramGb} GB videogeheugen",
+            "Lengte {$this->lengthMm} mm",
+        ];
+    }
 }

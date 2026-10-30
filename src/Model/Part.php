@@ -21,6 +21,9 @@ abstract readonly class Part
     /** @return array<string, mixed> */
     abstract public function specs(): array;
 
+    /** @return string[] De specificaties in gewone taal, voor op de kaartjes */
+    abstract public function description(): array;
+
     /** @return array<string, mixed> */
     public function toArray(): array
     {

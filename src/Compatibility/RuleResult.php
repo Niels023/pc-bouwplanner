@@ -10,4 +10,9 @@ readonly class RuleResult
         public string $message,
     ) {
     }
+
+    public function isProblem(): bool
+    {
+        return $this->status === CheckStatus::Error || $this->status === CheckStatus::Warning;
+    }
 }

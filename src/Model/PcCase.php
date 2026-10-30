@@ -34,4 +34,13 @@ readonly class PcCase extends Part
             'max_cooler_height_mm' => $this->maxCoolerHeightMm,
         ];
     }
+
+    public function description(): array
+    {
+        return [
+            "Moederbord tot {$this->maxFormFactor->name}",
+            "Videokaart tot {$this->maxGpuLengthMm} mm",
+            "Koeler tot {$this->maxCoolerHeightMm} mm",
+        ];
+    }
 }

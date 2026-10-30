@@ -29,4 +29,11 @@ readonly class Cooler extends Part
             'height_mm' => $this->heightMm,
         ];
     }
+
+    public function description(): array
+    {
+        return [
+            "Hoogte {$this->heightMm} mm",
+        ];
+    }
 }

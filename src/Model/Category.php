@@ -27,6 +27,21 @@ enum Category: string
         };
     }
 
+    public function stepNumber(): int
+    {
+        return array_search($this, self::cases(), true) + 1;
+    }
+
+    public function previous(): ?self
+    {
+        return self::cases()[$this->stepNumber() - 2] ?? null;
+    }
+
+    public function next(): ?self
+    {
+        return self::cases()[$this->stepNumber()] ?? null;
+    }
+
     public function withArticle(): string
     {
         return match ($this) {

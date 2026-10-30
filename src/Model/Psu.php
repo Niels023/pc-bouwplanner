@@ -31,4 +31,12 @@ readonly class Psu extends Part
             'efficiency_rating' => $this->efficiencyRating,
         ];
     }
+
+    public function description(): array
+    {
+        return [
+            "{$this->wattageW} W",
+            $this->efficiencyRating,
+        ];
+    }
 }

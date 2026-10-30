@@ -37,4 +37,14 @@ readonly class Cpu extends Part
             'has_integrated_graphics' => $this->hasIntegratedGraphics,
         ];
     }
+
+    public function description(): array
+    {
+        return [
+            "Socket {$this->socket}",
+            "{$this->cores} kernen, {$this->threads} threads",
+            'Tot ' . number_format($this->boostClockGhz, 1, ',', '') . ' GHz',
+            $this->hasIntegratedGraphics ? 'Ingebouwde graphics' : 'Geen ingebouwde graphics',
+        ];
+    }
 }

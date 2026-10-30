@@ -35,4 +35,13 @@ readonly class RamKit extends Part
             'speed_mts' => $this->speedMts,
         ];
     }
+
+    public function description(): array
+    {
+        return [
+            $this->ramType,
+            "{$this->capacityGb} GB in {$this->moduleCount} modules",
+            "{$this->speedMts} MT/s",
+        ];
+    }
 }
