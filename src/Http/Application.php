@@ -5,6 +5,7 @@ namespace App\Http;
 use App\Compatibility\CompatibilityChecker;
 use App\Database\Connection;
 use App\Http\Controller\BuildApiController;
+use App\Http\Controller\BuildPageController;
 use App\Http\Controller\HomePageController;
 use App\Http\Controller\PartApiController;
 use App\Http\Controller\RecommendationApiController;
@@ -45,9 +46,17 @@ class Application
 
         $view = new View();
         $homePage = new HomePageController($view);
+        $buildPage = new BuildPageController($view, $parts, $builds, $checker, new WorkingBuild($parts));
 
         $router = new Router();
         $router->add('GET', '/', $homePage->show(...));
+        $router->add('GET', '/bouwen/{category}', $buildPage->step(...));
+        $router->add('POST', '/bouwen/{category}/kiezen', $buildPage->choose(...));
+        $router->add('POST', '/bouwen/{category}/verwijderen', $buildPage->remove(...));
+        $router->add('GET', '/overzicht', $buildPage->overview(...));
+        $router->add('POST', '/opslaan', $buildPage->save(...));
+        $router->add('GET', '/build/open', $buildPage->open(...));
+        $router->add('GET', '/build/{code}', $buildPage->show(...));
         $router->add('GET', '/api/parts', $partApi->index(...));
         $router->add('GET', '/api/parts/{id}', $partApi->show(...));
         $router->add('POST', '/api/builds', $buildApi->store(...));
