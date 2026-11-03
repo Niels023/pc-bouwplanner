@@ -107,6 +107,7 @@ Start: woensdag 28 oktober 2026.
 - `feature/aanbeveling-scherm-en-games` gemerged en gepusht. Issues #19, #20, #21, #35 en #36 gesloten.
 - Nieuwe eis NF-10 (verzorgde vormgeving, #37) toegevoegd. Op branch `feature/vormgeving` de hele site in de nieuwe stijl gezet: kleuren als variabelen in de CSS, een startpagina met grote keuzes en uitleg hoe het werkt, kaartjes met labels voor de specificaties, een totaalbalk die onderaan in beeld blijft en grote keuzevlakken in het aanbevelingsformulier.
 - Getest: 258 tests, linter schoon, Lighthouse 100 op vijf pagina's, contrast minimaal 5,02:1, geen horizontaal scrollen van 360 tot 1920 pixels. Schermafbeeldingen in `docs/img/` vernieuwd.
+- Refactor op branch `refactor/minder-bestanden` (#30), omdat ik alles moet kunnen uitleggen en er niet meer code moet zijn dan nodig. Vier mogelijkheden bekeken. Gekozen: ongebruikte code weg en de zeven regelklassen samen in de `CompatibilityChecker`. De onderdeelklassen zijn gebleven, omdat de regels dan met `$build->cpu()->socket` kunnen werken. Van 55 naar 45 PHP-bestanden in `src/`. Alle 258 tests slagen en de mutatietest vangt alle 16 ingebouwde fouten.
 
 **Open:**
 

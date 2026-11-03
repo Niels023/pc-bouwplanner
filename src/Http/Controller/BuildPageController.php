@@ -131,7 +131,6 @@ class BuildPageController
             'report' => $this->checker->check($build),
             'error' => $error,
             'name' => $name,
-            'maxNameLength' => Input::MAX_NAME_LENGTH,
         ], $status);
     }
 

@@ -315,7 +315,6 @@ classDiagram
         +gpu() Gpu
         +cooler() Cooler
         +pcCase() PcCase
-        +storage() StorageDrive
         +psu() Psu
     }
     class SavedBuild {
@@ -351,26 +350,19 @@ De klasse voor een kast heet `PcCase`, omdat `case` in PHP een gereserveerd woor
 
 ```mermaid
 classDiagram
-    class CompatibilityRule {
-        <<interface>>
-        +name() string
-        +requiredCategories() array
-        +evaluate(Build build) RuleResult
-    }
-    class SocketRule
-    class RamTypeRule
-    class FormFactorRule
-    class PsuWattageRule {
-        -int marginPercent
-    }
-    class GpuLengthRule
-    class CoolerHeightRule
-    class IntegratedGraphicsRule
     class CompatibilityChecker {
-        -array rules
-        +withAllRules(int psuMarginPercent) CompatibilityChecker$
+        -array RULES$
+        -int psuMarginPercent
         +check(Build build) CheckReport
         +problemsFor(Build build, Part candidate) array
+        -runRule(string rule, Build build) RuleResult
+        -socketRule(Build build) array
+        -ramTypeRule(Build build) array
+        -formFactorRule(Build build) array
+        -psuWattageRule(Build build) array
+        -gpuLengthRule(Build build) array
+        -coolerHeightRule(Build build) array
+        -graphicsRule(Build build) array
     }
     class CheckReport {
         +array results
@@ -404,23 +396,15 @@ classDiagram
         +label() string
     }
 
-    CompatibilityRule <|.. SocketRule
-    CompatibilityRule <|.. RamTypeRule
-    CompatibilityRule <|.. FormFactorRule
-    CompatibilityRule <|.. PsuWattageRule
-    CompatibilityRule <|.. GpuLengthRule
-    CompatibilityRule <|.. CoolerHeightRule
-    CompatibilityRule <|.. IntegratedGraphicsRule
-    CompatibilityChecker o-- CompatibilityRule : voert uit
     CompatibilityChecker ..> CheckReport : maakt
     CheckReport *-- RuleResult
     RuleResult --> CheckStatus
     CheckReport ..> OverallStatus
 ```
 
-Elke regel is een eigen klasse met dezelfde interface. De `CompatibilityChecker` kijkt eerst met `requiredCategories()` of de onderdelen voor een regel gekozen zijn. Is dat niet zo, dan maakt de checker zelf een resultaat "nog niet gecontroleerd". Pas als alles er is, roept hij `evaluate()` aan. Zo staat de controle op ontbrekende onderdelen maar op één plek. Een nieuwe regel toevoegen (zoals F-21) betekent: één nieuwe klasse schrijven en die aan de lijst van de checker toevoegen.
+Alle regels staan in de `CompatibilityChecker`, elke regel in een eigen private methode, zoals `socketRule()`. De constante `RULES` zegt per regel welke onderdelen nodig zijn. `runRule()` kijkt eerst of die onderdelen gekozen zijn. Is dat niet zo, dan geeft hij zelf het resultaat "nog niet gecontroleerd". Pas als alles er is, roept hij de methode van de regel aan. Die geeft een status en een melding terug. Zo staat de controle op ontbrekende onderdelen maar op één plek. Een nieuwe regel toevoegen betekent: een regel in `RULES`, een regel in de `match` van `runRule()` en een nieuwe methode.
 
-`withAllRules()` maakt een checker met alle zeven regels. De marge van de voeding komt uit `config/app.php`.
+Tot 3 november was elke regel een eigen klasse met een interface `CompatibilityRule`. Waarom dat veranderd is, staat in [keuzes.md](keuzes.md). De marge van de voeding komt via de constructor uit `config/app.php`.
 
 `problemsFor()` wordt gebruikt om onderdelen grijs te maken (F-12): de checker probeert het onderdeel in een kopie van de build en geeft de fouten en waarschuwingen terug die dat oplevert. Een probleem telt mee als de regel over dit onderdeel gaat, of als het probleem er zonder dit onderdeel niet was. Zo krijgt een videokaart die de voeding overbelast ook een melding, en krijgt een SSD niet de schuld van een verkeerde socket.
 
@@ -485,9 +469,7 @@ classDiagram
         +findById(int id) Part
         +findByIds(array ids) array
         +findByFilter(PartFilter filter) array
-    }
-    class PartMapper {
-        +fromRow(array row) Part
+        -fromRow(array row) Part
     }
     class PartFilter {
         +Category category
@@ -528,7 +510,6 @@ classDiagram
     Recommendation *-- RecommendedChoice
     Recommendation --> GameTarget
     PartRepository ..> PartFilter
-    PartRepository --> PartMapper
     PartApiController --> PartRepository
     BuildApiController --> PartRepository
     BuildApiController --> BuildRepository
@@ -538,7 +519,9 @@ classDiagram
     RecommendationApiController --> PartRepository
 ```
 
-De paginacontrollers (`HomePageController`, `BuildPageController`, `RecommendationPageController`) gebruiken dezelfde repositories en logica als de API-controllers, maar geven HTML terug in plaats van JSON.
+De paginacontrollers (`BuildPageController`, `RecommendationPageController`) gebruiken dezelfde repositories en logica als de API-controllers, maar geven HTML terug in plaats van JSON. De startpagina heeft geen eigen controller: die route is één regel in `Application`, omdat er niets te doen is behalve de template tonen.
+
+`PartRepository::fromRow()` maakt van een rij uit de view het juiste object, bij categorie `cpu` een `Cpu`. Dat stond eerst in een aparte klasse `PartMapper`, maar alleen de `PartRepository` gebruikte die.
 
 `budgetEuro` en `target` mogen leeg (`null`) zijn. Zonder budget wordt het budget het minimum (F-32). Zonder `GameTarget` telt alleen het budget, zoals bij werken. `Resolution` en `GameType` zijn enums, zodat er geen ander scherm of soort games in kan komen dan de drie en twee die er zijn. De minimale FPS per soort games komt uit `config/app.php`.
 
@@ -686,13 +669,13 @@ Voorbeeld met 30% marge en een verbruik van 450 W: nodig is 585 W. Een voeding v
 
 | Regel | Eis | Nodig | In orde als | Voorbeeld van een foutmelding |
 |---|---|---|---|---|
-| SocketRule | F-05 | processor, moederbord | socket processor = socket moederbord | De processor heeft socket AM5, maar het moederbord heeft socket AM4. |
-| RamTypeRule | F-06 | moederbord, geheugen | RAM-type geheugen = RAM-type moederbord | Het geheugen is DDR4, maar het moederbord ondersteunt alleen DDR5. |
-| FormFactorRule | F-07 | moederbord, kast | `size_rank` moederbord ≤ `size_rank` grootste formaat kast | Het moederbord is ATX, maar in deze kast past maximaal Micro-ATX. |
-| PsuWattageRule | F-08 | voeding, processor | zie 5.1 | De voeding levert 400 W, maar de onderdelen verbruiken samen ongeveer 450 W. |
-| GpuLengthRule | F-09 | kast | geen videokaart, of lengte videokaart ≤ maximale lengte kast | De videokaart is 336 mm lang, maar in deze kast past maximaal 305 mm. |
-| CoolerHeightRule | F-10 | koeler, kast | hoogte koeler ≤ maximale koelerhoogte kast | De koeler is 168 mm hoog, maar in deze kast past maximaal 155 mm. |
-| IntegratedGraphicsRule | F-21 | processor | er is een videokaart, of de processor heeft ingebouwde graphics | Deze processor heeft geen ingebouwde graphics. Zonder videokaart krijg je geen beeld. |
+| `socketRule()` | F-05 | processor, moederbord | socket processor = socket moederbord | De processor heeft socket AM5, maar het moederbord heeft socket AM4. |
+| `ramTypeRule()` | F-06 | moederbord, geheugen | RAM-type geheugen = RAM-type moederbord | Het geheugen is DDR4, maar het moederbord ondersteunt alleen DDR5. |
+| `formFactorRule()` | F-07 | moederbord, kast | `size_rank` moederbord ≤ `size_rank` grootste formaat kast | Het moederbord is ATX, maar in deze kast past maximaal Micro-ATX. |
+| `psuWattageRule()` | F-08 | voeding, processor | zie 5.1 | De voeding levert 400 W, maar de onderdelen verbruiken samen ongeveer 450 W. |
+| `gpuLengthRule()` | F-09 | kast | geen videokaart, of lengte videokaart ≤ maximale lengte kast | De videokaart is 336 mm lang, maar in deze kast past maximaal 305 mm. |
+| `coolerHeightRule()` | F-10 | koeler, kast | hoogte koeler ≤ maximale koelerhoogte kast | De koeler is 168 mm hoog, maar in deze kast past maximaal 155 mm. |
+| `graphicsRule()` | F-21 | processor | er is een videokaart, of de processor heeft ingebouwde graphics | Deze processor heeft geen ingebouwde graphics. Zonder videokaart krijg je geen beeld. |
 
 De voedingsregel heeft naast de voeding ook de processor nodig. Zonder processor zou het verbruik heel laag uitvallen en zou elke voeding "in orde" zijn, wat de gebruiker op het verkeerde been zet.
 
@@ -992,7 +975,7 @@ Vaste onderdelen van de stijl:
 | F-32 | `Input::budget()`, `Recommender::recommend()` (§7.2) |
 | F-18 | REST API (§8) |
 | F-19 | `RecommendationPageController::adopt()`, `WorkingBuild::replaceWith()` |
-| F-21 | Extra regel `IntegratedGraphicsRule` (zelfde interface als §4.2) |
+| F-21 | Regel `graphicsRule()` in de `CompatibilityChecker` (§4.2, §6) |
 | NF-01, NF-02 | `public/css/style.css`, templates |
 | NF-03 | `PartRepository` en `BuildRepository` met prepared statements, escaping in de templates |
 | NF-04 | `config/app.php`, `.env` |

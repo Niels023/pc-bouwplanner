@@ -95,18 +95,20 @@ De pagina's roepen de logica direct aan en gaan niet via de API. Dat is sneller 
 
 **Sessie voor de build in wording:** de build waar je mee bezig bent, staat in de PHP-sessie. Het alternatief was de onderdelen in de URL zetten, maar dan worden de links lang en lastig. Een sessie is standaard PHP. Omdat er geen accounts zijn, is er geen CSRF-token gebruikt: een aanvaller kan hooguit een onderdeel in iemands tijdelijke build zetten. De sessiecookie staat wel op `HttpOnly` en `SameSite=Lax`.
 
-## 7. Compatibiliteit: elke regel een eigen klasse
+## 7. Compatibiliteit: alle regels in één klasse
 
-**Gekozen:** een interface `CompatibilityRule` met per regel een eigen klasse, en een `CompatibilityChecker` die alle regels uitvoert.
+**Gekozen:** de `CompatibilityChecker` bevat alle regels, elke regel in een eigen private methode. Een lijst bovenaan zegt per regel welke onderdelen nodig zijn.
 
 **Waarom:**
 
-- Elke regel is klein en apart te testen.
-- Een nieuwe regel toevoegen betekent één nieuwe klasse, zonder bestaande code te veranderen.
-- De controle op ontbrekende onderdelen zit op één plek, in de checker, en niet zes keer in elke regel.
+- Alle regels staan op één plek en zijn van boven naar beneden te lezen.
+- Elke regel is een korte methode met één taak, en de tests testen elke regel apart.
+- De controle op ontbrekende onderdelen zit op één plek, en niet zeven keer in elke regel.
 - De logica staat los van de API en de pagina's. De aanbeveling gebruikt dezelfde checker, zodat een aanbeveling nooit iets voorstelt wat de bouwplanner afkeurt.
 
-**Alternatief:** één functie met een lange reeks `if`-statements. Dat is in het begin sneller, maar wordt lang, lastig te testen en bij elke nieuwe regel moet je in dezelfde functie zitten.
+**Eerdere versie:** tot 3 november had elke regel een eigen klasse met een interface `CompatibilityRule`. Dat waren 8 bestanden, met in elk bestand dezelfde onderdelen: een naam, een lijst met nodige onderdelen en `use`-regels, voor een controle van een paar regels code. Bij een refactor heb ik gekeken wat echt nodig is, en die aparte klassen waren dat niet. Nadeel van de nieuwe opzet: een nieuwe regel toevoegen betekent deze klasse op drie plekken aanpassen, en het bestand is groter (ongeveer 200 regels).
+
+**Alternatief:** één functie met een lange reeks `if`-statements. Dat wordt lang en lastig te testen, want je kunt de regels dan niet los van elkaar uitvoeren.
 
 **Build met een methode per onderdeel:** `Build` heeft methodes als `cpu()` en `psu()`. Het alternatief was één methode `part(Category)`. Die geeft alleen een `Part` terug, dus PHP en PhpStorm weten dan niet dat er een veld `socket` is. Dat kost zeven korte methodes, maar de regels worden er duidelijker en veiliger van.
 

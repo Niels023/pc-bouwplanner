@@ -93,7 +93,7 @@ class RecommenderTest extends TestCase
 
     public function testEveryBudgetGivesCompleteCompatibleBuildWithinBudget(): void
     {
-        $checker = CompatibilityChecker::withAllRules(30);
+        $checker = new CompatibilityChecker(30);
 
         foreach (Goal::cases() as $goal) {
             for ($budget = 1020; $budget <= 4000; $budget += 37) {
@@ -125,7 +125,7 @@ class RecommenderTest extends TestCase
         $goals['work']['shares']['gpu'] = 0;
         $parts = [...$this->catalog(), Parts::cpu('AM4', powerW: 65, priceCents: 5000, hasIntegratedGraphics: false)];
 
-        $recommendation = (new Recommender($parts, CompatibilityChecker::withAllRules(30), $goals))
+        $recommendation = (new Recommender($parts, new CompatibilityChecker(30), $goals))
             ->recommend(1500, Goal::Work);
 
         $this->assertTrue($recommendation->build->cpu()->hasIntegratedGraphics);
@@ -231,8 +231,11 @@ class RecommenderTest extends TestCase
 
     public function testStorageMeetsMinimumOfGoal(): void
     {
-        $this->assertSame(500, $this->recommend(900, Goal::Work)->build->storage()->capacityGb);
-        $this->assertSame(1000, $this->recommend(self::MINIMUM_GAMING_EUR)->build->storage()->capacityGb);
+        $work = $this->recommend(900, Goal::Work);
+        $gaming = $this->recommend(self::MINIMUM_GAMING_EUR);
+
+        $this->assertSame(500, $work->build->partIn(Category::Storage)->capacityGb);
+        $this->assertSame(1000, $gaming->build->partIn(Category::Storage)->capacityGb);
     }
 
     public function testBoardWithTooFewRamSlotsIsNotChosen(): void
@@ -241,7 +244,7 @@ class RecommenderTest extends TestCase
         $smallBoard = Parts::motherboard('AM4', 'DDR4', Parts::microAtx(), priceCents: 9000, ramSlots: 2);
         $parts = [...$this->catalog(), $smallBoard];
 
-        $recommendation = (new Recommender($parts, CompatibilityChecker::withAllRules(30), self::GOALS))
+        $recommendation = (new Recommender($parts, new CompatibilityChecker(30), self::GOALS))
             ->recommend(1000, Goal::Gaming);
 
         $this->assertSame(4, $recommendation->build->motherboard()->ramSlots);
@@ -252,7 +255,7 @@ class RecommenderTest extends TestCase
         // Werken heeft geen upgrade voor de videokaart, dus de eerste keuze blijft staan.
         $parts = [...$this->catalog(), Parts::gpu(lengthMm: 250, powerW: 150, priceCents: 30000)];
 
-        $recommendation = (new Recommender($parts, CompatibilityChecker::withAllRules(30), self::GOALS))
+        $recommendation = (new Recommender($parts, new CompatibilityChecker(30), self::GOALS))
             ->recommend(1000, Goal::Work);
 
         $this->assertSame(40000, $recommendation->build->gpu()->priceCents);
@@ -331,7 +334,7 @@ class RecommenderTest extends TestCase
 
     private function recommender(array $goals): Recommender
     {
-        return new Recommender($this->catalog(), CompatibilityChecker::withAllRules(30), $goals);
+        return new Recommender($this->catalog(), new CompatibilityChecker(30), $goals);
     }
 
     private function choiceFor(Recommendation $recommendation, Category $category): RecommendedChoice
