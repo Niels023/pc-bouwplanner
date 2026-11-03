@@ -111,11 +111,16 @@ Start: woensdag 28 oktober 2026.
 - In `docs/uitleg.md` uitgelegd wat `index.php`, `bootstrap.php` en `layout.php` doen, omdat ik dat zelf nog niet goed kon uitleggen.
 - De Could haves gebouwd: builds vergelijken (#22), afdrukken op één A4 (#23), controle of de koeler op de socket past (#24) en waterkoeling (#25). Daarvoor de sockets van alle koelers, twee waterkoelers en de radiatorruimte van alle kasten opgezocht bij de fabrikanten. De data heeft nu 53 onderdelen. 278 tests slagen, Lighthouse 100 op de nieuwe pagina's.
 
+- `docs/verbetervoorstellen.md` gemaakt, met zeven voorstellen, prioriteit en een planning in sprints. In `docs/opdracht.md` opgeschreven hoe de scope tijdens het project veranderd is.
+- Het verslag deels ingevuld: alle blokken van B1-K1 en de projectmethodiek van B1-K2, op basis van de documentatie, de git-geschiedenis en de issues.
+
 **Open:**
 
+- De andere blokken van B1-K2 in het verslag: samenwerken, feedback, de presentatie en de evaluatie. Die kan ik pas invullen na de gebruikerstest en de demo.
+- Een sprintreview en retrospective van sprint 1 schrijven.
 - Gebruikerstest met 2 of 3 mensen (testplan hoofdstuk 6), nu ook met TC-G-09 voor scherm en games. Daarin ook vragen wat ze van de nieuwe vormgeving vinden.
 - De site laten zien aan de docent en de feedback opschrijven.
-- `verbetervoorstellen.md` maken. Punten tot nu toe: de aanbeveling kijkt alleen naar prijs en niet naar koelvermogen, de FPS komt uit één test met een andere processor, 30 FPS voor lichte games is een aanname, en de site is nog niet getest in Firefox, Safari en op een echte telefoon.
+- `verbetervoorstellen.md` aanvullen met wat de gebruikerstest en de docent opleveren.
 - Eén persoon laten installeren met de README (#34).
 
 **Afwijkingen en wat ik eraan gedaan heb:**
