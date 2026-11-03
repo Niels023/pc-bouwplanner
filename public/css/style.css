@@ -1149,3 +1149,79 @@ fieldset {
         font-weight: 600;
     }
 }
+
+@media print {
+    body {
+        background: #fff;
+        font-size: 10pt;
+    }
+
+    .site-header nav,
+    .skip-link,
+    .print-hint,
+    form,
+    .button,
+    .build-list a,
+    .compare-form,
+    .save-build {
+        display: none;
+    }
+
+    .site-header,
+    .site-header-inner,
+    main {
+        padding-top: 0.3rem;
+        padding-bottom: 0.3rem;
+    }
+
+    h1 {
+        font-size: 18pt;
+        margin-bottom: 0.2rem;
+    }
+
+    h2 {
+        font-size: 12pt;
+        margin-bottom: 0.3rem;
+    }
+
+    .intro {
+        margin-bottom: 0.6rem;
+    }
+
+    .card,
+    .totals,
+    .build-list,
+    .recommendation-list,
+    .check-results {
+        box-shadow: none;
+        margin-bottom: 0.6rem;
+    }
+
+    .totals {
+        padding: 0.4rem 0.8rem;
+    }
+
+    .build-list li,
+    .check-result,
+    .compare th,
+    .compare td {
+        padding: 0.3rem 0.8rem;
+    }
+
+    .check-result {
+        grid-template-columns: 9rem minmax(0, 1fr);
+    }
+
+    .share-code {
+        font-size: 12pt;
+    }
+
+    .site-footer p {
+        margin: 0.3rem 0;
+    }
+
+    a {
+        color: inherit;
+        text-decoration: none;
+    }
+}

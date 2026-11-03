@@ -18,6 +18,13 @@ class SavedBuildPageTest extends PageTestCase
         $this->assertPageContains('Kies eerst een moederbord.', $response);
     }
 
+    public function testSavedBuildSaysHowToPrint(): void
+    {
+        $code = $this->saveBuild('Om af te drukken');
+
+        $this->assertPageContains('Afdrukken kan met Ctrl+P', $this->get("/build/$code"));
+    }
+
     public function testUnknownCodeGivesNotFoundPage(): void
     {
         $response = $this->get('/build/onbekend');

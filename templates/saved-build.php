@@ -4,6 +4,7 @@
     Deelcode <span class="share-code"><?= $this->e($saved->shareCode) ?></span><br>
     Met deze code of <a href="/build/<?= $this->e($saved->shareCode) ?>">deze link</a> open je de build later weer.
 </p>
+<p class="hint print-hint">Afdrukken kan met Ctrl+P. Het menu en de knoppen komen dan niet op papier.</p>
 
 <?= $this->partial('partials/totals', ['report' => $report]) ?>
 <?= $this->partial('partials/build-list', ['build' => $saved->build, 'editable' => false]) ?>
