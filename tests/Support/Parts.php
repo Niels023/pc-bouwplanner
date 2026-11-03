@@ -104,9 +104,13 @@ class Parts
         );
     }
 
-    public static function cooler(int $heightMm = 150, int $powerW = 5, int $priceCents = 5000): Cooler
-    {
-        return new Cooler(5, 'Noctua', 'Test koeler', $priceCents, self::date(), $powerW, $heightMm);
+    public static function cooler(
+        int $heightMm = 150,
+        int $powerW = 5,
+        int $priceCents = 5000,
+        array $sockets = ['AM4', 'AM5', 'LGA1700', 'LGA1851'],
+    ): Cooler {
+        return new Cooler(5, 'Noctua', 'Test koeler', $priceCents, self::date(), $powerW, $heightMm, $sockets);
     }
 
     public static function pcCase(

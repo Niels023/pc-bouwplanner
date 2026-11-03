@@ -270,6 +270,25 @@ class RulesTest extends TestCase
         $this->assertStringContainsString('geen beeld', $result->message);
     }
 
+    public function testCoolerOnSupportedSocketIsOk(): void
+    {
+        $build = new Build(Parts::cpu(socket: 'AM5'), Parts::cooler(sockets: ['AM4', 'AM5']));
+
+        $result = $this->resultFor($build, 'cooler_socket');
+
+        $this->assertSame(CheckStatus::Ok, $result->status);
+    }
+
+    public function testCoolerOnOtherSocketGivesErrorWithItsSockets(): void
+    {
+        $build = new Build(Parts::cpu(socket: 'LGA1851'), Parts::cooler(sockets: ['AM4', 'AM5', 'LGA1700']));
+
+        $result = $this->resultFor($build, 'cooler_socket');
+
+        $this->assertSame(CheckStatus::Error, $result->status);
+        $this->assertSame('De koeler past niet op socket LGA1851. Hij past op AM4, AM5, LGA1700.', $result->message);
+    }
+
     private function resultFor(Build $build, string $rule, int $psuMarginPercent = 30): RuleResult
     {
         foreach ((new CompatibilityChecker($psuMarginPercent))->check($build)->results as $result) {

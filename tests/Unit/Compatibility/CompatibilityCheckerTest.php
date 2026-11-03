@@ -25,7 +25,7 @@ class CompatibilityCheckerTest extends TestCase
     {
         $report = $this->checker->check(new Build());
 
-        $this->assertCount(7, $report->results);
+        $this->assertCount(8, $report->results);
         foreach ($report->results as $result) {
             $this->assertSame(CheckStatus::NotChecked, $result->status);
         }
