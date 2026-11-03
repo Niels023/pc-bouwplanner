@@ -55,6 +55,8 @@ flowchart LR
         uc8([Aanbeveling vragen])
         uc9([Aanbeveling overnemen])
         uc10([Onderdelen inladen])
+        uc11([Builds vergelijken])
+        uc12([Build afdrukken])
     end
     gebruiker --- uc1
     gebruiker --- uc3
@@ -68,6 +70,8 @@ flowchart LR
     uc7 -.->|"«include»"| uc4
     uc8 -.->|"«include»"| uc4
     uc9 -.->|"«extend»"| uc8
+    uc11 -.->|"«extend»"| uc7
+    uc12 -.->|"«extend»"| uc7
 ```
 
 | Use case | Eisen | Korte beschrijving |
@@ -82,6 +86,8 @@ flowchart LR
 | Aanbeveling vragen | F-16, F-17, F-31, F-32 | De gebruiker kiest een doel en bij gamen en streamen ook scherm en soort games. Het budget mag leeg blijven. Daarna volgt een build met uitleg. |
 | Aanbeveling overnemen | F-19 | De gebruiker zet de aanbeveling in de bouwplanner om hem aan te passen. |
 | Onderdelen inladen | F-01 | De ontwikkelaar vult de database met het seed-script. |
+| Builds vergelijken | F-22 | De gebruiker vult bij een opgeslagen build de code van een tweede build in en ziet ze naast elkaar. |
+| Build afdrukken | F-23 | De gebruiker drukt een opgeslagen build af op één A4, zonder menu en knoppen. |
 
 ## 3. ERD
 
@@ -146,13 +152,19 @@ erDiagram
     }
     coolers {
         int part_id PK, FK
-        smallint height_mm
+        smallint height_mm "leeg bij een waterkoeler"
+        smallint radiator_mm "leeg bij een luchtkoeler"
+    }
+    cooler_sockets {
+        int cooler_id PK, FK
+        int socket_id PK, FK
     }
     cases {
         int part_id PK, FK
         int max_form_factor_id FK
         smallint max_gpu_length_mm
         smallint max_cooler_height_mm
+        smallint max_radiator_mm
     }
     storage_drives {
         int part_id PK, FK
@@ -185,6 +197,8 @@ erDiagram
     parts ||--o| psus : "specificaties"
     sockets ||--o{ cpus : "past op"
     sockets ||--o{ motherboards : "heeft"
+    coolers ||--|{ cooler_sockets : "past op"
+    sockets ||--o{ cooler_sockets : "hoort bij"
     ram_types ||--o{ motherboards : "ondersteunt"
     ram_types ||--o{ ram_kits : "is van type"
     form_factors ||--o{ motherboards : "heeft formaat"
@@ -201,6 +215,8 @@ Toelichting:
 - **Build en onderdelen** is een veel-op-veel-relatie via `build_parts`. Dat er per categorie maar één onderdeel in een build zit, controleert de code bij het opslaan.
 - **View `part_details`:** een onderdeel staat verdeeld over `parts`, de tabel van de categorie en de opzoektabellen. De view voegt die samen tot één rij per onderdeel. De PHP-code leest altijd uit deze view, zodat de lange reeks joins op één plek staat (`database/schema.sql`). Velden van een andere categorie zijn in die rij leeg (NULL). De view staat niet in het ERD, omdat hij geen eigen gegevens bevat.
 - **FPS bij videokaarten:** `fps_1080p`, `fps_1440p` en `fps_4k` zijn de gemiddelde beelden per seconde in zware games op dat scherm, uit één bron. De aanbeveling gebruikt ze om een videokaart te kiezen die snel genoeg is (F-31). Waar de getallen vandaan komen, staat in [data-controle.md](data-controle.md).
+- **Sockets van een koeler:** een koeler past op meerdere sockets. Daarom staan die in de koppeltabel `cooler_sockets`, met een rij per koeler en socket. De view zet ze met `GROUP_CONCAT` in één kolom `cooler_sockets`, bijvoorbeeld `AM4,AM5,LGA1700`.
+- **Luchtkoeler of waterkoeler:** een luchtkoeler heeft een hoogte (`height_mm`), een waterkoeler een radiator (`radiator_mm`). Het andere veld is leeg. Een kast heeft de grootste radiator die erin past (`max_radiator_mm`).
 - **Geen M.2-sloten:** in de eerste versie van het ontwerp had een moederbord ook `m2_slots`. Dat veld is eruit gehaald, omdat geen enkele regel het gebruikt en ik het aantal per moederbord niet zeker wist.
 
 ## 4. Klassendiagram
@@ -279,11 +295,15 @@ classDiagram
     }
     class Cooler {
         +int heightMm
+        +int radiatorMm
+        +array sockets
+        +isLiquidCooler() bool
     }
     class PcCase {
         +FormFactor maxFormFactor
         +int maxGpuLengthMm
         +int maxCoolerHeightMm
+        +int maxRadiatorMm
     }
     class StorageDrive {
         +string type
@@ -362,6 +382,8 @@ classDiagram
         -psuWattageRule(Build build) array
         -gpuLengthRule(Build build) array
         -coolerHeightRule(Build build) array
+        -radiatorRule(Build build) array
+        -coolerSocketRule(Build build) array
         -graphicsRule(Build build) array
     }
     class CheckReport {
@@ -665,7 +687,7 @@ flowchart TD
 
 Voorbeeld met 30% marge en een verbruik van 450 W: nodig is 585 W. Een voeding van 650 W is in orde, 500 W geeft een waarschuwing en 400 W een fout. Een voeding van precies 585 W is in orde.
 
-## 6. De zeven compatibiliteitsregels
+## 6. De negen compatibiliteitsregels
 
 | Regel | Eis | Nodig | In orde als | Voorbeeld van een foutmelding |
 |---|---|---|---|---|
@@ -674,7 +696,9 @@ Voorbeeld met 30% marge en een verbruik van 450 W: nodig is 585 W. Een voeding v
 | `formFactorRule()` | F-07 | moederbord, kast | `size_rank` moederbord ≤ `size_rank` grootste formaat kast | Het moederbord is ATX, maar in deze kast past maximaal Micro-ATX. |
 | `psuWattageRule()` | F-08 | voeding, processor | zie 5.1 | De voeding levert 400 W, maar de onderdelen verbruiken samen ongeveer 450 W. |
 | `gpuLengthRule()` | F-09 | kast | geen videokaart, of lengte videokaart ≤ maximale lengte kast | De videokaart is 336 mm lang, maar in deze kast past maximaal 305 mm. |
-| `coolerHeightRule()` | F-10 | koeler, kast | hoogte koeler ≤ maximale koelerhoogte kast | De koeler is 168 mm hoog, maar in deze kast past maximaal 155 mm. |
+| `coolerHeightRule()` | F-10 | koeler, kast | waterkoeler, of hoogte koeler ≤ maximale koelerhoogte kast | De koeler is 168 mm hoog, maar in deze kast past maximaal 155 mm. |
+| `radiatorRule()` | F-25 | koeler, kast | luchtkoeler, of radiator ≤ grootste radiator kast | De radiator is 360 mm, maar in deze kast past maximaal 240 mm. |
+| `coolerSocketRule()` | F-24 | koeler, processor | socket processor staat in de sockets van de koeler | De koeler past niet op socket LGA1851. Hij past op AM4, AM5, LGA1700. |
 | `graphicsRule()` | F-21 | processor | er is een videokaart, of de processor heeft ingebouwde graphics | Deze processor heeft geen ingebouwde graphics. Zonder videokaart krijg je geen beeld. |
 
 De voedingsregel heeft naast de voeding ook de processor nodig. Zonder processor zou het verbruik heel laag uitvallen en zou elke voeding "in orde" zijn, wat de gebruiker op het verkeerde been zet.
@@ -871,13 +895,16 @@ Voorbeeld van een foutmelding:
 | `/overzicht` | Alle gekozen onderdelen, het controleresultaat en het formulier om op te slaan. |
 | `/opslaan` | POST: slaat de build op en stuurt door naar de opgeslagen build. |
 | `/build/open` | Verwerkt het veld met de deelcode op de startpagina. |
-| `/build/{code}` | Een opgeslagen build. |
+| `/build/{code}` | Een opgeslagen build, met een formulier om hem te vergelijken. |
+| `/vergelijken?a={code}&b={code}` | Twee opgeslagen builds naast elkaar, met per onderdeel het verschil in prijs en onderaan het verschil in totaal en verbruik (F-22). Op een telefoon staan de twee builds per onderdeel onder elkaar. |
 | `/aanbeveling` | Formulier voor doel, scherm, soort games en budget, en daaronder het resultaat. |
 | `/aanbeveling/overnemen` | POST: rekent de aanbeveling opnieuw uit, zet hem in de sessie en stuurt door naar het overzicht. |
 
 De build waar de gebruiker mee bezig is, staat in de PHP-sessie. Kiezen en verwijderen gaat met een gewoon formulier (POST). Daarna stuurt de server de browser door naar dezelfde stap, zodat vernieuwen de keuze niet opnieuw verstuurt. Zo werkt alles zonder JavaScript (NF-07).
 
 Er is één klein JavaScript-bestand, `public/js/live.js`, van ongeveer 30 regels. Als JavaScript aan staat, verstuurt het de keuze op de achtergrond. De server geeft de normale pagina terug, en het script vervangt alleen de stappen, de kaartjes en de totalen. Alle logica blijft dus in PHP. De totalen staan in een `aria-live`-gebied, zodat een schermlezer de nieuwe prijs voorleest, en de focus blijft op hetzelfde kaartje. Op een telefoon klapt het script ook de filters in, die in een `<details>`-blok staan. Zonder JavaScript staat dat blok gewoon open.
+
+**Afdrukken (F-23).** Onderaan `style.css` staat een blok `@media print`. Bij afdrukken verdwijnen het menu, de knoppen en de formulieren, en worden de regels kleiner. Een opgeslagen build en het overzicht passen zo op één A4. Er is geen aparte printpagina en geen JavaScript voor nodig.
 
 In een eerdere versie van dit ontwerp haalde het script de totalen op via `POST /api/builds/check`. Dat is veranderd, zie [keuzes.md](keuzes.md).
 
@@ -975,6 +1002,10 @@ Vaste onderdelen van de stijl:
 | F-32 | `Input::budget()`, `Recommender::recommend()` (§7.2) |
 | F-18 | REST API (§8) |
 | F-19 | `RecommendationPageController::adopt()`, `WorkingBuild::replaceWith()` |
+| F-22 | `BuildPageController::compare()`, `templates/compare.php` (§9) |
+| F-23 | `@media print` in `public/css/style.css` (§9) |
+| F-24 | Tabel `cooler_sockets` (§3), `coolerSocketRule()` (§6) |
+| F-25 | Kolommen `radiator_mm` en `max_radiator_mm` (§3), `radiatorRule()` (§6) |
 | F-21 | Regel `graphicsRule()` in de `CompatibilityChecker` (§4.2, §6) |
 | NF-01, NF-02 | `public/css/style.css`, templates |
 | NF-03 | `PartRepository` en `BuildRepository` met prepared statements, escaping in de templates |
