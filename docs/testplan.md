@@ -31,7 +31,10 @@ Alle tests moeten slagen voordat een branch naar `main` gaat.
 | F-14, F-15 | API-test, paginatest en handmatig | Uitgewerkt in hoofdstuk 3, 4 en 5 |
 | F-16, F-17 | Unit test, API-test en paginatest | Uitgewerkt in hoofdstuk 3 en 4 |
 | F-18 | API-test en handmatig | Uitgewerkt in hoofdstuk 3 |
-| F-19, F-20, F-21 | Unit test en handmatig | Komt bij die eisen |
+| F-19 | Paginatest en handmatig | Uitgewerkt in hoofdstuk 4 |
+| F-20 | API-test en paginatest | Uitgewerkt in hoofdstuk 3 en 4 |
+| F-21 | Unit test, API-test en paginatest | Uitgewerkt in hoofdstuk 3 |
+| F-31, F-32 | Unit test, API-test, paginatest en handmatig | Uitgewerkt in hoofdstuk 3 en 4 |
 | NF-01, NF-02, NF-07, NF-08 | Handmatig en Lighthouse | Uitgewerkt in hoofdstuk 5 |
 | NF-03 | API-test, paginatest en code nakijken | Uitgewerkt in hoofdstuk 3 en 4 |
 | NF-04 | Code nakijken | Uitgewerkt in hoofdstuk 3 |
@@ -114,7 +117,7 @@ Behalve de testcases bij F-02, F-03, F-14 en F-15:
 
 | ID | Invoer | Verwacht resultaat | Test |
 |---|---|---|---|
-| TC-F18-01 | Lege lijst naar `/api/builds/check` | 200, totaalstatus incomplete, 6 regels | `testEmptyListGivesIncomplete` |
+| TC-F18-01 | Lege lijst naar `/api/builds/check` | 200, totaalstatus incomplete, 7 regels | `testEmptyListGivesIncomplete` |
 | TC-F18-02 | Complete build die past | Totaalstatus ok | `testCompleteBuildThatFitsIsOk` |
 | TC-F18-03 | Ryzen 5 5600 en B550M Pro4 | Totaal 220,44 en 128 W | `testTotalsAreCalculated` |
 | TC-F18-04 | AM4-processor op AM5-bord | Fout met de juiste melding | `testWrongSocketGivesErrorWithMessage` |
@@ -153,8 +156,8 @@ Bij de unit tests gebruikt de test een kleine eigen catalogus. Daarin kost de go
 | TC-F16-12 | Budget € 1.800, gamen en werken | Bij gamen gaat restgeld naar de videokaart, bij werken niet | `testLeftoverGoesToWhatMattersForTheGoal` |
 | TC-F16-13 | Upgrade naar videokaart van 300 W | Voeding van 850 W wordt gekozen | `testBetterGpuGetsAStrongerPsu` |
 | TC-F16-14 | Twee keer dezelfde invoer | Precies dezelfde uitkomst | `testSameInputGivesSameResult` |
-| TC-F16-15 | Budget 0, -5, abc, 12.50, 1e3, 100001, leeg (API) | 422 `invalid_budget` | `testInvalidBudgetGivesError` |
-| TC-F16-16 | Geen budget (API) | 422 `invalid_budget` | `testMissingBudgetGivesError` |
+| TC-F16-15 | Budget 0, -5, abc, 12.50, 1e3, 100001 (API) | 422 `invalid_budget` | `testInvalidBudgetGivesError` |
+| TC-F16-16 | Geen budget (API) | Vervallen door F-32: geen fout meer, zie TC-F32-02 | |
 | TC-F16-17 | Doel `wandelen` (API) | 422 `invalid_goal`, melding noemt de opties | `testUnknownGoalGivesErrorWithOptions` |
 | TC-F16-18 | Geen doel (API) | 422 `invalid_goal` | `testMissingGoalGivesError` |
 | TC-F16-19 | Budget € 1 (API) | 422 `budget_too_low`, melding noemt het minimum | `testBudgetTooLowNamesMinimumAmount` |
@@ -170,7 +173,7 @@ Bij de unit tests gebruikt de test een kleine eigen catalogus. Daarin kost de go
 |---|---|---|---|
 | TC-F17-01 | Videokaart binnen het deelbudget | "Beste videokaart binnen het deelbudget van € 440." | `testReasonNamesCategoryAndBudget` |
 | TC-F17-02 | Geheugen bij streamen | Melding noemt minimaal 32 GB voor streamen | `testReasonForMemoryNamesMinimumForGoal` |
-| TC-F17-03 | Deelbudget te laag | "Het deelbudget van € 46 was te krap, daarom de goedkoopste keuze die past." | `testReasonSaysWhenCategoryBudgetWasTooLow` |
+| TC-F17-03 | Deelbudget te laag | Begint met "Het deelbudget van € 46 was te krap" | `testReasonSaysWhenCategoryBudgetWasTooLow` |
 | TC-F17-04 | Betere videokaart door restgeld | Melding noemt het deelbudget en de betere videokaart | `testReasonSaysWhenLeftoverPaidForUpgrade` |
 | TC-F17-05 | Budget € 1.000 | Over = budget min totaal | `testLeftoverIsBudgetMinusTotal` |
 | TC-F17-06 | Budget € 1.500 | Acht keuzes, voor elke categorie één | `testEveryCategoryHasOneChoice` |
@@ -233,7 +236,7 @@ Verbruik 450 W en 30% marge, dus 585 W is nodig, tenzij de tabel iets anders zeg
 
 | ID | Invoer | Verwacht resultaat | Test |
 |---|---|---|---|
-| TC-F11-01 | Lege build | 6 regels nog niet gecontroleerd, totaalstatus nog niet compleet | `testEmptyBuildChecksNothing` |
+| TC-F11-01 | Lege build | 7 regels nog niet gecontroleerd, totaalstatus nog niet compleet | `testEmptyBuildChecksNothing` |
 | TC-F11-02 | Lege build | Melding noemt wat ontbreekt: "Kies eerst een processor en een moederbord." | `testMissingPartsAreNamedInMessage` |
 | TC-F11-03 | Alleen een processor | Melding noemt alleen het ontbrekende onderdeel: "Kies eerst een moederbord." | `testOnlyMissingPartIsNamed` |
 | TC-F11-04 | Alleen een voeding | Voedingsregel nog niet gecontroleerd | `testPsuWithoutCpuIsNotChecked` |
@@ -248,6 +251,66 @@ Verbruik 450 W en 30% marge, dus 585 W is nodig, tenzij de tabel iets anders zeg
 | TC-F11-13 | Build met alles behalve opslag | Alle regels in orde, totaalstatus nog niet compleet | `testBuildWithoutStorageIsNotComplete` |
 | TC-F11-14 | Build met alle acht onderdelen | De build is compleet | `testBuildIsCompleteWithAllEightParts` |
 | TC-F11-15 | Build zonder opslag | De build is niet compleet | `testBuildIsNotCompleteWithMissingPart` |
+
+### F-20 Onderdelen sorteren (API)
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-F20-01 | Geen `sort` | Prijs van laag naar hoog | `testDefaultSortIsPriceLowToHigh` |
+| TC-F20-02 | `sort=price_desc` | Prijs van hoog naar laag | `testSortByPriceHighToLow` |
+| TC-F20-03 | `sort=name` | Op naam | `testSortByName` |
+| TC-F20-04 | `sort=kleur` | 422 `invalid_sort` | `testUnknownSortGivesError` |
+
+### F-21 Controle beeld zonder videokaart
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-F21-01 | Build met videokaart | In orde | `testBuildWithGpuIsOk` |
+| TC-F21-02 | Geen videokaart, processor met ingebouwde graphics | In orde | `testNoGpuIsOkWithIntegratedGraphics` |
+| TC-F21-03 | Geen videokaart en geen ingebouwde graphics, nog niet alles gekozen | Nog niet gecontroleerd, nog geen fout | `testNoGpuYetWithoutIntegratedGraphicsIsNotAFaultYet` |
+| TC-F21-04 | Alles behalve videokaart, geen ingebouwde graphics | Fout: "Zonder videokaart krijg je geen beeld." | `testEverythingChosenExceptGpuWithoutIntegratedGraphicsIsAnError` |
+| TC-F21-05 | Kast zonder videokaart | Lengteregel in orde | `testNoGpuIsFine` |
+| TC-F21-06 | Zeven onderdelen, ingebouwde graphics | Build is compleet en in orde | `testBuildWithoutGpuIsCompleteWithIntegratedGraphics`, `testBuildWithoutGpuIsOkWithIntegratedGraphics` |
+| TC-F21-07 | Zeven onderdelen, geen ingebouwde graphics | Build niet compleet, totaalstatus fout | `testBuildWithoutGpuIsNotCompleteWithoutIntegratedGraphics`, `testBuildWithoutGpuIsAnErrorWithoutIntegratedGraphics` |
+| TC-F21-08 | Echte onderdelen zonder videokaart (API) | In orde met ingebouwde graphics, fout zonder | `testBuildWithoutGpuCanBeOk`, `testBuildWithoutGpuOrIntegratedGraphicsIsAnError` |
+| TC-F21-09 | Aanbeveling voor werken | Geen videokaart, processor met ingebouwde graphics | `testGoalWithoutGpuShareGetsNoGpu`, `testGoalWithoutGpuOnlyPicksCpuWithIntegratedGraphics`, `testWorkGetsNoGpu` |
+| TC-F21-10 | Stap Videokaart met een processor met en zonder ingebouwde graphics | Melding dat een videokaart niet nodig is, alleen als dat klopt | `testGpuStepSaysWhenAGpuIsOptional`, `testGpuStepDoesNotSayThatWithoutIntegratedGraphics` |
+
+### F-31 Aanbeveling op basis van scherm en games
+
+In de unit tests is de minimale FPS voor zware games 60. De API-tests gebruiken de echte onderdelen en FPS.
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-F31-01 | Kaart met 67 FPS, minimum 60 | Snel genoeg | `testGpuThatReachesTheFpsFits` |
+| TC-F31-02 | Kaart met precies 60 FPS | Snel genoeg (grenswaarde) | `testGpuWithExactlyTheFpsFits` |
+| TC-F31-03 | Kaart met 59 FPS | Niet snel genoeg | `testGpuBelowTheFpsDoesNotFit` |
+| TC-F31-04 | 4K gekozen, kaart snel op Full HD maar 40 FPS op 4K | Niet snel genoeg | `testOnlyTheChosenResolutionCounts` |
+| TC-F31-05 | Zware games op 4K, lichte games op Full HD | "zware games op 4K", "lichte games op Full HD" | `testLabelIsInPlainLanguage` |
+| TC-F31-06 | Samenvatting zware en lichte games | Noemt de FPS of zegt dat lichte games vloeiend lopen | `testSummaryForHeavyGamesNamesTheFps`, `testSummaryForLightGamesSaysTheyRunSmoothly` |
+| TC-F31-07 | Zware games op 4K | Alleen de kaart die 60 FPS op 4K haalt | `testTargetOnlyAllowsFastEnoughGpu` |
+| TC-F31-08 | Zware games op 4K met het minimum zonder doel | Te laag, melding noemt het doel | `testTargetRaisesTheMinimumBudget` |
+| TC-F31-09 | Minimum van 500 FPS | `NoBuildPossibleException` | `testTargetThatNoGpuReachesGivesClearError` |
+| TC-F31-10 | Reden bij de videokaart | Noemt "geschikt voor zware games op Full HD" | `testReasonOfGpuNamesTheTarget` |
+| TC-F31-11 | Samenvatting met en zonder doel | Met doel de FPS, zonder doel niets | `testSummaryDescribesTheBuild`, `testNoSummaryWithoutTarget` |
+| TC-F31-12 | Alle zes combinaties van scherm en games (API) | RTX 5060, RX 9060 XT of RX 9070 XT, zie ontwerp §7.3 | `testTargetPicksAGpuThatIsFastEnough` |
+| TC-F31-13 | Zware games op 1440p (API) | Samenvatting "ongeveer 67 FPS in zware games op 1440p" | `testSummaryIsInPlainLanguage` |
+| TC-F31-14 | € 1.300 voor zware games op 4K (API) | 422 `budget_too_low`, melding begint met "Voor zware games op 4K" | `testBudgetTooLowForTargetNamesTheTarget` |
+| TC-F31-15 | Lichte games op Full HD en zware games op 4K (API) | Zware games op 4K kost meer | `testHigherTargetCostsMore` |
+| TC-F31-16 | Elke combinatie, van het minimum tot € 5.000 in stappen van € 250 (API) | Altijd in orde en binnen budget | `testEveryTargetAndBudgetGivesABuildThatFits` |
+| TC-F31-17 | Streamen, zware games op 4K (API) | RX 9070 XT | `testStreamingAlsoUsesTheTarget` |
+| TC-F31-18 | Werken met scherm en games (API) | Scherm en games worden genegeerd, geen samenvatting | `testWorkIgnoresTheTarget` |
+| TC-F31-19 | Alleen een scherm (API) | 422 `invalid_game_target` | `testResolutionWithoutGameTypeGivesError` |
+| TC-F31-20 | Scherm `8k` of soort games `middel` (API) | 422 `invalid_game_target` | `testUnknownResolutionOrGameTypeGivesError` |
+
+### F-32 Aanbeveling zonder budget
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-F32-01 | Geen budget | Goedkoopste build, niets over | `testNoBudgetGivesTheCheapestBuild` (unit) |
+| TC-F32-02 | Geen budget (API) | 200, `budget_eur` leeg, `leftover_eur` 0, prijs is het minimum | `testNoBudgetGivesTheCheapestBuild` (API) |
+| TC-F32-03 | Leeg budget en geen budget (API) | Hetzelfde antwoord | `testEmptyBudgetIsTheSameAsNoBudget` |
+| TC-F32-04 | Geen budget | De redenen noemen geen deelbudget | `testReasonWithoutBudgetDoesNotMentionABudget` |
 
 ### F-13 Totaalprijs en geschat verbruik
 
@@ -367,10 +430,39 @@ Deze tests staan in `tests/Pages/`. Ze sturen een verzoek naar de applicatie, ne
 | TC-P-43 | Formulier openen | Geen foutmelding | `testEmptyFormGivesNoError` |
 | TC-P-44 | € 2.000 voor gamen | Onderdelen, reden en bedrag over | `testResultShowsPartsWithReasonAndLeftover` |
 | TC-P-45 | Formulier verstuurd | Waarden blijven ingevuld | `testFormKeepsItsValues` |
-| TC-P-46 | Leeg budget | 422 en melding | `testEmptyBudgetGivesMessage` |
+| TC-P-46 | Leeg budget | Sinds F-32: de goedkoopste build, zonder "Over van je budget" | `testEmptyBudgetGivesTheCheapestBuild` |
 | TC-P-47 | 0, -5, abc, 12.50 | Melding | `testInvalidBudgetsGiveMessage` |
 | TC-P-48 | € 1.000 voor gamen | "Voor gamen heb je minimaal € 1.172 nodig." | `testBudgetBelowMinimumNamesTheMinimum` |
 | TC-P-49 | Onbekend doel | 422 en melding | `testUnknownGoalGivesMessage` |
+
+### F-20 Sorteren op de pagina
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-P-57 | `sort=price_desc` | Duurste kaartje eerst | `testSortChangesTheOrderOfTheCards` |
+| TC-P-58 | Kiezen met een sortering | Sortering blijft na het kiezen | `testChoosingKeepsTheSorting` |
+
+### F-19 Aanbeveling overnemen
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-P-59 | Resultaat van de aanbeveling | Knop "Overnemen en zelf aanpassen" | `testResultHasButtonToAdoptTheBuild` |
+| TC-P-60 | Overnemen | Doorsturen naar het overzicht met alle onderdelen | `testAdoptingPutsThePartsInThePlanner` |
+| TC-P-61 | Daarna een onderdeel wijzigen | Kan, zoals bij F-04 | `testAdoptedPartCanBeChanged` |
+| TC-P-62 | Overnemen met al een build in de planner | De oude build wordt vervangen | `testAdoptingReplacesTheEarlierBuild` |
+| TC-P-63 | Werken overnemen | Complete build zonder videokaart | `testAdoptingWorkBuildGivesCompleteBuildWithoutGpu` |
+| TC-P-64 | Overnemen met te laag budget | 422 en foutpagina | `testAdoptingWithTooLowBudgetGivesErrorPage` |
+| TC-P-65 | Overnemen met zware games op 4K | De RX 9070 XT staat in de planner | `testAdoptingKeepsTheChoices` |
+
+### F-31 en F-32 op de pagina
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-P-66 | Formulier openen | Keuzes voor scherm en games, met voorbeelden zoals Fortnite en Cyberpunk 2077 | `testFormAsksForScreenAndGamesWithExamples` |
+| TC-P-67 | Zware games op 1440p, geen budget | Samenvatting met 67 FPS, RX 9060 XT en de reden | `testChoosingScreenAndGamesShowsWhatTheBuildCanDo` |
+| TC-P-68 | 4K en lichte games verstuurd | Keuzes blijven aangevinkt | `testChoicesStaySelected` |
+| TC-P-69 | € 1.300 voor zware games op 4K | 422, melding met het minimum en een link naar de goedkoopste build | `testBudgetTooLowLinksToTheCheapestBuild` |
+| TC-P-70 | Werken kiezen in de browser | Scherm en games verdwijnen | Handmatig |
 
 ### NF-03 Escaping en algemene pagina's
 
@@ -411,6 +503,7 @@ De gebruikerstest doe ik met 2 of 3 echte mensen, liefst iemand die weinig van P
 | TC-G-05 | Sla je build op en open hem opnieuw met de code | Build is terug | F-14, F-15 |
 | TC-G-06 | Vraag een build aan voor gamen met € 1.500. Waarom is de videokaart gekozen? | Vindt de reden | F-16, F-17 |
 | TC-G-07 | Vraag een build aan met € 500 | Begrijpt de melding | F-16 |
+| TC-G-09 | Je speelt Fortnite op een gewoon scherm en weet niet wat een PC kost. Vraag een build aan | Kiest scherm en games en laat het budget leeg | F-31, F-32 |
 | TC-G-08 | Doe opdracht 1 op een telefoon | Lukt zonder horizontaal scrollen | NF-01 |
 
 Vragen na afloop:
