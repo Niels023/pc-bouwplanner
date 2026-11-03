@@ -6,7 +6,6 @@ use App\Compatibility\CompatibilityChecker;
 use App\Database\Connection;
 use App\Http\Controller\BuildApiController;
 use App\Http\Controller\BuildPageController;
-use App\Http\Controller\HomePageController;
 use App\Http\Controller\PartApiController;
 use App\Http\Controller\RecommendationApiController;
 use App\Http\Controller\RecommendationPageController;
@@ -51,7 +50,6 @@ class Application
         );
 
         $view = new View();
-        $homePage = new HomePageController($view);
         $working = new WorkingBuild($parts);
         $buildPage = new BuildPageController($view, $parts, $builds, $checker, $working);
         $recommendationPage = new RecommendationPageController(
@@ -64,7 +62,7 @@ class Application
         );
 
         $router = new Router();
-        $router->add('GET', '/', $homePage->show(...));
+        $router->add('GET', '/', fn () => $view->render('home', ['title' => 'Stel je eigen PC samen']));
         $router->add('GET', '/bouwen/{category}', $buildPage->step(...));
         $router->add('POST', '/bouwen/{category}/kiezen', $buildPage->choose(...));
         $router->add('POST', '/bouwen/{category}/verwijderen', $buildPage->remove(...));
