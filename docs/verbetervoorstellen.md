@@ -17,7 +17,7 @@ Ik heb deze bronnen doorgelopen op 3 november 2026:
 
 ## 2. Voorstellen
 
-Prioriteit: **hoog** betekent dat de site nu een verkeerd advies kan geven of iets niet bewezen is, **middel** dat het advies beter kan, **laag** dat het vooral gemak is. Omvang: **klein** is een paar uur werk, **middel** een werkdag en **groot** meerdere werkdagen.
+Prioriteit: **hoog** betekent dat de site nu een verkeerd advies kan geven of iets niet bewezen is, **middel** dat het advies beter kan, **laag** dat het vooral gemak is. Omvang: **klein** is een aanpassing op één plek, **middel** is nieuwe data opzoeken en één regel of pagina bouwen, **groot** is veel nieuw data-onderzoek en wijzigingen op meerdere plekken.
 
 | ID | Voorstel | Waar blijkt het uit | Prioriteit | Omvang |
 |---|---|---|---|---|
