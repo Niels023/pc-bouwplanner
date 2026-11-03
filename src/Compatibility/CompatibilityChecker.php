@@ -17,6 +17,7 @@ class CompatibilityChecker
         'psu_wattage' => [Category::Psu, Category::Cpu],
         'gpu_length' => [Category::PcCase],
         'cooler_height' => [Category::Cooler, Category::PcCase],
+        'radiator' => [Category::Cooler, Category::PcCase],
         'cooler_socket' => [Category::Cooler, Category::Cpu],
         'graphics' => [Category::Cpu],
     ];
@@ -79,6 +80,7 @@ class CompatibilityChecker
             'psu_wattage' => $this->psuWattageRule($build),
             'gpu_length' => $this->gpuLengthRule($build),
             'cooler_height' => $this->coolerHeightRule($build),
+            'radiator' => $this->radiatorRule($build),
             'cooler_socket' => $this->coolerSocketRule($build),
             'graphics' => $this->graphicsRule($build),
         };
@@ -184,6 +186,12 @@ class CompatibilityChecker
 
     private function coolerHeightRule(Build $build): array
     {
+        if ($build->cooler()->isLiquidCooler()) {
+            $message = 'Een waterkoeler heeft geen hoge koeltoren, dus de hoogte telt niet.';
+
+            return [CheckStatus::Ok, $message];
+        }
+
         $height = $build->cooler()->heightMm;
         $maxHeight = $build->pcCase()->maxCoolerHeightMm;
 
@@ -194,6 +202,28 @@ class CompatibilityChecker
         }
 
         $message = "De koeler ($height mm) past in deze kast (maximaal $maxHeight mm).";
+
+        return [CheckStatus::Ok, $message];
+    }
+
+    private function radiatorRule(Build $build): array
+    {
+        if (!$build->cooler()->isLiquidCooler()) {
+            $message = 'Er is geen waterkoeler gekozen, dus er hoeft geen radiator in de kast.';
+
+            return [CheckStatus::Ok, $message];
+        }
+
+        $radiator = $build->cooler()->radiatorMm;
+        $maxRadiator = $build->pcCase()->maxRadiatorMm;
+
+        if ($radiator > $maxRadiator) {
+            $message = "De radiator is $radiator mm, maar in deze kast past maximaal $maxRadiator mm.";
+
+            return [CheckStatus::Error, $message];
+        }
+
+        $message = "De radiator ($radiator mm) past in deze kast (maximaal $maxRadiator mm).";
 
         return [CheckStatus::Ok, $message];
     }
