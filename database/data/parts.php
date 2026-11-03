@@ -200,33 +200,46 @@ return [
             'power_w' => 5, 'height_mm' => 168,
             'sockets' => ['AM4', 'AM5', 'LGA1700', 'LGA1851'],
         ],
+        // Waterkoelers zijn later toegevoegd (F-25), met de prijs van 3 november.
+        [
+            'brand' => 'ARCTIC', 'name' => 'Liquid Freezer III Pro 240', 'price_eur' => 61.67,
+            'price_date' => '2026-11-03', 'power_w' => 13, 'radiator_mm' => 240,
+            'sockets' => ['AM4', 'AM5', 'LGA1700', 'LGA1851'],
+        ],
+        [
+            'brand' => 'ARCTIC', 'name' => 'Liquid Freezer III Pro 360', 'price_eur' => 74.18,
+            'price_date' => '2026-11-03', 'power_w' => 17, 'radiator_mm' => 360,
+            'sockets' => ['AM4', 'AM5', 'LGA1700', 'LGA1851'],
+        ],
     ],
 
     'case' => [
         [
             'brand' => 'Cooler Master', 'name' => 'MasterBox Q300L V2', 'price_eur' => 62.00,
             'price_date' => $priceDate, 'power_w' => 5, 'max_form_factor' => 'Micro-ATX',
-            'max_gpu_length_mm' => 360, 'max_cooler_height_mm' => 159,
+            'max_gpu_length_mm' => 360, 'max_cooler_height_mm' => 159, 'max_radiator_mm' => 240,
         ],
         [
             'brand' => 'Corsair', 'name' => '3000D Airflow Tempered Glass', 'price_eur' => 76.00,
             'price_date' => $priceDate, 'power_w' => 5, 'max_form_factor' => 'ATX',
-            'max_gpu_length_mm' => 360, 'max_cooler_height_mm' => 170,
+            'max_gpu_length_mm' => 360, 'max_cooler_height_mm' => 170, 'max_radiator_mm' => 360,
         ],
         [
             'brand' => 'Lian Li', 'name' => 'Lancool 216', 'price_eur' => 89.90, 'price_date' => $priceDate,
             'power_w' => 5, 'max_form_factor' => 'ATX', 'max_gpu_length_mm' => 392,
-            'max_cooler_height_mm' => 180,
+            'max_cooler_height_mm' => 180, 'max_radiator_mm' => 360,
         ],
         [
             'brand' => 'Fractal Design', 'name' => 'North TG Clear Charcoal Black', 'price_eur' => 144.90,
             'price_date' => $priceDate, 'power_w' => 5, 'max_form_factor' => 'ATX',
             'max_gpu_length_mm' => 355, 'max_cooler_height_mm' => 170,
+            // Voorin past 360 mm, maar dan mag de videokaart maar 300 mm zijn. Bovenin past 240 mm.
+            'max_radiator_mm' => 240,
         ],
         [
             'brand' => 'Cooler Master', 'name' => 'MasterBox NR200P V3', 'price_eur' => 103.05,
             'price_date' => $priceDate, 'power_w' => 5, 'max_form_factor' => 'Mini-ITX',
-            'max_gpu_length_mm' => 361, 'max_cooler_height_mm' => 70,
+            'max_gpu_length_mm' => 361, 'max_cooler_height_mm' => 70, 'max_radiator_mm' => 280,
         ],
     ],
 

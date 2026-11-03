@@ -126,6 +126,7 @@ class PartRepository
             Category::Cooler => new Cooler(
                 ...$common,
                 heightMm: $row['height_mm'],
+                radiatorMm: $row['radiator_mm'],
                 sockets: explode(',', $row['cooler_sockets'] ?? ''),
             ),
             Category::PcCase => $this->pcCase($common, $row),
@@ -189,6 +190,7 @@ class PartRepository
             maxFormFactor: new FormFactor($row['max_form_factor'], $row['max_form_factor_rank']),
             maxGpuLengthMm: $row['max_gpu_length_mm'],
             maxCoolerHeightMm: $row['max_cooler_height_mm'],
+            maxRadiatorMm: $row['max_radiator_mm'],
         );
     }
 

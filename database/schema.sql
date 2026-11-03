@@ -81,9 +81,11 @@ CREATE TABLE gpus (
     FOREIGN KEY (part_id) REFERENCES parts (id) ON DELETE CASCADE
 );
 
+-- Een luchtkoeler heeft een hoogte, een waterkoeler een radiator. Het andere veld is leeg.
 CREATE TABLE coolers (
     part_id INT UNSIGNED PRIMARY KEY,
-    height_mm SMALLINT UNSIGNED NOT NULL,
+    height_mm SMALLINT UNSIGNED NULL,
+    radiator_mm SMALLINT UNSIGNED NULL,
     FOREIGN KEY (part_id) REFERENCES parts (id) ON DELETE CASCADE
 );
 
@@ -101,6 +103,7 @@ CREATE TABLE cases (
     max_form_factor_id INT UNSIGNED NOT NULL,
     max_gpu_length_mm SMALLINT UNSIGNED NOT NULL,
     max_cooler_height_mm SMALLINT UNSIGNED NOT NULL,
+    max_radiator_mm SMALLINT UNSIGNED NOT NULL,
     FOREIGN KEY (part_id) REFERENCES parts (id) ON DELETE CASCADE,
     FOREIGN KEY (max_form_factor_id) REFERENCES form_factors (id)
 );
@@ -167,6 +170,7 @@ SELECT
     g.fps_1440p,
     g.fps_4k,
     co.height_mm,
+    co.radiator_mm,
     (
         SELECT GROUP_CONCAT(cooler_socket.name ORDER BY cooler_socket.name SEPARATOR ',')
         FROM cooler_sockets cs
@@ -175,6 +179,7 @@ SELECT
     ) AS cooler_sockets,
     ca.max_gpu_length_mm,
     ca.max_cooler_height_mm,
+    ca.max_radiator_mm,
     s.type AS storage_type,
     ps.wattage_w,
     ps.efficiency_rating

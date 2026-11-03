@@ -13,7 +13,8 @@ readonly class Cooler extends Part
         int $priceCents,
         DateTimeImmutable $priceDate,
         int $powerW,
-        public int $heightMm,
+        public ?int $heightMm,
+        public ?int $radiatorMm,
         /** @var string[] */
         public array $sockets,
     ) {
@@ -25,10 +26,16 @@ readonly class Cooler extends Part
         return Category::Cooler;
     }
 
+    public function isLiquidCooler(): bool
+    {
+        return $this->radiatorMm !== null;
+    }
+
     public function specs(): array
     {
         return [
             'height_mm' => $this->heightMm,
+            'radiator_mm' => $this->radiatorMm,
             'sockets' => $this->sockets,
         ];
     }
@@ -36,7 +43,7 @@ readonly class Cooler extends Part
     public function description(): array
     {
         return [
-            "Hoogte {$this->heightMm} mm",
+            $this->isLiquidCooler() ? "Waterkoeling, radiator {$this->radiatorMm} mm" : "Hoogte {$this->heightMm} mm",
             'Past op ' . implode(', ', $this->sockets),
         ];
     }
