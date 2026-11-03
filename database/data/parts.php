@@ -172,26 +172,33 @@ return [
         [
             'brand' => 'Noctua', 'name' => 'NH-L12S', 'price_eur' => 57.95, 'price_date' => $priceDate,
             'power_w' => 5, 'height_mm' => 70,
+            'sockets' => ['AM4', 'AM5', 'LGA1700', 'LGA1851'],
         ],
         [
             'brand' => 'DeepCool', 'name' => 'AK400', 'price_eur' => 32.99, 'price_date' => $priceDate,
             'power_w' => 5, 'height_mm' => 155,
+            'sockets' => ['AM4', 'AM5', 'LGA1700', 'LGA1851'],
         ],
         [
             'brand' => 'Thermalright', 'name' => 'Peerless Assassin 120 SE', 'price_eur' => 43.00,
             'price_date' => $priceDate, 'power_w' => 5, 'height_mm' => 155,
+            'sockets' => ['AM4', 'AM5', 'LGA1700', 'LGA1851'],
         ],
         [
             'brand' => 'ARCTIC', 'name' => 'Freezer 36', 'price_eur' => 21.20, 'price_date' => $priceDate,
             'power_w' => 5, 'height_mm' => 159,
+            'sockets' => ['AM4', 'AM5', 'LGA1700', 'LGA1851'],
         ],
         [
             'brand' => 'DeepCool', 'name' => 'AK620', 'price_eur' => 64.95, 'price_date' => $priceDate,
             'power_w' => 5, 'height_mm' => 160,
+            // DeepCool noemt LGA1851 niet, dus niet ondersteund.
+            'sockets' => ['AM4', 'AM5', 'LGA1700'],
         ],
         [
             'brand' => 'Noctua', 'name' => 'NH-D15 G2', 'price_eur' => 138.94, 'price_date' => $priceDate,
             'power_w' => 5, 'height_mm' => 168,
+            'sockets' => ['AM4', 'AM5', 'LGA1700', 'LGA1851'],
         ],
     ],
 

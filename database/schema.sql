@@ -4,7 +4,7 @@
 DROP VIEW IF EXISTS part_details;
 
 SET FOREIGN_KEY_CHECKS = 0;
-DROP TABLE IF EXISTS build_parts, builds, cpus, motherboards, ram_kits, gpus, coolers, cases,
+DROP TABLE IF EXISTS build_parts, builds, cpus, motherboards, ram_kits, gpus, cooler_sockets, coolers, cases,
     storage_drives, psus, parts, sockets, ram_types, form_factors;
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -87,6 +87,15 @@ CREATE TABLE coolers (
     FOREIGN KEY (part_id) REFERENCES parts (id) ON DELETE CASCADE
 );
 
+-- Een koeler past op meerdere sockets.
+CREATE TABLE cooler_sockets (
+    cooler_id INT UNSIGNED NOT NULL,
+    socket_id INT UNSIGNED NOT NULL,
+    PRIMARY KEY (cooler_id, socket_id),
+    FOREIGN KEY (cooler_id) REFERENCES coolers (part_id) ON DELETE CASCADE,
+    FOREIGN KEY (socket_id) REFERENCES sockets (id)
+);
+
 CREATE TABLE cases (
     part_id INT UNSIGNED PRIMARY KEY,
     max_form_factor_id INT UNSIGNED NOT NULL,
@@ -158,6 +167,12 @@ SELECT
     g.fps_1440p,
     g.fps_4k,
     co.height_mm,
+    (
+        SELECT GROUP_CONCAT(cooler_socket.name ORDER BY cooler_socket.name SEPARATOR ',')
+        FROM cooler_sockets cs
+        JOIN sockets cooler_socket ON cooler_socket.id = cs.socket_id
+        WHERE cs.cooler_id = p.id
+    ) AS cooler_sockets,
     ca.max_gpu_length_mm,
     ca.max_cooler_height_mm,
     s.type AS storage_type,

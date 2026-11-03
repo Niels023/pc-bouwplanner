@@ -74,6 +74,12 @@ class PartRepositoryTest extends TestCase
         $this->assertSame(2000, $this->partNamed('990 PRO 2TB')->capacityGb);
     }
 
+    public function testCoolerGetsItsSockets(): void
+    {
+        $this->assertSame(['AM4', 'AM5', 'LGA1700'], $this->partNamed('AK620')->sockets);
+        $this->assertSame(['AM4', 'AM5', 'LGA1700', 'LGA1851'], $this->partNamed('AK400')->sockets);
+    }
+
     public function testFindByIdReturnsNullForUnknownId(): void
     {
         $this->assertNull($this->parts->findById(999999));

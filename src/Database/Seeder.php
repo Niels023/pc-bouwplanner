@@ -54,6 +54,10 @@ class Seeder
 
     private function insertPart(string $category, array $part): void
     {
+        // Een koeler heeft een lijst met sockets, die komt in een aparte tabel.
+        $coolerSockets = $part['sockets'] ?? [];
+        unset($part['sockets']);
+
         $common = array_intersect_key($part, array_flip(self::COMMON_FIELDS));
         $partId = $this->insert('parts', ['category' => $category] + $common);
 
@@ -67,6 +71,11 @@ class Seeder
             }
         }
         $this->insert(self::SPEC_TABLES[$category], $specs);
+
+        foreach ($coolerSockets as $socket) {
+            $socketId = $this->lookupId('sockets', $socket);
+            $this->insert('cooler_sockets', ['cooler_id' => $partId, 'socket_id' => $socketId]);
+        }
     }
 
     private function lookupId(string $table, string $name): int

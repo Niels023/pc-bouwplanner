@@ -14,6 +14,8 @@ readonly class Cooler extends Part
         DateTimeImmutable $priceDate,
         int $powerW,
         public int $heightMm,
+        /** @var string[] */
+        public array $sockets,
     ) {
         parent::__construct($id, $brand, $name, $priceCents, $priceDate, $powerW);
     }
@@ -27,6 +29,7 @@ readonly class Cooler extends Part
     {
         return [
             'height_mm' => $this->heightMm,
+            'sockets' => $this->sockets,
         ];
     }
 
@@ -34,6 +37,7 @@ readonly class Cooler extends Part
     {
         return [
             "Hoogte {$this->heightMm} mm",
+            'Past op ' . implode(', ', $this->sockets),
         ];
     }
 }

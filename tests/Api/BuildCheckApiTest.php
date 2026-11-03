@@ -26,7 +26,7 @@ class BuildCheckApiTest extends ApiTestCase
         $data = $this->data($response);
         $this->assertSame('incomplete', $data['overall_status']);
         $this->assertSame(0, $data['total_price_eur']);
-        $this->assertCount(7, $data['results']);
+        $this->assertCount(8, $data['results']);
     }
 
     public function testCompleteBuildThatFitsIsOk(): void
@@ -121,6 +121,23 @@ class BuildCheckApiTest extends ApiTestCase
         $data = $this->data($this->check($parts));
 
         $this->assertSame('error', $this->resultFor($data, 'graphics')['status']);
+    }
+
+    public function testCoolerThatDoesNotFitTheSocketGivesError(): void
+    {
+        $parts = ['Core Ultra 5 245K Boxed', 'AK620'];
+
+        $result = $this->resultFor($this->data($this->check($parts)), 'cooler_socket');
+
+        $this->assertSame('error', $result['status']);
+        $this->assertStringContainsString('LGA1851', $result['message']);
+    }
+
+    public function testCoolerThatFitsTheSocketIsOk(): void
+    {
+        $result = $this->resultFor($this->data($this->check(['Core Ultra 5 245K Boxed', 'AK400'])), 'cooler_socket');
+
+        $this->assertSame('ok', $result['status']);
     }
 
     public function testInvalidJsonGivesBadRequest(): void
