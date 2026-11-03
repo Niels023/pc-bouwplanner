@@ -26,7 +26,7 @@ class BuildCheckApiTest extends ApiTestCase
         $data = $this->data($response);
         $this->assertSame('incomplete', $data['overall_status']);
         $this->assertSame(0, $data['total_price_eur']);
-        $this->assertCount(8, $data['results']);
+        $this->assertCount(9, $data['results']);
     }
 
     public function testCompleteBuildThatFitsIsOk(): void
@@ -138,6 +138,23 @@ class BuildCheckApiTest extends ApiTestCase
         $result = $this->resultFor($this->data($this->check(['Core Ultra 5 245K Boxed', 'AK400'])), 'cooler_socket');
 
         $this->assertSame('ok', $result['status']);
+    }
+
+    public function testLiquidCoolerMustFitTheCase(): void
+    {
+        $tooBig = $this->data($this->check(['Liquid Freezer III Pro 360', 'North TG Clear Charcoal Black']));
+        $fits = $this->data($this->check(['Liquid Freezer III Pro 360', 'Lancool 216']));
+
+        $this->assertSame('error', $this->resultFor($tooBig, 'radiator')['status']);
+        $this->assertSame('ok', $this->resultFor($fits, 'radiator')['status']);
+    }
+
+    public function testLiquidCoolerFitsInSmallCaseWithLowCoolerSpace(): void
+    {
+        $data = $this->data($this->check(['Liquid Freezer III Pro 240', 'MasterBox NR200P V3']));
+
+        $this->assertSame('ok', $this->resultFor($data, 'cooler_height')['status']);
+        $this->assertSame('ok', $this->resultFor($data, 'radiator')['status']);
     }
 
     public function testInvalidJsonGivesBadRequest(): void

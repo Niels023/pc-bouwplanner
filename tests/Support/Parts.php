@@ -105,12 +105,20 @@ class Parts
     }
 
     public static function cooler(
-        int $heightMm = 150,
+        ?int $heightMm = 150,
         int $powerW = 5,
         int $priceCents = 5000,
         array $sockets = ['AM4', 'AM5', 'LGA1700', 'LGA1851'],
+        ?int $radiatorMm = null,
     ): Cooler {
-        return new Cooler(5, 'Noctua', 'Test koeler', $priceCents, self::date(), $powerW, $heightMm, $sockets);
+        $date = self::date();
+
+        return new Cooler(5, 'Noctua', 'Test koeler', $priceCents, $date, $powerW, $heightMm, $radiatorMm, $sockets);
+    }
+
+    public static function liquidCooler(int $radiatorMm = 240): Cooler
+    {
+        return self::cooler(heightMm: null, radiatorMm: $radiatorMm);
     }
 
     public static function pcCase(
@@ -119,6 +127,7 @@ class Parts
         int $maxCoolerHeightMm = 170,
         int $powerW = 5,
         int $priceCents = 10000,
+        int $maxRadiatorMm = 360,
     ): PcCase {
         $maxFormFactor ??= self::atx();
 
@@ -132,6 +141,7 @@ class Parts
             $maxFormFactor,
             $maxGpuLengthMm,
             $maxCoolerHeightMm,
+            $maxRadiatorMm,
         );
     }
 
