@@ -176,6 +176,12 @@ Er is één bestand, `public/js/live.js`. Het doet twee dingen:
 
 Zonder JavaScript gebeurt er niets bijzonders: het formulier wordt gewoon verstuurd en de pagina herlaadt. Dit heet progressive enhancement. Alle logica blijft in PHP.
 
+### Vormgeving
+
+Alle opmaak staat in `public/css/style.css`. Bovenaan staan de kleuren als variabelen, zoals `--accent` voor paars. Wil ik een andere kleur, dan pas ik die op één plek aan. Kaartjes, knoppen en lijsten gebruiken overal dezelfde klassen, daardoor ziet elke pagina er hetzelfde uit.
+
+De keuzevlakken in het aanbevelingsformulier zijn gewone radioknoppen. Het hele vlak is een `<label>`, dus klikken op de tekst kiest ook de knop. De CSS-regel `.tile:has(input:checked)` geeft het gekozen vlak een paarse rand. Kies je werken, dan verbergt `.recommendation-form:has(input[value="work"]:checked) .game-options` de vragen over scherm en games. Dat is allemaal CSS, er is geen JavaScript voor nodig.
+
 ### Toegankelijkheid
 
 - Elk invoerveld heeft een `<label>`.
