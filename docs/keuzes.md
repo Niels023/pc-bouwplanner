@@ -143,7 +143,15 @@ De pagina's roepen de logica direct aan en gaan niet via de API. Dat is sneller 
 
 **Restgeld apart verdelen in plaats van doorschuiven:** eerst schoof ongebruikt geld door naar de volgende categorie. Op de echte data ging dat mis: bij € 1.500 voor gamen kwam er een koeler van € 139 op een zuinige processor, en bij € 4.000 bleef € 865 liggen terwijl een veel betere videokaart betaalbaar was. Daarom krijgt elke categorie nu alleen zijn eigen deel, en wordt wat overblijft pas aan het eind verdeeld op volgorde van belangrijkheid. Dat is ook makkelijker uit te leggen.
 
-**Geen videokaart upgraden bij werken:** bij werken levert een snellere videokaart niets op. Je houdt dan liever geld over dan dat de site het uitgeeft omdat het kan.
+**Werken zonder losse videokaart (F-21):** voor werk (kantoor, programmeren, school) is een losse videokaart niet nodig als de processor ingebouwde graphics heeft. Eerst kreeg werken toch 20% van het budget voor een videokaart, waardoor de goedkoopste build voor werken € 1.126 kostte. Nu krijgt werken 0% voor de videokaart en kiest de aanbeveling alleen processors met ingebouwde graphics. De goedkoopste build voor werken kost nu € 766,21. Het alternatief was de goedkoopste videokaart blijven kiezen, maar dan betaal je voor iets wat je niet gebruikt.
+
+**Scherm en soort games in plaats van alleen een budget (F-31):** iemand die niets van PC's weet, weet vaak niet welk budget past bij wat hij wil. Hij weet wel wat voor scherm hij heeft en welke games hij speelt. Daarom kies je bij gamen en streamen ook je scherm (Full HD, 1440p of 4K) en het soort games, met voorbeelden zoals Fortnite en Cyberpunk 2077. De aanbeveling neemt dan alleen een videokaart die snel genoeg is. Het alternatief was een lijst met losse games, maar dan heb ik per game per videokaart cijfers nodig, en die zijn er niet uit één betrouwbare bron.
+
+**FPS uit één bron:** de FPS per videokaart komt uit de GPU-ranglijst van Tom's Hardware, waar alle kaarten op dezelfde manier getest zijn. Dat is belangrijk, want cijfers uit verschillende tests zijn niet te vergelijken. Ik gebruik de gemiddelde FPS in zware games, zonder upscaling, en rond naar beneden af, zodat de site nooit meer belooft dan de test. De bron staat in [data-controle.md](data-controle.md).
+
+**60 en 30 FPS:** vanaf ongeveer 60 beelden per seconde voelt een game vloeiend, dat is een gangbare grens. Voor zware games moet de videokaart dus gemiddeld 60 FPS halen in de test. Lichte games zoals Fortnite en Valorant zijn veel minder zwaar dan de games in de test. Daarom is voor lichte games 30 FPS in de test genoeg. Dit is een aanname van mij en niet gemeten. Beide grenzen staan in `config/app.php`, zodat ik ze kan aanpassen als testgebruikers iets anders merken.
+
+**Leeg budget geeft de goedkoopste build (F-32):** eerst gaf een leeg budget een foutmelding. Maar juist mensen die niets van PC's weten, weten vaak niet wat een PC kost. Nu krijg je bij een leeg budget de goedkoopste build die past bij je doel, scherm en games. Is je budget te laag, dan zie je een link naar die goedkoopste build. Het alternatief was een standaardbudget invullen, maar dan kies ik voor de gebruiker een bedrag dat nergens op gebaseerd is.
 
 **Minimaal 4 geheugensloten:** zonder deze regel koos de module bij hoge budgetten een Mini-ITX-bord, alleen omdat dat het duurst is. Die borden zijn niet sneller en je kunt er minder geheugen op kwijt.
 
@@ -151,7 +159,7 @@ De pagina's roepen de logica direct aan en gaan niet via de API. Dat is sneller 
 
 | Alternatief | Waarom niet |
 |---|---|
-| Prestatiescores uit benchmarks | Beter dan prijs, maar ik kan de scores niet zelf controleren en ze verschillen per bron. Verzonnen of onzekere cijfers wil ik niet in de database. |
+| Prestatiescores uit benchmarks voor alle onderdelen | Beter dan prijs, maar scores verschillen per bron en voor koelers, geheugen en opslag heb ik geen betrouwbare bron gevonden. Voor de videokaart gebruik ik sinds F-31 wel FPS uit één vaste bron, maar alleen als ondergrens. Binnen de kaarten die snel genoeg zijn, kiest de aanbeveling nog steeds op prijs. |
 | Alle combinaties uitproberen en de beste kiezen | Met 50 onderdelen zijn dat honderdduizenden combinaties. Dat is traag en lastig uit te leggen. |
 | AI | Niet uitlegbaar, niet voorspelbaar en valt buiten de opdracht. |
 
