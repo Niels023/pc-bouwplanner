@@ -73,6 +73,10 @@ Prijzen veranderen snel. Werkwijze om ze bij te werken:
 | ARCTIC Freezer 36 | € 21,20 |
 | DeepCool AK620 | € 64,95 |
 | Noctua NH-D15 G2 | € 138,94 |
+| ARCTIC Liquid Freezer III Pro 240 | € 61,67 (3 november) |
+| ARCTIC Liquid Freezer III Pro 360 | € 74,18 (3 november) |
+
+De twee waterkoelers zijn later toegevoegd voor F-25. Hun prijs is opgezocht op 3 november 2026 en hun `price_date` is die dag.
 
 ### Kasten
 
@@ -186,7 +190,7 @@ Het verbruik (`power_w`) wordt gebruikt voor de controle van de voeding.
 |---|---|
 | Moederbord | 40 W |
 | Geheugen | 6 W per kit (3 W per module) |
-| Koeler | 5 W (ventilator) |
+| Luchtkoeler | 5 W (ventilator) |
 | Kast | 5 W (meegeleverde ventilatoren) |
 | Opslag | 5 W |
 | Voeding | 0 W, levert zelf het vermogen |
@@ -222,3 +226,45 @@ Keuzes:
 - **Naar beneden afgerond.** Zo belooft de site nooit meer dan de test.
 - **Per chip, niet per merk.** Tom's Hardware test de standaardversie van een chip. De MSI- en ASUS-versie van de RTX 5080 krijgen dus dezelfde getallen. Fabrieksoverklokte kaarten zijn in de praktijk een paar procent sneller, dat is de veilige kant.
 - **Andere processor, andere FPS.** De getallen zijn gemeten met de testcomputer van Tom's Hardware. Met een andere processor kan de echte FPS anders uitvallen, vooral op Full HD, waar de processor meer uitmaakt. Dit staat ook bij de verbeterpunten.
+
+## 8. Sockets van de koelers (F-24)
+
+Opgezocht op 3 november 2026 bij de fabrikant. In de data staan alleen de vier sockets die ook bij de processors voorkomen.
+
+| Koeler | AM4 | AM5 | LGA1700 | LGA1851 | Bron |
+|---|---|---|---|---|---|
+| Noctua NH-L12S | ja | ja | ja | ja | Noctua, specificaties |
+| DeepCool AK400 | ja | ja | ja | ja | DeepCool, productpagina |
+| Thermalright Peerless Assassin 120 SE | ja | ja | ja | ja | Thermalright, productpagina |
+| ARCTIC Freezer 36 | ja | ja | ja | ja | ARCTIC, specificaties |
+| DeepCool AK620 | ja | ja | ja | nee | DeepCool, productpagina |
+| Noctua NH-D15 G2 | ja | ja | ja | ja | Noctua, specificaties |
+| ARCTIC Liquid Freezer III Pro 240 | ja | ja | ja | ja | ARCTIC, specificaties |
+| ARCTIC Liquid Freezer III Pro 360 | ja | ja | ja | ja | ARCTIC, specificaties |
+
+**DeepCool AK620.** DeepCool noemt op de pagina van de AK620 LGA1700 en oudere Intel-sockets, maar niet LGA1851. LGA1851 heeft dezelfde gaten als LGA1700, dus waarschijnlijk past hij wel. Omdat de fabrikant het niet zegt, kies ik de veilige kant: in de data past de AK620 niet op LGA1851. Met de Core Ultra 5 245K geeft de site dus een fout.
+
+## 9. Waterkoeling (F-25)
+
+**Waterkoelers.** Gegevens van de productpagina's van ARCTIC, opgezocht op 3 november 2026:
+
+| Waterkoeler | Radiator | Afmeting radiator | Verbruik in de data |
+|---|---|---|---|
+| Liquid Freezer III Pro 240 | 240 mm | 277 x 120 x 38 mm | 13 W |
+| Liquid Freezer III Pro 360 | 360 mm | 398 x 120 x 38 mm | 17 W |
+
+Het verbruik heb ik uitgerekend met de stroom die ARCTIC opgeeft, bij 12 V: pomp 0,35 A, ventilator op de pomp 0,05 A en per radiatorventilator 0,33 A. Voor de 240 is dat 12 x 1,06 = 12,7 W, voor de 360 12 x 1,39 = 16,7 W. Ik rond naar boven af. Dit is het maximum. Voor luchtkoelers blijft de schatting van 5 W staan.
+
+**Grootste radiator per kast.** Opgezocht bij de fabrikant:
+
+| Kast | In de data | Wat de fabrikant zegt |
+|---|---|---|
+| Cooler Master MasterBox Q300L V2 | 240 mm | Voorin tot 240 mm |
+| Corsair 3000D Airflow | 360 mm | Voorin tot 360 mm, bovenin tot 280 mm |
+| Lian Li Lancool 216 | 360 mm | Bovenin en voorin tot 360 mm |
+| Fractal Design North | 240 mm | Voorin tot 360 mm, bovenin tot 240 mm |
+| Cooler Master MasterBox NR200P V3 | 280 mm | Bovenin tot 280 mm |
+
+**Fractal Design North.** Voorin past een radiator van 360 mm, maar Fractal zegt erbij dat de videokaart dan maar 300 mm mag zijn in plaats van 355 mm. De site kijkt niet naar die combinatie. Daarom staat in de data de veilige 240 mm, die bovenin past en de videokaart niet in de weg zit.
+
+**Beperking.** Een radiator voorin kan bij elke kast ruimte van de videokaart kosten. Alleen Fractal geeft op hoeveel. Bij de andere kasten volgt de site de maten van de fabrikant. Ook de dikte van een radiator (38 mm plus ventilatoren bij ARCTIC) controleert de site niet. Dit staat bij de verbeterpunten.

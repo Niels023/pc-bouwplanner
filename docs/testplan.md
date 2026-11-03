@@ -35,6 +35,9 @@ Alle tests moeten slagen voordat een branch naar `main` gaat.
 | F-20 | API-test en paginatest | Uitgewerkt in hoofdstuk 3 en 4 |
 | F-21 | Unit test, API-test en paginatest | Uitgewerkt in hoofdstuk 3 |
 | F-31, F-32 | Unit test, API-test, paginatest en handmatig | Uitgewerkt in hoofdstuk 3 en 4 |
+| F-22 | Paginatest en handmatig | Uitgewerkt in hoofdstuk 4 en 5 |
+| F-23 | Paginatest en handmatig | Uitgewerkt in hoofdstuk 4 en 5 |
+| F-24, F-25 | Unit test, databasetest, API-test en paginatest | Uitgewerkt in hoofdstuk 3 |
 | NF-01, NF-02, NF-07, NF-08 | Handmatig en Lighthouse | Uitgewerkt in hoofdstuk 5 |
 | NF-03 | API-test, paginatest en code nakijken | Uitgewerkt in hoofdstuk 3 en 4 |
 | NF-04 | Code nakijken | Uitgewerkt in hoofdstuk 3 |
@@ -118,7 +121,7 @@ Behalve de testcases bij F-02, F-03, F-14 en F-15:
 
 | ID | Invoer | Verwacht resultaat | Test |
 |---|---|---|---|
-| TC-F18-01 | Lege lijst naar `/api/builds/check` | 200, totaalstatus incomplete, 7 regels | `testEmptyListGivesIncomplete` |
+| TC-F18-01 | Lege lijst naar `/api/builds/check` | 200, totaalstatus incomplete, 9 regels | `testEmptyListGivesIncomplete` |
 | TC-F18-02 | Complete build die past | Totaalstatus ok | `testCompleteBuildThatFitsIsOk` |
 | TC-F18-03 | Ryzen 5 5600 en B550M Pro4 | Totaal 220,44 en 128 W | `testTotalsAreCalculated` |
 | TC-F18-04 | AM4-processor op AM5-bord | Fout met de juiste melding | `testWrongSocketGivesErrorWithMessage` |
@@ -237,7 +240,7 @@ Verbruik 450 W en 30% marge, dus 585 W is nodig, tenzij de tabel iets anders zeg
 
 | ID | Invoer | Verwacht resultaat | Test |
 |---|---|---|---|
-| TC-F11-01 | Lege build | 7 regels nog niet gecontroleerd, totaalstatus nog niet compleet | `testEmptyBuildChecksNothing` |
+| TC-F11-01 | Lege build | 9 regels nog niet gecontroleerd, totaalstatus nog niet compleet | `testEmptyBuildChecksNothing` |
 | TC-F11-02 | Lege build | Melding noemt wat ontbreekt: "Kies eerst een processor en een moederbord." | `testMissingPartsAreNamedInMessage` |
 | TC-F11-03 | Alleen een processor | Melding noemt alleen het ontbrekende onderdeel: "Kies eerst een moederbord." | `testOnlyMissingPartIsNamed` |
 | TC-F11-04 | Alleen een voeding | Voedingsregel nog niet gecontroleerd | `testPsuWithoutCpuIsNotChecked` |
@@ -312,6 +315,28 @@ In de unit tests is de minimale FPS voor zware games 60. De API-tests gebruiken 
 | TC-F32-02 | Geen budget (API) | 200, `budget_eur` leeg, `leftover_eur` 0, prijs is het minimum | `testNoBudgetGivesTheCheapestBuild` (API) |
 | TC-F32-03 | Leeg budget en geen budget (API) | Hetzelfde antwoord | `testEmptyBudgetIsTheSameAsNoBudget` |
 | TC-F32-04 | Geen budget | De redenen noemen geen deelbudget | `testReasonWithoutBudgetDoesNotMentionABudget` |
+
+### F-24 Controle koeler op socket
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-F24-01 | Processor AM5, koeler voor AM4 en AM5 | In orde | `testCoolerOnSupportedSocketIsOk` |
+| TC-F24-02 | Processor LGA1851, koeler voor AM4, AM5 en LGA1700 | Fout: "De koeler past niet op socket LGA1851. Hij past op AM4, AM5, LGA1700." | `testCoolerOnOtherSocketGivesErrorWithItsSockets` |
+| TC-F24-03 | Core Ultra 5 245K met AK620 en met AK400 (API) | Fout met LGA1851 in de melding, en in orde | `testCoolerThatDoesNotFitTheSocketGivesError`, `testCoolerThatFitsTheSocketIsOk` |
+| TC-F24-04 | AK620 en AK400 uit de database | Sockets zonder en met LGA1851 | `testCoolerGetsItsSockets` |
+
+### F-25 Waterkoeling
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-F25-01 | Waterkoeler in kast met koelers tot 70 mm | Hoogteregel in orde, melding noemt de waterkoeler | `testLiquidCoolerDoesNotNeedCoolerHeight` |
+| TC-F25-02 | Luchtkoeler, kast met radiator tot 240 mm | Radiatorregel in orde | `testAirCoolerNeedsNoRadiatorSpace` |
+| TC-F25-03 | Radiator 280 mm, kast tot 280 mm | In orde (grenswaarde) | `testRadiatorOfExactlyMaxSizeFits` |
+| TC-F25-04 | Radiator 360 mm, kast tot 280 mm | Fout met beide maten | `testRadiatorThatIsTooBigGivesErrorWithBothSizes` |
+| TC-F25-05 | Liquid Freezer III Pro 360 in de North en in de Lancool 216 (API) | Fout en in orde | `testLiquidCoolerMustFitTheCase` |
+| TC-F25-06 | Liquid Freezer III Pro 240 in de NR200P V3 (API) | Hoogte en radiator allebei in orde | `testLiquidCoolerFitsInSmallCaseWithLowCoolerSpace` |
+| TC-F25-07 | Liquid Freezer III Pro 240 uit de database | Radiator 240 mm, geen hoogte, North tot 240 mm | `testLiquidCoolerGetsRadiatorAndNoHeight` |
+| TC-F25-08 | Stap Koeler | Toont "Waterkoeling, radiator 360 mm" en de sockets | `testCoolerStepShowsSocketsAndLiquidCoolers` |
 
 ### F-13 Totaalprijs en geschat verbruik
 
@@ -465,6 +490,23 @@ Deze tests staan in `tests/Pages/`. Ze sturen een verzoek naar de applicatie, ne
 | TC-P-69 | € 1.300 voor zware games op 4K | 422, melding met het minimum en een link naar de goedkoopste build | `testBudgetTooLowLinksToTheCheapestBuild` |
 | TC-P-70 | Werken kiezen in de browser | Scherm en games verdwijnen | Handmatig |
 
+### F-22 Builds vergelijken
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-P-71 | Build met processor en moederbord, build met alleen een processor | Beide namen, alle onderdelen, 13 keer "Nog niet gekozen" | `testShowsBothBuildsPerCategory` |
+| TC-P-72 | Zelfde builds | Processor "€ 51,86 duurder", moederbord "€ 95,48 goedkoper" | `testShowsDifferenceInPricePerCategory` |
+| TC-P-73 | Zelfde builds | Totaal "€ 43,62 goedkoper" en "40 W minder" | `testShowsDifferenceInTotalPriceAndPower` |
+| TC-P-74 | Twee keer dezelfde build | "Zelfde prijs" en "Zelfde verbruik" | `testSameBuildHasNoDifference` |
+| TC-P-75 | Onbekende of ontbrekende tweede code | 404 "Geen build gevonden met deze code" | `testUnknownOrMissingCodeGivesNotFound` |
+| TC-P-76 | Pagina van een opgeslagen build | Formulier naar `/vergelijken` met de eigen code | `testSavedBuildHasFormToCompare` |
+
+### F-23 Afdrukken
+
+| ID | Invoer | Verwacht resultaat | Test |
+|---|---|---|---|
+| TC-P-77 | Pagina van een opgeslagen build | Tip "Afdrukken kan met Ctrl+P" | `testSavedBuildSaysHowToPrint` |
+
 ### NF-03 Escaping en algemene pagina's
 
 | ID | Invoer | Verwacht resultaat | Test |
@@ -492,6 +534,8 @@ Deze tests staan in `tests/Pages/`. Ze sturen een verzoek naar de applicatie, ne
 | TC-H-09 | F-14, F-15 | In de browser een build opslaan en met de code openen | De build is hetzelfde |
 | TC-H-10 | NF-10 | Alle pagina's bekijken op 375 en 1280 pixels breed en de CSS nakijken | Overal dezelfde kleuren, kaartjes en knoppen. Kleuren alleen via de variabelen bovenaan de CSS. Op een kaartje vallen naam, prijs en knop het meest op. Keuzes in het aanbevelingsformulier zijn grote vlakken met uitleg |
 | TC-H-11 | NF-10, NF-02 | Met alleen het toetsenbord een doel, scherm en soort games kiezen | Tab gaat naar de groep, de pijltjes verplaatsen de keuze, de focus is zichtbaar. Bij werken verdwijnen scherm en games |
+| TC-H-12 | F-23 | Een complete opgeslagen build en het overzicht als PDF op A4 laten maken door de browser | Elk één pagina, zonder menu, knoppen en formulieren |
+| TC-H-13 | F-22, NF-01 | Twee builds vergelijken op 375 en 1280 pixels breed | Geen horizontaal scrollen. Op een telefoon staan de builds per onderdeel onder elkaar |
 
 ## 6. Gebruikerstest
 

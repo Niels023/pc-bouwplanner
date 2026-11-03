@@ -123,6 +123,12 @@ Bij `check($build)` gaat de checker de lijst `RULES` langs en doet in `runRule()
 
 Alle resultaten komen samen met de totaalprijs en het verbruik in een `CheckReport`. `overallStatus()` bepaalt daaruit de totaalstatus: eerst kijken of er een fout is, dan een waarschuwing, dan of de build nog niet alle acht onderdelen heeft, en anders is alles in orde. Ook zonder opslag is een build dus nog niet compleet, al heeft geen enkele regel opslag nodig.
 
+### Koeler op socket en waterkoeling
+
+Een koeler past op meerdere sockets. In de database staat dat in de koppeltabel `cooler_sockets`, met een rij per koeler en socket. De view `part_details` zet ze met `GROUP_CONCAT` in één tekst, zoals `AM4,AM5,LGA1700`. `PartRepository` maakt daar met `explode()` weer een lijst van. `coolerSocketRule()` kijkt met `in_array()` of de socket van de processor in die lijst staat.
+
+Een waterkoeler heeft geen hoogte maar een radiator. `Cooler::isLiquidCooler()` kijkt of `radiatorMm` is ingevuld. Bij een waterkoeler is `coolerHeightRule()` altijd in orde, en `radiatorRule()` vergelijkt de radiator met de grootste radiator die in de kast past.
+
 ### De voedingsregel
 
 Dit is de enige regel met drie uitkomsten. Stel de onderdelen verbruiken samen 450 W en de marge is 30%:
@@ -233,6 +239,12 @@ Er is één bestand, `public/js/live.js`. Het doet twee dingen:
 
 Zonder JavaScript gebeurt er niets bijzonders: het formulier wordt gewoon verstuurd en de pagina herlaadt. Dit heet progressive enhancement. Alle logica blijft in PHP.
 
+### Builds vergelijken en afdrukken
+
+Bij een opgeslagen build staat een formulier met één veld: de code van een tweede build. Dat formulier stuurt je naar `/vergelijken?a=...&b=...`. `BuildPageController::compare()` haalt beide builds op en `templates/compare.php` maakt een tabel met per onderdeel beide onderdelen en het verschil in prijs. Bestaat een code niet, dan krijg je een 404.
+
+Afdrukken gaat met de printknop van de browser, of Ctrl+P. Onderaan `style.css` staat `@media print`: die regels gelden alleen op papier. Ze verbergen het menu, de knoppen en de formulieren, en maken alles wat kleiner, zodat een build op één A4 past.
+
 ### Vormgeving
 
 Alle opmaak staat in `public/css/style.css`. Bovenaan staan de kleuren als variabelen, zoals `--accent` voor paars. Wil ik een andere kleur, dan pas ik die op één plek aan. Kaartjes, knoppen en lijsten gebruiken overal dezelfde klassen, daardoor ziet elke pagina er hetzelfde uit.
@@ -270,6 +282,12 @@ De keuzevlakken in het aanbevelingsformulier zijn gewone radioknoppen. Het hele 
 **Wat gebeurt er als je geen budget invult?** Dan wordt het minimum het budget en krijg je de goedkoopste build die bij je keuzes past.
 
 **Wat gebeurt er bij Overnemen?** De server rekent de aanbeveling opnieuw uit met dezelfde invoer, die staat in de URL. `WorkingBuild::replaceWith()` zet de onderdelen in de sessie. Daarna kun je alles aanpassen zoals bij zelf bouwen. Omdat dezelfde invoer altijd dezelfde build geeft, hoeft de aanbeveling nergens bewaard te worden.
+
+**Waarom staat bij de Fractal North een radiator van 240 mm, terwijl er 360 mm in past?** Een radiator van 360 mm past alleen voorin, en dan mag de videokaart nog maar 300 mm zijn. De site kijkt niet naar die combinatie. Met 240 mm, die bovenin past, zegt de site nooit dat iets past wat niet past.
+
+**Waarom past de AK620 niet op LGA1851?** Waarschijnlijk past hij wel, maar DeepCool noemt het niet. Ik neem alleen op wat de fabrikant zegt.
+
+**Waarom staan de sockets van een koeler in een aparte tabel?** Een koeler past op meerdere sockets. Eén veld met tekst zoals "AM4,AM5" kan een tikfout bevatten. Met een koppeltabel verwijst elke socket naar de tabel `sockets`, net als bij processors en moederborden.
 
 **Waarom staat de voeding als laatste?** Pas als alle andere onderdelen vaststaan, is het verbruik bekend. Een upgrade van de videokaart kan een zwaardere voeding nodig maken.
 

@@ -433,6 +433,63 @@ Omdat de regels op een andere plek staan, heb ik de mutatietest van 30 oktober o
 
 **Conclusie:** alle 16 fouten zijn gevangen. De refactor heeft de tests niet zwakker gemaakt.
 
+## Testrun 3 november 2026, could haves
+
+**Omgeving:** gelijk aan de vorige runs. Branches `feature/builds-vergelijken`, `feature/printen`, `feature/koeler-socket` en `feature/waterkoeling`, daarna `main`.
+
+**Resultaat `composer test`:**
+
+```text
+OK (278 tests, 2506 assertions)
+```
+
+**Resultaat `composer lint`:** 0 fouten en 0 waarschuwingen.
+
+| Testsuite | Tests | Geslaagd | Mislukt |
+|---|---|---|---|
+| unit | 112 | 112 | 0 |
+| database | 17 | 17 | 0 |
+| api | 77 | 77 | 0 |
+| pages | 72 | 72 | 0 |
+
+### Resultaten per eis
+
+| Eis | Conclusie |
+|---|---|
+| F-22 Builds vergelijken | Voldoet. Per onderdeel staan beide onderdelen en het verschil in prijs, onderaan het verschil in totaal en verbruik. |
+| F-23 Printvriendelijk overzicht | Voldoet. Een complete opgeslagen build en het overzicht passen op één A4, zonder knoppen en filters. |
+| F-24 Controle koeler op socket | Voldoet. Op de echte onderdelen geeft de AK620 met de Core Ultra 5 245K een fout, de andere koelers passen op alle sockets. |
+| F-25 Waterkoeling | Voldoet. De hoogte telt niet bij een waterkoeler, de radiator wordt vergeleken met de kast. De Liquid Freezer III Pro 360 past niet in de North en wel in de Lancool 216. |
+| F-11 Resultaat van de controle | Voldoet nog steeds, nu met 9 regels. |
+
+### Metingen
+
+**Afdrukken (TC-H-12).** Met Edge zonder venster een aanbeveling van € 2.000 overgenomen, opgeslagen en als PDF op A4 laten maken. Zonder de printopmaak waren dat 2 pagina's met het menu, knoppen en formulieren erop. Met de printopmaak:
+
+| Pagina | Pagina's op A4 | Zichtbare menu's, knoppen en formulieren |
+|---|---|---|
+| Opgeslagen build | 1 | 0 |
+| Overzicht | 1 | 0 |
+
+**Vergelijken (TC-H-13).** Op 1280 pixels staat een tabel met vier kolommen. Op 375 pixels staan de builds per onderdeel onder elkaar met de naam ervoor. Nergens horizontaal scrollen.
+
+**Breedte (TC-H-01).** De meting van eerder vandaag opnieuw gedaan, nu ook met de stap Koeler, een opgeslagen build en de vergelijkpagina. Op 360, 375, 768, 1000, 1200 en 1920 pixels nergens horizontaal scrollen.
+
+**Lighthouse, toegankelijkheid (TC-H-02).** Vergelijkpagina 100, opgeslagen build 100, stap Koeler 100.
+
+**Stap Koeler met een echte build.** Met de Core Ultra 5 245K en de Fractal Design North gekozen waren twee koelers grijs: de AK620 ("De koeler past niet op socket LGA1851. Hij past op AM4, AM5, LGA1700.") en de Liquid Freezer III Pro 360 ("De radiator is 360 mm, maar in deze kast past maximaal 240 mm."). De andere zes waren te kiezen.
+
+### Mutatietest
+
+7 fouten met opzet ingebouwd in de nieuwe regels en het inlezen van de koelers. Eerst werden er 6 gevangen. De fout die bleef: als de uitzondering voor waterkoelers in de hoogteregel weg is, komt er toch "in orde" uit, maar met een kapotte melding ("De koeler ( mm) past ..."). Mijn test keek alleen naar de status. De test controleert nu ook de melding, en daarna werden alle 7 fouten gevangen.
+
+### Bevindingen
+
+- Bij de eerste meting van het afdrukken was het overzicht 2 pagina's. Dat kwam door mijn meetscript: dat zette na de eerste pagina de weergave op "scherm", waardoor de tweede PDF zonder printopmaak gemaakt werd. Na het herstellen van het script was het 1 pagina.
+- Bij de vergelijkpagina werden op een telefoon woorden midden in afgebroken. Opgelost door per onderdeel de twee builds onder elkaar te zetten.
+- `composer seed` maakt alle tabellen opnieuw. Na de schemawijzigingen voor F-24 en F-25 waren de opgeslagen builds in mijn eigen database dus weg. Dat stond al in de README.
+- Een radiator voorin de kast kan ruimte van de videokaart kosten. Dat controleert de site alleen bij de North, via een veilige maat. Zie [data-controle.md](data-controle.md).
+
 ## Nog niet getest
 
 - Gebruikerstests met echte mensen (TC-G-01 t/m TC-G-09).

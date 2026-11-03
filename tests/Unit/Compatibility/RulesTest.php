@@ -274,7 +274,10 @@ class RulesTest extends TestCase
     {
         $build = new Build(Parts::liquidCooler(360), Parts::pcCase(maxCoolerHeightMm: 70));
 
-        $this->assertSame(CheckStatus::Ok, $this->resultFor($build, 'cooler_height')->status);
+        $result = $this->resultFor($build, 'cooler_height');
+
+        $this->assertSame(CheckStatus::Ok, $result->status);
+        $this->assertStringContainsString('waterkoeler', $result->message);
     }
 
     public function testAirCoolerNeedsNoRadiatorSpace(): void

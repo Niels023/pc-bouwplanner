@@ -1,6 +1,6 @@
 # PC-bouwplanner
 
-Een website waarop je zelf een PC samenstelt. Je kiest per stap een onderdeel (processor, moederbord, geheugen, videokaart, koeler, kast, opslag en voeding). De site controleert of de onderdelen bij elkaar passen, telt de prijs en het geschatte stroomverbruik op en kan zelf een build voorstellen. Daarvoor kies je je doel (gamen, werken of streamen), je scherm en wat voor games je speelt. Een budget mag, maar hoeft niet.
+Een website waarop je zelf een PC samenstelt. Je kiest per stap een onderdeel (processor, moederbord, geheugen, videokaart, koeler, kast, opslag en voeding). De site controleert of de onderdelen bij elkaar passen, telt de prijs en het geschatte stroomverbruik op en kan zelf een build voorstellen. Daarvoor kies je je doel (gamen, werken of streamen), je scherm en wat voor games je speelt. Een budget mag, maar hoeft niet. Opgeslagen builds kun je met elkaar vergelijken en netjes afdrukken op één A4.
 
 De basisversie is af: je kunt een PC samenstellen, je build opslaan en een aanbeveling vragen. De site werkt op telefoon en desktop, ook zonder JavaScript.
 
