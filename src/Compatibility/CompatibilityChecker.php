@@ -17,6 +17,7 @@ class CompatibilityChecker
         'psu_wattage' => [Category::Psu, Category::Cpu],
         'gpu_length' => [Category::PcCase],
         'cooler_height' => [Category::Cooler, Category::PcCase],
+        'cooler_socket' => [Category::Cooler, Category::Cpu],
         'graphics' => [Category::Cpu],
     ];
 
@@ -78,6 +79,7 @@ class CompatibilityChecker
             'psu_wattage' => $this->psuWattageRule($build),
             'gpu_length' => $this->gpuLengthRule($build),
             'cooler_height' => $this->coolerHeightRule($build),
+            'cooler_socket' => $this->coolerSocketRule($build),
             'graphics' => $this->graphicsRule($build),
         };
 
@@ -192,6 +194,22 @@ class CompatibilityChecker
         }
 
         $message = "De koeler ($height mm) past in deze kast (maximaal $maxHeight mm).";
+
+        return [CheckStatus::Ok, $message];
+    }
+
+    private function coolerSocketRule(Build $build): array
+    {
+        $socket = $build->cpu()->socket;
+        $coolerSockets = $build->cooler()->sockets;
+
+        if (!in_array($socket, $coolerSockets, true)) {
+            $message = "De koeler past niet op socket $socket. Hij past op " . implode(', ', $coolerSockets) . '.';
+
+            return [CheckStatus::Error, $message];
+        }
+
+        $message = "De koeler past op socket $socket.";
 
         return [CheckStatus::Ok, $message];
     }
