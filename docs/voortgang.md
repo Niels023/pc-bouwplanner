@@ -108,6 +108,8 @@ Start: woensdag 28 oktober 2026.
 - Nieuwe eis NF-10 (verzorgde vormgeving, #37) toegevoegd. Op branch `feature/vormgeving` de hele site in de nieuwe stijl gezet: kleuren als variabelen in de CSS, een startpagina met grote keuzes en uitleg hoe het werkt, kaartjes met labels voor de specificaties, een totaalbalk die onderaan in beeld blijft en grote keuzevlakken in het aanbevelingsformulier.
 - Getest: 258 tests, linter schoon, Lighthouse 100 op vijf pagina's, contrast minimaal 5,02:1, geen horizontaal scrollen van 360 tot 1920 pixels. Schermafbeeldingen in `docs/img/` vernieuwd.
 - Refactor op branch `refactor/minder-bestanden` (#30), omdat ik alles moet kunnen uitleggen en er niet meer code moet zijn dan nodig. Vier mogelijkheden bekeken. Gekozen: ongebruikte code weg en de zeven regelklassen samen in de `CompatibilityChecker`. De onderdeelklassen zijn gebleven, omdat de regels dan met `$build->cpu()->socket` kunnen werken. Van 55 naar 45 PHP-bestanden in `src/`. Alle 258 tests slagen en de mutatietest vangt alle 16 ingebouwde fouten.
+- In `docs/uitleg.md` uitgelegd wat `index.php`, `bootstrap.php` en `layout.php` doen, omdat ik dat zelf nog niet goed kon uitleggen.
+- De Could haves gebouwd: builds vergelijken (#22), afdrukken op één A4 (#23), controle of de koeler op de socket past (#24) en waterkoeling (#25). Daarvoor de sockets van alle koelers, twee waterkoelers en de radiatorruimte van alle kasten opgezocht bij de fabrikanten. De data heeft nu 53 onderdelen. 278 tests slagen, Lighthouse 100 op de nieuwe pagina's.
 
 **Open:**
 
@@ -118,6 +120,9 @@ Start: woensdag 28 oktober 2026.
 
 **Afwijkingen en wat ik eraan gedaan heb:**
 
+- DeepCool noemt LGA1851 niet bij de AK620. Ik heb de veilige kant gekozen: in de data past hij er niet op, dus de site geeft een fout met de Core Ultra 5 245K.
+- Bij de Fractal North past een radiator van 360 mm alleen voorin, en dan is er minder ruimte voor de videokaart. Omdat de site die combinatie niet controleert, staat in de data 240 mm.
+- De mutatietest vond een te zwakke test voor de waterkoeler. De test kijkt nu ook naar de melding.
 - NF-10 hoort bij de eisen, maar het issuenummer volgt niet de vaste regel. NF-01 t/m NF-09 zijn #26 t/m #34, maar #35 en #36 waren al gebruikt voor F-31 en F-32. NF-10 is daarom #37.
 
 **Komt de planning in gevaar?** Nee.
