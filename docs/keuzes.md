@@ -175,7 +175,25 @@ De pagina's roepen de logica direct aan en gaan niet via de API. Dat is sneller 
 
 **Alternatief:** een frontendframework zoals React of Vue. Dat is veel extra code en kennis voor een site met vijf pagina's.
 
-## 11. Testen: PHPUnit
+## 11. Vormgeving: licht en modern
+
+**Gekozen:** een lichte stijl met witte kaartjes, ronde hoeken en één accentkleur (paars). Alle kleuren staan als variabelen in de CSS.
+
+**Waarom:** de eerste versie werkte, maar zag er kaal uit. Ik heb drie stijlen naast elkaar gelegd en gekozen voor licht en modern. Een lichte stijl is ook makkelijk goed leesbaar te houden: elke tekst heeft een contrast van minimaal 5:1.
+
+**Alternatieven:**
+
+| Alternatief | Waarom niet |
+|---|---|
+| Donker, in gaming-stijl | Past bij games, maar het contrast vraagt meer aandacht. |
+| Volgt de instelling van je apparaat (licht of donker) | Alles moet dan in twee versies gemaakt en getest worden. Dat is veel extra werk voor iets wat niet nodig is. |
+| Een CSS-framework zoals Bootstrap of Tailwind | Scheelt werk, maar dan laadt de site veel CSS die niet gebruikt wordt, en de site ziet eruit als veel andere sites. Met eigen CSS kan ik elke regel uitleggen. |
+
+**Lettertype van het systeem:** de site gebruikt het lettertype van het apparaat, zoals Segoe UI op Windows. Een lettertype van Google Fonts ziet er misschien mooier uit, maar dan maakt elke bezoeker contact met een server van Google en laadt de pagina trager.
+
+**Keuzevlakken zonder JavaScript:** de grote keuzevlakken in het aanbevelingsformulier zijn gewone radioknoppen in een label. De paarse rand om de gekozen keuze komt van de CSS-selector `:has()`. In een oude browser zonder `:has()` werkt alles nog, alleen zonder die rand. De radioknop zelf blijft zichtbaar.
+
+## 12. Testen: PHPUnit
 
 **Gekozen:** PHPUnit voor unit tests (regels, checker, aanbeveling) en voor API-tests (verzoeken naar de router met een testdatabase).
 
@@ -185,7 +203,7 @@ De API-tests maken een `Request`-object en geven dat direct aan `Application`, z
 
 **Alternatief:** Pest. Dat is een laagje bovenop PHPUnit met een kortere schrijfwijze, maar het voegt voor dit project niets toe.
 
-## 12. Codestijl: PHP_CodeSniffer met PSR-12
+## 13. Codestijl: PHP_CodeSniffer met PSR-12
 
 **Gekozen:** PHP_CodeSniffer met de standaard PSR-12. `phpcs` controleert de code, `phpcbf` verbetert de opmaak automatisch.
 
@@ -193,13 +211,13 @@ De API-tests maken een `Request`-object en geven dat direct aan `Application`, z
 
 **Alternatief:** PHP-CS-Fixer. Die doet ongeveer hetzelfde, maar heeft meer instellingen nodig om tot dezelfde regels te komen.
 
-## 13. Taal in code en documentatie
+## 14. Taal in code en documentatie
 
 **Gekozen:** namen in de code (klassen, functies, variabelen) zijn Engels. Teksten voor de gebruiker, de documentatie en de commit messages zijn Nederlands.
 
 **Waarom:** Engels is gebruikelijk in code en past bij PHP zelf en bij de documentatie die ik online vind. De gebruikers en de beoordelaars zijn Nederlands, dus alles wat zij lezen is Nederlands. Commit messages zijn altijd Nederlands, zodat de geschiedenis één taal heeft.
 
-## 14. Versiebeheer
+## 15. Versiebeheer
 
 **Gekozen:** git met een branch per onderdeel. Een branch gaat pas naar `main` als de feature werkt en alle tests slagen. Ik merge met `--no-ff`, zodat in de geschiedenis te zien blijft welke commits bij welke feature horen. Commit messages volgen Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `refactor:`, `chore:`) en verwijzen naar het issue.
 
