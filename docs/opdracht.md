@@ -52,6 +52,18 @@ Binnen de scope:
 - Meerdere onderdelen in dezelfde categorie, zoals twee SSD's of twee videokaarten.
 - Waterkoeling (AIO). De eerste versie gebruikt alleen luchtkoelers.
 
+## Wijzigingen in de scope
+
+De tekst hierboven is de opdracht zoals ik hem op 28 oktober 2026 heb vastgelegd. Tijdens het project is de scope op deze punten veranderd:
+
+| Datum | Wijziging | Waarom |
+|---|---|---|
+| 30 oktober 2026 | Zevende regel: beeld zonder videokaart (F-21) | Een build voor werken heeft geen losse videokaart nodig als de processor ingebouwde graphics heeft. Dat maakt de goedkoopste build voor werken veel goedkoper. |
+| 30 oktober 2026 | De aanbeveling kijkt naar het scherm en het soort games, met een voorspelling van de FPS (F-31). Het budget mag leeg (F-32). | Alleen een budget zegt weinig voor iemand die niets van PC's weet. FPS stond eerst buiten de scope. Ik gebruik nu de FPS uit één betrouwbare test, alleen als ondergrens voor de videokaart. |
+| 3 november 2026 | Achtste en negende regel: koeler op socket (F-24) en waterkoeling (F-25) | De Must en Should haves waren af, dus heb ik de Could haves gebouwd. Waterkoeling stond buiten de eerste versie. |
+
+Doel 2 gaat daardoor nu over negen controleregels in plaats van zes.
+
 ## Randvoorwaarden
 
 - De website draait lokaal met PHP 8.2 en MySQL (MariaDB via XAMPP).
