@@ -20,9 +20,9 @@ enum Resolution: string
     public function description(): string
     {
         return match ($this) {
-            self::FullHd => 'Full HD (1920 x 1080): de meeste schermen',
-            self::Qhd => '1440p (2560 x 1440): scherper beeld',
-            self::Uhd => '4K (3840 x 2160): heel scherp, vooral grote schermen',
+            self::FullHd => '1920 x 1080, de meeste schermen',
+            self::Qhd => '2560 x 1440, scherper beeld',
+            self::Uhd => '3840 x 2160, heel scherp, vooral grote schermen',
         };
     }
 }

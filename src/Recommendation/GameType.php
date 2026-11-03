@@ -18,8 +18,8 @@ enum GameType: string
     public function description(): string
     {
         return match ($this) {
-            self::Light => 'Lichte games, zoals Fortnite, Minecraft, Valorant, Rocket League of League of Legends',
-            self::Heavy => 'Zware games, zoals Cyberpunk 2077, Call of Duty, Red Dead Redemption 2 of Hogwarts Legacy',
+            self::Light => 'Zoals Fortnite, Minecraft, Valorant, Rocket League of League of Legends',
+            self::Heavy => 'Zoals Cyberpunk 2077, Call of Duty, Red Dead Redemption 2 of Hogwarts Legacy',
         };
     }
 }
