@@ -13,7 +13,7 @@ use App\Repository\PartFilter;
 // Alle controles op invoer van de gebruiker, zodat de API en de pagina's dezelfde regels gebruiken.
 class Input
 {
-    public const MAX_NAME_LENGTH = 60;
+    private const MAX_NAME_LENGTH = 60;
 
     private const MAX_BUDGET_EUR = 100000;
 
