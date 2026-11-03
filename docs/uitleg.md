@@ -232,7 +232,7 @@ De keuzevlakken in het aanbevelingsformulier zijn gewone radioknoppen. Het hele 
 
 **Wat moet je doen om een regel toe te voegen?** Drie dingen in de `CompatibilityChecker`: de regel en de nodige onderdelen in `RULES` zetten, een regel in de `match` in `runRule()` en een nieuwe methode die een status en een melding teruggeeft.
 
-**Waarom controleert de checker of onderdelen ontbreken, en niet de regels zelf?** Dan zou die controle zes keer in de code staan. Nu staat hij op één plek.
+**Waarom controleert de checker of onderdelen ontbreken, en niet de regels zelf?** Dan zou die controle in elke regel opnieuw staan, zeven keer. Nu staat hij op één plek, in `runRule()`.
 
 **Waarom staat de marge niet in de code van de regel?** De marge is een instelling. Hij staat in `config/app.php` en wordt via de constructor meegegeven aan de `CompatibilityChecker`. In de test kan ik zo ook een andere marge gebruiken.
 
