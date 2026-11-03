@@ -231,8 +231,11 @@ class RecommenderTest extends TestCase
 
     public function testStorageMeetsMinimumOfGoal(): void
     {
-        $this->assertSame(500, $this->recommend(900, Goal::Work)->build->storage()->capacityGb);
-        $this->assertSame(1000, $this->recommend(self::MINIMUM_GAMING_EUR)->build->storage()->capacityGb);
+        $work = $this->recommend(900, Goal::Work);
+        $gaming = $this->recommend(self::MINIMUM_GAMING_EUR);
+
+        $this->assertSame(500, $work->build->partIn(Category::Storage)->capacityGb);
+        $this->assertSame(1000, $gaming->build->partIn(Category::Storage)->capacityGb);
     }
 
     public function testBoardWithTooFewRamSlotsIsNotChosen(): void

@@ -99,11 +99,6 @@ readonly class Build
         return $this->parts[Category::PcCase->value];
     }
 
-    public function storage(): StorageDrive
-    {
-        return $this->parts[Category::Storage->value];
-    }
-
     public function psu(): Psu
     {
         return $this->parts[Category::Psu->value];
