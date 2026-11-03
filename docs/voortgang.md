@@ -112,11 +112,15 @@ Start: woensdag 28 oktober 2026.
 - De Could haves gebouwd: builds vergelijken (#22), afdrukken op één A4 (#23), controle of de koeler op de socket past (#24) en waterkoeling (#25). Daarvoor de sockets van alle koelers, twee waterkoelers en de radiatorruimte van alle kasten opgezocht bij de fabrikanten. De data heeft nu 53 onderdelen. 278 tests slagen, Lighthouse 100 op de nieuwe pagina's.
 
 - `docs/verbetervoorstellen.md` gemaakt, met zeven voorstellen, prioriteit en een planning in sprints. In `docs/opdracht.md` opgeschreven hoe de scope tijdens het project veranderd is.
-- Het verslag deels ingevuld: alle blokken van B1-K1 en de projectmethodiek van B1-K2, op basis van de documentatie, de git-geschiedenis en de issues.
+- Het verslag deels ingevuld: alle blokken van B1-K1 en de projectmethodiek van B1-K2, op basis van de documentatie, de git-geschiedenis en de issues. Daarna ook samenwerken, feedback en evaluatie, met mijn eigen antwoorden. Alleen de presentatie staat nog open.
+
+**Feedback van klasgenoten:** er mocht meer detail komen bij het laten voorstellen van een build. Verwerkt in F-31: je kiest nu ook je scherm en het soort games, en ziet in gewone taal wat de build haalt.
+
+**Afspraak met mezelf:** het project is in november af. Op 3 november zijn alle eisen behalve NF-09 gebouwd en getest, dus dat ligt op schema.
 
 **Open:**
 
-- De andere blokken van B1-K2 in het verslag: samenwerken, feedback, de presentatie en de evaluatie. Die kan ik pas invullen na de gebruikerstest en de demo.
+- De drie blokken over de presentatie in het verslag (B1-K2-W2). Die kan ik pas invullen na de demo.
 - Een sprintreview en retrospective van sprint 1 schrijven.
 - Gebruikerstest met 2 of 3 mensen (testplan hoofdstuk 6), nu ook met TC-G-09 voor scherm en games. Daarin ook vragen wat ze van de nieuwe vormgeving vinden.
 - De site laten zien aan de docent en de feedback opschrijven.
