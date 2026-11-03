@@ -41,6 +41,7 @@ Alle tests moeten slagen voordat een branch naar `main` gaat.
 | NF-05 | PHP_CodeSniffer | Uitgewerkt in hoofdstuk 3 |
 | NF-06 | Alle testvormen | Uitgewerkt in hoofdstuk 3 |
 | NF-09 | Handmatig | Uitgewerkt in hoofdstuk 5 |
+| NF-10 | Handmatig en Lighthouse | Uitgewerkt in hoofdstuk 5 |
 
 ## 3. Testcases
 
@@ -489,6 +490,8 @@ Deze tests staan in `tests/Pages/`. Ze sturen een verzoek naar de applicatie, ne
 | TC-H-07 | NF-08 | Tijd meten van alle pagina's en API-verzoeken, 5 keer per pagina | Binnen 1 seconde |
 | TC-H-08 | NF-09 | Schone clone van GitHub, stappen uit de README volgen, `composer test` draaien | Site start, alle tests slagen |
 | TC-H-09 | F-14, F-15 | In de browser een build opslaan en met de code openen | De build is hetzelfde |
+| TC-H-10 | NF-10 | Alle pagina's bekijken op 375 en 1280 pixels breed en de CSS nakijken | Overal dezelfde kleuren, kaartjes en knoppen. Kleuren alleen via de variabelen bovenaan de CSS. Op een kaartje vallen naam, prijs en knop het meest op. Keuzes in het aanbevelingsformulier zijn grote vlakken met uitleg |
+| TC-H-11 | NF-10, NF-02 | Met alleen het toetsenbord een doel, scherm en soort games kiezen | Tab gaat naar de groep, de pijltjes verplaatsen de keuze, de focus is zichtbaar. Bij werken verdwijnen scherm en games |
 
 ## 6. Gebruikerstest
 

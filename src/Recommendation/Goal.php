@@ -16,4 +16,13 @@ enum Goal: string
             self::Streaming => 'streamen',
         };
     }
+
+    public function description(): string
+    {
+        return match ($this) {
+            self::Gaming => 'Games spelen, met een videokaart die past bij je scherm',
+            self::Work => 'Kantoor, school en programmeren, zonder losse videokaart',
+            self::Streaming => 'Gamen en tegelijk uitzenden, met extra geheugen',
+        };
+    }
 }

@@ -434,6 +434,7 @@ classDiagram
         Work
         Streaming
         +label() string
+        +description() string
     }
     class Recommender {
         -array parts
@@ -953,6 +954,26 @@ Telefoon:
 ```
 
 De namen op de kaartjes in deze schetsen zijn voorbeelden. De echte onderdelen komen uit de database.
+
+### 9.2 Vormgeving
+
+Op 3 november is de vormgeving vernieuwd (NF-10). Gekozen is een lichte, moderne stijl, zie [keuzes.md](keuzes.md). Alle kleuren, ronde hoeken en schaduwen staan als variabelen bovenaan `public/css/style.css`, zodat elke pagina dezelfde stijl heeft.
+
+| Variabele | Kleur | Gebruik |
+|---|---|---|
+| `--bg` | #f4f5fb | Achtergrond van de pagina |
+| `--surface` | #ffffff | Kaartjes, formulieren en lijsten |
+| `--ink` | #111827 | Gewone tekst |
+| `--ink-soft` | #4b5563 | Uitleg en kleine tekst |
+| `--accent` | #4338ca | Knoppen, links en wat gekozen is |
+| `--ok`, `--warning`, `--error` | groen, oranje, rood | Status in orde, waarschuwing en fout, altijd met tekst erbij |
+
+Vaste onderdelen van de stijl:
+
+- **Kaartje** (`.card`, `.part-card`): wit, ronde hoeken van 12 pixels, een dunne rand en een lichte schaduw. Op een onderdeelkaartje zijn de naam, de prijs en de knop het grootst. De specificaties staan als kleine labels.
+- **Stappen** (`.steps`): een rondje met het nummer per stap. Groen is gekozen, paars is de stap waar je nu bent. Op een telefoon staat alleen bij de huidige stap de naam, de andere stappen zijn alleen een nummer. Voor een schermlezer blijft de naam er wel.
+- **Totaalbalk** (`.step-bar`): op de stap-pagina blijft de balk met totaal, verbruik, status en de knoppen voor de volgende en vorige stap onderaan in beeld. Op de andere pagina's staan de totalen in een gewoon kaartje.
+- **Keuzevlakken** (`.tile`): in het aanbevelingsformulier is elke keuze een groot vlak met een titel en een korte uitleg. Het is een gewone radioknop in een `<label>`, dus klikken op het hele vlak werkt en de pijltjestoetsen ook. Met `:has(input:checked)` krijgt het gekozen vlak een paarse rand.
 
 ## 10. Van eis naar ontwerp
 

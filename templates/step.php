@@ -79,17 +79,17 @@ $sortOptions = [
     </section>
 </div>
 
-<?= $this->partial('partials/totals', ['report' => $report]) ?>
+<div class="step-bar">
+    <?= $this->partial('partials/totals', ['report' => $report]) ?>
 
-<nav class="step-links" aria-label="Volgende en vorige stap">
-    <?php if ($category->previous() !== null) : ?>
-        <a class="button button-secondary" href="/bouwen/<?= $this->e($category->previous()->value) ?>">Vorige stap</a>
-    <?php else : ?>
-        <span></span>
-    <?php endif; ?>
-    <?php if ($category->next() !== null) : ?>
-        <a class="button" href="/bouwen/<?= $this->e($category->next()->value) ?>">Volgende stap</a>
-    <?php else : ?>
-        <a class="button" href="/overzicht">Naar het overzicht</a>
-    <?php endif; ?>
-</nav>
+    <nav class="step-links" aria-label="Volgende en vorige stap">
+        <?php if ($category->previous() !== null) : ?>
+            <a class="button button-secondary" href="/bouwen/<?= $this->e($category->previous()->value) ?>">Vorige stap</a>
+        <?php endif; ?>
+        <?php if ($category->next() !== null) : ?>
+            <a class="button" href="/bouwen/<?= $this->e($category->next()->value) ?>">Volgende stap</a>
+        <?php else : ?>
+            <a class="button" href="/overzicht">Naar het overzicht</a>
+        <?php endif; ?>
+    </nav>
+</div>

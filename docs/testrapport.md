@@ -345,6 +345,53 @@ Op 30 oktober heb ik 22 fouten met opzet in de nieuwe code gezet en steeds alle 
 - De FPS komt uit één test met de testcomputer van Tom's Hardware. In een goedkope build met een andere processor kan de echte FPS lager zijn, vooral op Full HD. Dit komt in de verbetervoorstellen.
 - Dat lichte games met 30 FPS in de test vloeiend lopen, is een aanname. Dit wil ik nagaan in de gebruikerstest of met iemand die deze games speelt.
 
+## Testrun 3 november 2026, vormgeving
+
+**Omgeving:** gelijk aan de vorige runs. Branch `feature/vormgeving`. Screenshots en metingen met Microsoft Edge zonder venster.
+
+**Resultaat `composer test`:**
+
+```text
+OK (258 tests, 2453 assertions)
+```
+
+**Resultaat `composer lint`:** 0 fouten en 0 waarschuwingen.
+
+Eén paginatest is aangepast: die zocht naar "Full HD (1920 x 1080)", maar in het keuzevlak staan "Full HD" en "1920 x 1080" nu los van elkaar.
+
+### Resultaten per eis
+
+| Eis | Conclusie |
+|---|---|
+| NF-10 Verzorgde vormgeving | Voldoet volgens TC-H-10 en TC-H-11. Of de site er ook mooi uitziet, moet de gebruikerstest laten zien. |
+| NF-01 Telefoon en desktop | Voldoet nog steeds, zie hieronder. |
+| NF-02 Toegankelijk | Voldoet nog steeds, zie hieronder. |
+| NF-07 Werkt zonder JavaScript | Voldoet nog steeds. De keuzevlakken en het verbergen bij werken zijn alleen CSS. |
+
+### Metingen
+
+**Breedte (TC-H-01).** Gemeten op 360, 375, 768, 1000, 1200 en 1920 pixels breed, op de startpagina, de stappen Processor en Videokaart, het overzicht, het aanbevelingsformulier, een resultaat, de melding over een te laag budget en de foutpagina: nergens horizontaal scrollen.
+
+**Lighthouse, toegankelijkheid (TC-H-02).**
+
+| Pagina | Score |
+|---|---|
+| Startpagina | 100 |
+| Stap Moederbord | 100 |
+| Overzicht | 100 |
+| Aanbevelingsformulier | 100 |
+| Resultaat van de aanbeveling | 100 |
+
+**Contrast (TC-H-03).** Uitgerekend voor 26 kleurparen uit de nieuwe CSS. Het laagste is 5,02:1 (wit nummer op het groene rondje van een gekozen stap), de eis is 4,5:1. De rand van een invoerveld heeft 3,17:1 op wit en 3,01:1 op grijs. Voor randen van invoervelden is 3:1 de eis.
+
+**Met JavaScript (TC-H-06).** Op de stap Videokaart een kaart gekozen: de totalen gingen van € 0,00 naar € 499,00 zonder dat de pagina herlaadde, het kaartje kreeg het label "Gekozen", de stap Videokaart werd groen en de focus stond op de knop Verwijderen.
+
+**Toetsenbord (TC-H-11).** Op het aanbevelingsformulier met de pijltjestoetsen van Gamen naar Werken: Werken werd gekozen en de vragen over scherm en games verdwenen. Terug naar Gamen: ze kwamen terug. De focusrand was zichtbaar.
+
+### Bevindingen
+
+- De eerste versie van de nieuwe stijl had te brede statuslabels bij de controle, links die wegvielen in het overzicht en een menu dat op een telefoon over twee regels liep. Gezien op de screenshots en aangepast voordat het gecommit werd.
+
 ## Nog niet getest
 
 - Gebruikerstests met echte mensen (TC-G-01 t/m TC-G-09).

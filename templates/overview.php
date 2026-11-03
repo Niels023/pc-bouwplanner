@@ -1,10 +1,11 @@
 <h1>Overzicht van je build</h1>
+<p class="intro">Hier zie je alles wat je gekozen hebt. Klik op Wijzigen om een onderdeel te vervangen.</p>
 
-<?= $this->partial('partials/build-list', ['build' => $build, 'editable' => true]) ?>
 <?= $this->partial('partials/totals', ['report' => $report]) ?>
+<?= $this->partial('partials/build-list', ['build' => $build, 'editable' => true]) ?>
 <?= $this->partial('partials/check-results', ['report' => $report]) ?>
 
-<section class="save-build" aria-labelledby="save-title">
+<section class="save-build card" aria-labelledby="save-title">
     <h2 id="save-title">Build opslaan</h2>
     <?php if ($error !== null) : ?>
         <p class="message message-error" role="alert"><?= $this->e($error) ?></p>

@@ -12,7 +12,14 @@
     <a class="skip-link" href="#inhoud">Ga naar de inhoud</a>
     <header class="site-header">
         <div class="wrap site-header-inner">
-            <a class="logo" href="/">PC-bouwplanner</a>
+            <a class="logo" href="/">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="5" y="5" width="14" height="14" rx="3" fill="currentColor"/>
+                    <rect x="9" y="9" width="6" height="6" rx="1" fill="#fff"/>
+                    <path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                PC-bouwplanner
+            </a>
             <nav aria-label="Hoofdmenu">
                 <ul class="site-nav">
                     <li><a href="/bouwen/cpu">Zelf bouwen</a></li>

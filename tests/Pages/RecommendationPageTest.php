@@ -47,7 +47,8 @@ class RecommendationPageTest extends PageTestCase
     {
         $response = $this->get('/aanbeveling');
 
-        $this->assertPageContains('Full HD (1920 x 1080)', $response);
+        $this->assertPageContains('Full HD', $response);
+        $this->assertPageContains('1920 x 1080', $response);
         $this->assertPageContains('Fortnite', $response);
         $this->assertPageContains('Cyberpunk 2077', $response);
         $this->assertPageContains('name="resolution"', $response);
