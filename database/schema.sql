@@ -75,6 +75,9 @@ CREATE TABLE gpus (
     chip VARCHAR(50) NOT NULL,
     vram_gb TINYINT UNSIGNED NOT NULL,
     length_mm SMALLINT UNSIGNED NOT NULL,
+    fps_1080p SMALLINT UNSIGNED NOT NULL,
+    fps_1440p SMALLINT UNSIGNED NOT NULL,
+    fps_4k SMALLINT UNSIGNED NOT NULL,
     FOREIGN KEY (part_id) REFERENCES parts (id) ON DELETE CASCADE
 );
 
@@ -151,6 +154,9 @@ SELECT
     g.chip,
     g.vram_gb,
     g.length_mm,
+    g.fps_1080p,
+    g.fps_1440p,
+    g.fps_4k,
     co.height_mm,
     ca.max_gpu_length_mm,
     ca.max_cooler_height_mm,

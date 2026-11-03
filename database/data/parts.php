@@ -128,36 +128,43 @@ return [
             'brand' => 'MSI', 'name' => 'GeForce RTX 5060 8G VENTUS 2X OC', 'price_eur' => 499.00,
             'price_date' => $priceDate, 'power_w' => 145, 'chip' => 'GeForce RTX 5060', 'vram_gb' => 8,
             'length_mm' => 197,
+            'fps_1080p' => 88, 'fps_1440p' => 59, 'fps_4k' => 21,
         ],
         [
             'brand' => 'PowerColor', 'name' => 'Reaper Radeon RX 9060 XT 16GB', 'price_eur' => 570.01,
             'price_date' => $priceDate, 'power_w' => 160, 'chip' => 'Radeon RX 9060 XT', 'vram_gb' => 16,
             'length_mm' => 220,
+            'fps_1080p' => 98, 'fps_1440p' => 67, 'fps_4k' => 35,
         ],
         [
             'brand' => 'MSI', 'name' => 'GeForce RTX 5060 Ti 16G VENTUS 2X OC PLUS', 'price_eur' => 843.90,
             'price_date' => $priceDate, 'power_w' => 180, 'chip' => 'GeForce RTX 5060 Ti', 'vram_gb' => 16,
             'length_mm' => 227,
+            'fps_1080p' => 105, 'fps_1440p' => 73, 'fps_4k' => 40,
         ],
         [
             'brand' => 'MSI', 'name' => 'GeForce RTX 5070 12G VENTUS 2X OC', 'price_eur' => 949.00,
             'price_date' => $priceDate, 'power_w' => 250, 'chip' => 'GeForce RTX 5070', 'vram_gb' => 12,
             'length_mm' => 236,
+            'fps_1080p' => 132, 'fps_1440p' => 96, 'fps_4k' => 54,
         ],
         [
             'brand' => 'Sapphire', 'name' => 'Pulse Radeon RX 9070 XT', 'price_eur' => 999.00,
             'price_date' => $priceDate, 'power_w' => 304, 'chip' => 'Radeon RX 9070 XT', 'vram_gb' => 16,
             'length_mm' => 320,
+            'fps_1080p' => 156, 'fps_1440p' => 116, 'fps_4k' => 65,
         ],
         [
             'brand' => 'MSI', 'name' => 'GeForce RTX 5080 16G VENTUS 3X OC', 'price_eur' => 1999.00,
             'price_date' => $priceDate, 'power_w' => 360, 'chip' => 'GeForce RTX 5080', 'vram_gb' => 16,
             'length_mm' => 303,
+            'fps_1080p' => 166, 'fps_1440p' => 128, 'fps_4k' => 77,
         ],
         [
             'brand' => 'ASUS', 'name' => 'ROG Astral GeForce RTX 5080 16GB GDDR7 OC Edition', 'price_eur' => 2229.00,
             'price_date' => $priceDate, 'power_w' => 360, 'chip' => 'GeForce RTX 5080', 'vram_gb' => 16,
             'length_mm' => 358,
+            'fps_1080p' => 166, 'fps_1440p' => 128, 'fps_4k' => 77,
         ],
     ],
 

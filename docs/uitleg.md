@@ -88,9 +88,9 @@ De regel heeft ook een processor nodig. Anders is het verbruik bijna 0 en lijkt 
 
 De aanbeveling staat in `src/Recommendation/Recommender.php`. Net als de controle kent deze klasse geen database, hij krijgt de lijst met onderdelen mee. De percentages en minimumeisen per doel staan in `config/app.php`.
 
-`recommend($budget, $goal)` werkt in vier stappen:
+`recommend($budget, $goal, $target)` werkt in vier stappen:
 
-1. **Minimum uitrekenen.** Wat kost de goedkoopste build die werkt? Is het budget lager, dan volgt een `BudgetTooLowException` met dat bedrag.
+1. **Minimum uitrekenen.** Wat kost de goedkoopste build die werkt? Is het budget leeg, dan wordt dit het budget. Is het budget lager, dan volgt een `BudgetTooLowException` met dat bedrag.
 2. **Onderdelen kiezen, behalve de voeding.** Elke categorie krijgt een deelbudget, bijvoorbeeld 50% voor de videokaart bij gamen. Ik neem het duurste onderdeel dat binnen het deelbudget valt en waarmee de build nog af kan.
 3. **Restgeld besteden.** Wat over is gaat naar de onderdelen die voor dit doel het belangrijkst zijn. Bij gamen eerst de videokaart, bij werken eerst de processor.
 4. **Voeding kiezen.** Pas nu is het verbruik bekend.
@@ -110,6 +110,14 @@ Bij elke keuze hoort een `RecommendedChoice` met het onderdeel, het deelbudget e
 - Het onderdeel past: "Beste videokaart binnen het deelbudget van € 1.000."
 - Niets past binnen het deelbudget: "Het deelbudget van € 60 was te krap, daarom de goedkoopste keuze die past."
 - Het onderdeel is betaald uit het restgeld: "Het deelbudget was € 140, maar er bleef genoeg over voor deze betere opslag."
+
+Zonder budget is de zin altijd "De goedkoopste keuze die past", want dan is er geen deelbudget. Bij geheugen en opslag komt er het minimum voor het doel achter, en bij de videokaart het scherm en soort games, bijvoorbeeld "geschikt voor zware games op 1440p".
+
+### Scherm en soort games
+
+Bij gamen en streamen kies je ook je scherm en of je lichte of zware games speelt. Dat wordt een `GameTarget`. Elke videokaart heeft drie FPS-getallen in de database, voor Full HD, 1440p en 4K. `fits()` kijkt of de videokaart op jouw scherm minstens de minimale FPS haalt: 60 voor zware games, 30 voor lichte games. Videokaarten die dat niet halen, doen gewoon niet mee bij het kiezen. De rest van de aanbeveling werkt hetzelfde.
+
+Bij werken zit er geen losse videokaart in de build, maar een processor met ingebouwde graphics. Daarom tellen scherm en games bij werken niet mee, en verbergt de CSS die vragen als je werken kiest.
 
 ## Onderdelen uit de database halen
 
@@ -131,7 +139,7 @@ Dit gebeurt er bij `GET /api/parts?category=cpu`:
 6. De controller geeft een `Response` terug met JSON.
 7. `index.php` stuurt het antwoord naar de browser met `send()`.
 
-Gaat er iets mis, dan gooit de code een `ApiException` met een statuscode en een melding. `Application::handle()` vangt die op en maakt er een nette foutmelding in JSON van. Alle andere fouten worden een 500 met een algemene melding, en de echte fout gaat naar het logbestand.
+Gaat er iets mis, dan gooit de code een `HttpException` met een statuscode en een melding. `Application::handle()` vangt die op en maakt er een nette foutmelding in JSON van. Alle andere fouten worden een 500 met een algemene melding, en de echte fout gaat naar het logbestand.
 
 ## De website
 
@@ -141,7 +149,7 @@ De pagina's gebruiken dezelfde klassen als de API, ze geven alleen HTML terug in
 
 De HTML staat in `templates/`. De klasse `View` vult een template met gegevens en zet het in `layout.php`, waar de kop en de voet van elke pagina in staan. Stukken die op meerdere pagina's staan, zoals de totaalbalk, staan in `templates/partials/`.
 
-In een template gebruik ik altijd `$this->e($tekst)` om tekst op de pagina te zetten. Die functie maakt van `<` de tekst `&lt;`. Vult iemand `<script>` in als naam van zijn build, dan wordt dat gewone tekst en geen code. Dit heet escapen en voorkomt XSS.
+In een template gebruik ik altijd `$this->e($tekst)` om tekst op de pagina te zetten. Die functie maakt van `<` de tekst `&lt;`. Vult iemand `<script>` in als naam van een build, dan wordt dat gewone tekst en geen code. Dit heet escapen en voorkomt XSS.
 
 ### De build in wording
 
@@ -191,6 +199,14 @@ Zonder JavaScript gebeurt er niets bijzonders: het formulier wordt gewoon verstu
 **Waarom is de duurste het beste?** Binnen een categorie is duurder meestal sneller of beter. Dat klopt niet altijd, bijvoorbeeld bij een low-profile koeler. Benchmarks zouden beter zijn, maar die kan ik niet zelf controleren. Daarom staat dit in de verbetervoorstellen.
 
 **Waarom blijft er bij werken zoveel geld over?** Bij werken krijgt de videokaart geen restgeld, want dat levert niets op. Ik vind het beter als de gebruiker geld overhoudt dan dat de site het uitgeeft omdat het kan.
+
+**Waar komen de FPS-getallen vandaan?** Uit de GPU-ranglijst van Tom's Hardware. Daar zijn alle kaarten op dezelfde manier getest, dus de getallen zijn eerlijk te vergelijken. Ik rond naar beneden af, zodat de site nooit meer belooft dan de test.
+
+**Waarom 60 FPS?** Vanaf ongeveer 60 beelden per seconde voelt een game vloeiend. Voor lichte games is 30 FPS in de test genoeg, omdat die games veel minder zwaar zijn dan de testgames. Dat laatste is een aanname, en daarom staan beide getallen in de configuratie.
+
+**Wat gebeurt er als je geen budget invult?** Dan wordt het minimum het budget en krijg je de goedkoopste build die bij je keuzes past.
+
+**Wat gebeurt er bij Overnemen?** De server rekent de aanbeveling opnieuw uit met dezelfde invoer, die staat in de URL. `WorkingBuild::replaceWith()` zet de onderdelen in de sessie. Daarna kun je alles aanpassen zoals bij zelf bouwen. Omdat dezelfde invoer altijd dezelfde build geeft, hoeft de aanbeveling nergens bewaard te worden.
 
 **Waarom staat de voeding als laatste?** Pas als alle andere onderdelen vaststaan, is het verbruik bekend. Een upgrade van de videokaart kan een zwaardere voeding nodig maken.
 

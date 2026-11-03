@@ -260,9 +260,94 @@ De foutpagina is niet gemeten. Lighthouse weigert pagina's met een 404.
 - Op een telefoon duwden de filters de kaartjes ver naar beneden. Opgelost: de filters staan in een uitklapblok dat op een telefoon dicht begint.
 - De statuskolom in de controle was te smal, waardoor "Nog niet gecontroleerd" over twee regels liep. Opgelost.
 
+## Testrun 3 november 2026, should haves
+
+**Omgeving:** gelijk aan de vorige runs. Branch `feature/aanbeveling-scherm-en-games`.
+
+F-19, F-20 en F-21 zijn op 30 oktober gebouwd en naar `main` gemerged. Bij die merges slaagden alle tests (228 bij de laatste). F-31 en F-32 zijn ook op 30 oktober gebouwd. De handmatige tests en metingen hieronder zijn van 30 oktober, de testrun van 3 november.
+
+**Resultaat `composer test`:**
+
+```text
+OK (258 tests, 2452 assertions)
+```
+
+**Resultaat `composer lint`:** 0 fouten en 0 waarschuwingen.
+
+| Testsuite | Tests | Geslaagd | Mislukt |
+|---|---|---|---|
+| unit | 106 | 106 | 0 |
+| database | 15 | 15 | 0 |
+| api | 73 | 73 | 0 |
+| pages | 64 | 64 | 0 |
+
+### Resultaten per eis
+
+| Eis | Conclusie |
+|---|---|
+| F-16 Aanbeveling | Voldoet nog steeds. Het acceptatiecriterium is aangepast: een leeg budget geeft sinds F-32 geen melding meer. |
+| F-19 Aanbeveling overnemen | Voldoet. De build staat daarna in de bouwplanner en elk onderdeel is te wijzigen. Ook in de browser getest. |
+| F-20 Sorteren | Voldoet, op de pagina en in de API. De sortering blijft na het kiezen staan. |
+| F-21 Beeld zonder videokaart | Voldoet. Zonder videokaart is een build in orde als de processor ingebouwde graphics heeft, anders volgt een fout zodra de rest gekozen is. De goedkoopste build voor werken ging van € 1.126 naar € 766,21. |
+| F-31 Scherm en games | Voldoet. Elke combinatie geeft een videokaart die snel genoeg is, de build is altijd in orde en binnen het budget, en de samenvatting noemt de FPS in gewone taal. |
+| F-32 Zonder budget | Voldoet. Een leeg budget geeft de goedkoopste build voor je keuzes. Bij een te laag budget staat er een link naar die build. |
+
+### Uitkomsten op de echte onderdelen
+
+Goedkoopste build per keuze, zonder budget ingevuld. Alle builds hebben de status "in orde".
+
+| Doel | Scherm | Lichte games | Zware games |
+|---|---|---|---|
+| Gamen | Full HD | € 1.171,49 (RTX 5060) | € 1.171,49 (RTX 5060) |
+| Gamen | 1440p | € 1.171,49 (RTX 5060) | € 1.242,50 (RX 9060 XT) |
+| Gamen | 4K | € 1.242,50 (RX 9060 XT) | € 1.704,38 (RX 9070 XT) |
+| Streamen | Full HD | € 1.301,49 (RTX 5060) | € 1.301,49 (RTX 5060) |
+| Streamen | 1440p | € 1.301,49 (RTX 5060) | € 1.372,50 (RX 9060 XT) |
+| Streamen | 4K | € 1.372,50 (RX 9060 XT) | € 1.834,38 (RX 9070 XT) |
+
+Werken zonder budget: € 766,21, zonder losse videokaart.
+
+### Handmatige test in de browser
+
+Op 30 oktober in de browser van de ontwikkelomgeving (Chromium):
+
+- Werken kiezen verbergt de vragen over scherm en games, gamen kiezen laat ze weer zien.
+- Zware games op 4K zonder budget: de RX 9070 XT, totaal € 1.704,38, met de zin "Deze build haalt gemiddeld ongeveer 65 FPS in zware games op 4K."
+- € 1.300 voor zware games op 4K: de melding "Voor zware games op 4K heb je minimaal € 1.705 nodig." met een link naar de goedkoopste build. De keuzes en het budget bleven ingevuld.
+- Overnemen bij € 2.000 en zware games op 1440p: het overzicht had dezelfde acht onderdelen en hetzelfde totaal (€ 1.984,54).
+- Op 375 pixels breed: geen horizontaal scrollen.
+
+**Lighthouse, toegankelijkheid:** het formulier en het resultaat (€ 2.000, zware games op 1440p) scoorden allebei 100. De pagina met de melding over een te laag budget is niet gemeten, omdat Lighthouse pagina's met status 422 weigert.
+
+**Snelheid:** gemiddelde van 5 keer.
+
+| Pagina | Gemiddeld | Traagst |
+|---|---|---|
+| `/aanbeveling` | 36 ms | 68 ms |
+| `/aanbeveling`, € 2.000, zware games op 1440p | 65 ms | 68 ms |
+| `/aanbeveling`, zware games op 4K, geen budget | 64 ms | 88 ms |
+| `/api/recommendation`, € 3.000, zware games op 4K | 55 ms | 69 ms |
+| `/api/recommendation`, streamen, zware games op 4K | 47 ms | 61 ms |
+| `/bouwen/gpu` | 37 ms | 44 ms |
+
+Alles blijft ruim binnen 1 seconde (NF-08).
+
+### Mutatietest
+
+Op 30 oktober heb ik 22 fouten met opzet in de nieuwe code gezet en steeds alle tests gedraaid. Voorbeelden: `>=` wordt `>` bij de minimale FPS, de videokaart wordt niet meer gecontroleerd op FPS, 4K kijkt naar de FPS op 1440p, zonder budget wordt het budget te hoog, de minimale FPS in de configuratie verandert en de FPS van een kaart in de data verandert.
+
+20 van de 22 fouten werden gevangen. De twee die niet gevonden werden, gingen allebei over werken met een scherm en soort games erbij. Dat werd op twee plekken afgevangen: in `Input` en in `Recommendation::summary()`. Haalde ik één van de twee weg, dan deed de andere het werk nog. De controle in `summary()` was dus overbodig en is weggehaald. Daarna heb ik de fout in `Input` opnieuw ingebouwd, en die werd toen wel gevangen.
+
+### Bevindingen
+
+- De mutatietest vond een dubbele controle, zie hierboven.
+- Met een budget kiest de aanbeveling nog steeds de beste videokaart binnen het budget, ook als een goedkopere al genoeg haalt. Bij € 2.000 voor zware games op Full HD haalt de build 156 FPS, terwijl 60 genoeg is. Dat is zo bedoeld, want het geld is er. Wie wil besparen, laat het budget leeg.
+- De FPS komt uit één test met de testcomputer van Tom's Hardware. In een goedkope build met een andere processor kan de echte FPS lager zijn, vooral op Full HD. Dit komt in de verbetervoorstellen.
+- Dat lichte games met 30 FPS in de test vloeiend lopen, is een aanname. Dit wil ik nagaan in de gebruikerstest of met iemand die deze games speelt.
+
 ## Nog niet getest
 
-- Gebruikerstests met echte mensen (TC-G-01 t/m TC-G-08).
+- Gebruikerstests met echte mensen (TC-G-01 t/m TC-G-09).
 - Installatie door iemand anders (NF-09).
 - Firefox en Safari. Alleen Chromium-browsers zoals Edge zijn geprobeerd.
 - Een echte telefoon. De telefoonweergave is getest met de telefoonweergave van de browser.

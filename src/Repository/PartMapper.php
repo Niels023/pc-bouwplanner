@@ -78,7 +78,15 @@ class PartMapper
 
     private function gpu(array $common, array $row): Gpu
     {
-        return new Gpu(...$common, chip: $row['chip'], vramGb: $row['vram_gb'], lengthMm: $row['length_mm']);
+        return new Gpu(
+            ...$common,
+            chip: $row['chip'],
+            vramGb: $row['vram_gb'],
+            lengthMm: $row['length_mm'],
+            fps1080p: $row['fps_1080p'],
+            fps1440p: $row['fps_1440p'],
+            fps4k: $row['fps_4k'],
+        );
     }
 
     private function pcCase(array $common, array $row): PcCase

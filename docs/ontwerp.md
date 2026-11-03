@@ -79,7 +79,7 @@ flowchart LR
 | Totaalprijs en verbruik zien | F-13 | Het systeem telt prijs en verbruik op na elke keuze. |
 | Build opslaan | F-14 | De gebruiker geeft een naam en krijgt een deelcode. |
 | Opgeslagen build openen | F-15 | De gebruiker opent een build met de link of de deelcode. |
-| Aanbeveling vragen | F-16, F-17 | De gebruiker vult budget en doel in en krijgt een build met uitleg. |
+| Aanbeveling vragen | F-16, F-17, F-31, F-32 | De gebruiker kiest een doel en bij gamen en streamen ook scherm en soort games. Het budget mag leeg blijven. Daarna volgt een build met uitleg. |
 | Aanbeveling overnemen | F-19 | De gebruiker zet de aanbeveling in de bouwplanner om hem aan te passen. |
 | Onderdelen inladen | F-01 | De ontwikkelaar vult de database met het seed-script. |
 
@@ -140,6 +140,9 @@ erDiagram
         varchar chip "bijv. GeForce RTX 4070 Super"
         tinyint vram_gb
         smallint length_mm
+        smallint fps_1080p "gemiddelde FPS zware games"
+        smallint fps_1440p
+        smallint fps_4k
     }
     coolers {
         int part_id PK, FK
@@ -197,6 +200,7 @@ Toelichting:
 - **Verbruik** (`power_w`) staat bij elk onderdeel. Voor processors en videokaarten is dat het maximale vermogen volgens de fabrikant, voor de andere categorieën een vaste schatting. Zie [keuzes.md](keuzes.md).
 - **Build en onderdelen** is een veel-op-veel-relatie via `build_parts`. Dat er per categorie maar één onderdeel in een build zit, controleert de code bij het opslaan.
 - **View `part_details`:** een onderdeel staat verdeeld over `parts`, de tabel van de categorie en de opzoektabellen. De view voegt die samen tot één rij per onderdeel. De PHP-code leest altijd uit deze view, zodat de lange reeks joins op één plek staat (`database/schema.sql`). Velden van een andere categorie zijn in die rij leeg (NULL). De view staat niet in het ERD, omdat hij geen eigen gegevens bevat.
+- **FPS bij videokaarten:** `fps_1080p`, `fps_1440p` en `fps_4k` zijn de gemiddelde beelden per seconde in zware games op dat scherm, uit één bron. De aanbeveling gebruikt ze om een videokaart te kiezen die snel genoeg is (F-31). Waar de getallen vandaan komen, staat in [data-controle.md](data-controle.md).
 - **Geen M.2-sloten:** in de eerste versie van het ontwerp had een moederbord ook `m2_slots`. Dat veld is eruit gehaald, omdat geen enkele regel het gebruikt en ik het aantal per moederbord niet zeker wist.
 
 ## 4. Klassendiagram
@@ -260,6 +264,18 @@ classDiagram
         +string chip
         +int vramGb
         +int lengthMm
+        +int fps1080p
+        +int fps1440p
+        +int fps4k
+        +fpsAt(Resolution resolution) int
+    }
+    class Resolution {
+        <<enumeration>>
+        FullHd
+        Qhd
+        Uhd
+        +label() string
+        +description() string
     }
     class Cooler {
         +int heightMm
@@ -291,6 +307,7 @@ classDiagram
         +estimatedPowerW() int
         +isEmpty() bool
         +isComplete() bool
+        +hasAllExceptGpu() bool
         +parts() array
         +cpu() Cpu
         +motherboard() Motherboard
@@ -317,6 +334,7 @@ classDiagram
     Part <|-- StorageDrive
     Part <|-- Psu
     Part --> Category
+    Gpu ..> Resolution
     Motherboard --> FormFactor
     PcCase --> FormFactor
     Build "1" o-- "0..8" Part : bevat
@@ -347,6 +365,7 @@ classDiagram
     }
     class GpuLengthRule
     class CoolerHeightRule
+    class IntegratedGraphicsRule
     class CompatibilityChecker {
         -array rules
         +withAllRules(int psuMarginPercent) CompatibilityChecker$
@@ -391,6 +410,7 @@ classDiagram
     CompatibilityRule <|.. PsuWattageRule
     CompatibilityRule <|.. GpuLengthRule
     CompatibilityRule <|.. CoolerHeightRule
+    CompatibilityRule <|.. IntegratedGraphicsRule
     CompatibilityChecker o-- CompatibilityRule : voert uit
     CompatibilityChecker ..> CheckReport : maakt
     CheckReport *-- RuleResult
@@ -400,7 +420,7 @@ classDiagram
 
 Elke regel is een eigen klasse met dezelfde interface. De `CompatibilityChecker` kijkt eerst met `requiredCategories()` of de onderdelen voor een regel gekozen zijn. Is dat niet zo, dan maakt de checker zelf een resultaat "nog niet gecontroleerd". Pas als alles er is, roept hij `evaluate()` aan. Zo staat de controle op ontbrekende onderdelen maar op één plek. Een nieuwe regel toevoegen (zoals F-21) betekent: één nieuwe klasse schrijven en die aan de lijst van de checker toevoegen.
 
-`withAllRules()` maakt een checker met alle zes de regels. De marge van de voeding komt uit `config/app.php`.
+`withAllRules()` maakt een checker met alle zeven regels. De marge van de voeding komt uit `config/app.php`.
 
 `problemsFor()` wordt gebruikt om onderdelen grijs te maken (F-12): de checker probeert het onderdeel in een kopie van de build en geeft de fouten en waarschuwingen terug die dat oplevert. Een probleem telt mee als de regel over dit onderdeel gaat, of als het probleem er zonder dit onderdeel niet was. Zo krijgt een videokaart die de voeding overbelast ook een melding, en krijgt een SSD niet de schuld van een verkeerde socket.
 
@@ -419,9 +439,10 @@ classDiagram
         -array parts
         -CompatibilityChecker checker
         -array goals
-        +recommend(int budgetEuro, Goal goal) Recommendation
-        -chooseParts(array choices, array categories, int budgetCents, Goal goal, array settings) array
-        -spendLeftover(array choices, int budgetCents, array upgradeOrder) array
+        -GameTarget target
+        +recommend(int budgetEuro, Goal goal, GameTarget target) Recommendation
+        -chooseParts(array choices, array categories, int budgetCents) array
+        -spendLeftover(array choices, int budgetCents) array
         -canFinish(Build build, Part part, array remaining, int moneyLeftCents) bool
         -cheapestFinish(Build build, array remaining, int limitCents) int
     }
@@ -429,7 +450,25 @@ classDiagram
         +Build build
         +array choices
         +int budgetCents
+        +bool budgetGiven
+        +GameTarget target
         +leftoverCents() int
+        +summary() string
+    }
+    class GameTarget {
+        +Resolution resolution
+        +GameType gameType
+        +int minFps
+        +fits(Gpu gpu) bool
+        +label() string
+        +summary(Gpu gpu) string
+    }
+    class GameType {
+        <<enumeration>>
+        Light
+        Heavy
+        +label() string
+        +description() string
     }
     class RecommendedChoice {
         +Part part
@@ -439,6 +478,7 @@ classDiagram
     class BudgetTooLowException {
         +int minimumCents
     }
+    class NoBuildPossibleException
     class PartRepository {
         -PDO pdo
         +findById(int id) Part
@@ -480,8 +520,12 @@ classDiagram
     Recommender --> CompatibilityChecker
     Recommender ..> Recommendation : maakt
     Recommender ..> BudgetTooLowException : gooit
+    Recommender ..> NoBuildPossibleException : gooit
     Recommender --> Goal
+    Recommender --> GameTarget
+    GameTarget --> GameType
     Recommendation *-- RecommendedChoice
+    Recommendation --> GameTarget
     PartRepository ..> PartFilter
     PartRepository --> PartMapper
     PartApiController --> PartRepository
@@ -494,6 +538,8 @@ classDiagram
 ```
 
 De paginacontrollers (`HomePageController`, `BuildPageController`, `RecommendationPageController`) gebruiken dezelfde repositories en logica als de API-controllers, maar geven HTML terug in plaats van JSON.
+
+`budgetEuro` en `target` mogen leeg (`null`) zijn. Zonder budget wordt het budget het minimum (F-32). Zonder `GameTarget` telt alleen het budget, zoals bij werken. `Resolution` en `GameType` zijn enums, zodat er geen ander scherm of soort games in kan komen dan de drie en twee die er zijn. De minimale FPS per soort games komt uit `config/app.php`.
 
 ### 4.4 HTTP-laag
 
@@ -541,7 +587,9 @@ classDiagram
         +partFilter(Request request, Category category) PartFilter$
         +buildName(mixed name) string$
         +buildToSave(Build build) Build$
+        +sort(string value) string$
         +budget(string value) int$
+        +gameTarget(Request request, Goal goal, array gameTypes) GameTarget$
         +goal(string value) Goal$
     }
     class View {
@@ -555,6 +603,7 @@ classDiagram
         +build() Build
         +choose(Part part) void
         +remove(Category category) void
+        +replaceWith(Build build) void
     }
 
     Application --> Router
@@ -632,7 +681,7 @@ flowchart TD
 
 Voorbeeld met 30% marge en een verbruik van 450 W: nodig is 585 W. Een voeding van 650 W is in orde, 500 W geeft een waarschuwing en 400 W een fout. Een voeding van precies 585 W is in orde.
 
-## 6. De zes compatibiliteitsregels
+## 6. De zeven compatibiliteitsregels
 
 | Regel | Eis | Nodig | In orde als | Voorbeeld van een foutmelding |
 |---|---|---|---|---|
@@ -640,10 +689,13 @@ Voorbeeld met 30% marge en een verbruik van 450 W: nodig is 585 W. Een voeding v
 | RamTypeRule | F-06 | moederbord, geheugen | RAM-type geheugen = RAM-type moederbord | Het geheugen is DDR4, maar het moederbord ondersteunt alleen DDR5. |
 | FormFactorRule | F-07 | moederbord, kast | `size_rank` moederbord ≤ `size_rank` grootste formaat kast | Het moederbord is ATX, maar in deze kast past maximaal Micro-ATX. |
 | PsuWattageRule | F-08 | voeding, processor | zie 5.1 | De voeding levert 400 W, maar de onderdelen verbruiken samen ongeveer 450 W. |
-| GpuLengthRule | F-09 | videokaart, kast | lengte videokaart ≤ maximale lengte kast | De videokaart is 336 mm lang, maar in deze kast past maximaal 305 mm. |
+| GpuLengthRule | F-09 | kast | geen videokaart, of lengte videokaart ≤ maximale lengte kast | De videokaart is 336 mm lang, maar in deze kast past maximaal 305 mm. |
 | CoolerHeightRule | F-10 | koeler, kast | hoogte koeler ≤ maximale koelerhoogte kast | De koeler is 168 mm hoog, maar in deze kast past maximaal 155 mm. |
+| IntegratedGraphicsRule | F-21 | processor | er is een videokaart, of de processor heeft ingebouwde graphics | Deze processor heeft geen ingebouwde graphics. Zonder videokaart krijg je geen beeld. |
 
 De voedingsregel heeft naast de voeding ook de processor nodig. Zonder processor zou het verbruik heel laag uitvallen en zou elke voeding "in orde" zijn, wat de gebruiker op het verkeerde been zet.
+
+Sinds F-21 mag een build zonder videokaart, als de processor ingebouwde graphics heeft. Daarom heeft de lengteregel alleen nog de kast nodig: zonder videokaart is er niets dat moet passen. De regel voor beeld geeft pas een fout als alle andere onderdelen gekozen zijn. Daarvoor is de status "nog niet gecontroleerd", want de videokaart kan nog komen. Een build zonder videokaart is compleet als de processor ingebouwde graphics heeft (`Build::isComplete()`).
 
 ## 7. Aanbeveling
 
@@ -655,16 +707,16 @@ Het budget wordt per doel over de categorieën verdeeld. Deze percentages staan 
 
 | Categorie | Gamen | Werken | Streamen |
 |---|---|---|---|
-| Processor | 14% | 28% | 20% |
-| Moederbord | 6% | 9% | 7% |
-| Geheugen | 13% | 22% | 20% |
-| Videokaart | 50% | 20% | 38% |
-| Koeler | 3% | 3% | 3% |
-| Kast | 4% | 5% | 4% |
-| Opslag | 7% | 9% | 5% |
-| Voeding | 3% | 4% | 3% |
+| Processor | 14% | 34% | 20% |
+| Moederbord | 6% | 11% | 7% |
+| Geheugen | 13% | 26% | 20% |
+| Videokaart | 50% | 0% | 38% |
+| Koeler | 3% | 4% | 3% |
+| Kast | 4% | 6% | 4% |
+| Opslag | 7% | 14% | 5% |
+| Voeding | 3% | 5% | 3% |
 
-De eerste versie van deze tabel gaf geheugen 8 tot 14%. Met de echte prijzen van oktober 2026 was dat te weinig, want 16 GB kost nu minimaal € 169. De percentages zijn aangepast nadat ik de aanbeveling op de echte onderdelen had gedraaid, zie het [testrapport](testrapport.md).
+De eerste versie van deze tabel gaf geheugen 8 tot 14%. Met de echte prijzen van oktober 2026 was dat te weinig, want 16 GB kost nu minimaal € 169. De percentages zijn aangepast nadat ik de aanbeveling op de echte onderdelen had gedraaid, zie het [testrapport](testrapport.md). Bij werken kreeg de videokaart eerst 20%. Sinds F-21 is dat 0%: een doel zonder deel voor de videokaart krijgt geen losse videokaart en alleen een processor met ingebouwde graphics. Die 20% is over de andere onderdelen verdeeld.
 
 Daarnaast heeft elk doel minimumeisen en een eigen volgorde voor het restgeld:
 
@@ -674,12 +726,12 @@ Daarnaast heeft elk doel minimumeisen en een eigen volgorde voor het restgeld:
 | Werken | 16 GB | 500 GB | processor, geheugen, opslag |
 | Streamen | 32 GB | 1000 GB | processor, videokaart, geheugen, opslag |
 
-Bij werken krijgt de videokaart geen restgeld, want dat levert daar niets op. Je houdt dan liever geld over. Een moederbord moet minimaal 4 geheugensloten hebben, zodat je later geheugen kunt bijplaatsen. Daardoor kiest de aanbeveling geen Mini-ITX-borden: die zijn duur, maar niet sneller.
+Bij werken zit er geen videokaart in de build, dus die krijgt ook geen restgeld. Een moederbord moet minimaal 4 geheugensloten hebben, zodat je later geheugen kunt bijplaatsen. Daardoor kiest de aanbeveling geen Mini-ITX-borden: die zijn duur, maar niet sneller.
 
 ### 7.2 Stappen
 
-1. **Invoer controleren.** Het budget moet een geheel getal van 1 tot 100.000 zijn en het doel moet bestaan. Anders volgt een foutmelding.
-2. **Minimum bepalen.** `cheapestFinish()` rekent uit wat de goedkoopste complete build kost die aan de eisen van het doel voldoet. Is het budget lager, dan stopt de aanbeveling met het bedrag dat minimaal nodig is.
+1. **Invoer controleren.** Het budget is leeg of een geheel getal van 1 tot 100.000, en het doel moet bestaan. Bij gamen en streamen horen scherm en soort games er allebei bij, of allebei niet. Anders volgt een foutmelding.
+2. **Minimum bepalen.** `cheapestFinish()` rekent uit wat de goedkoopste complete build kost die aan de eisen van het doel voldoet. Is er een scherm en soort games gekozen, dan tellen alleen videokaarten mee die snel genoeg zijn. Haalt geen enkele videokaart dat, dan volgt een `NoBuildPossibleException`. Is het budget leeg, dan wordt het budget dit minimum. Is het budget lager, dan stopt de aanbeveling met het bedrag dat minimaal nodig is.
 3. **Onderdelen kiezen.** In deze volgorde: processor, moederbord, geheugen, videokaart, koeler, kast, opslag. De kast komt na de videokaart en de koeler omdat die er allebei in moeten passen. Per categorie:
    1. **Kandidaten:** alle onderdelen die aan de minimumeisen voldoen en geen fout of waarschuwing geven met wat al gekozen is. Dit gebruikt dezelfde `CompatibilityChecker` als de bouwplanner.
    2. **Deelbudget:** het percentage van het budget voor deze categorie.
@@ -689,7 +741,26 @@ Bij werken krijgt de videokaart geen restgeld, want dat levert daar niets op. Je
 4. **Restgeld besteden.** Wat over is gaat naar de onderdelen die voor dit doel het belangrijkst zijn. Per onderdeel uit de volgorde van het doel kijkt de `Recommender` of een duurder onderdeel past en betaalbaar is.
 5. **Voeding kiezen.** De voeding komt als laatste, omdat dan het verbruik vaststaat. Een betere videokaart kan een zwaardere voeding nodig hebben. Daar houdt stap 4 rekening mee.
 
-De uitkomst is de build, de uitleg per onderdeel en het bedrag dat over is.
+De uitkomst is de build, de uitleg per onderdeel, het bedrag dat over is en bij een gekozen scherm een zin over wat de build haalt.
+
+### 7.3 Scherm en soort games
+
+Alleen een budget zegt weinig voor iemand die niets van PC's weet. Daarom kies je bij gamen en streamen ook je scherm en het soort games, met voorbeelden die je kent (F-31).
+
+| Keuze | Minimale FPS in zware games op dat scherm |
+|---|---|
+| Zware games, zoals Cyberpunk 2077 | 60 |
+| Lichte games, zoals Fortnite | 30 |
+
+`GameTarget::fits()` vergelijkt de FPS van een videokaart op het gekozen scherm met dit minimum. Videokaarten die het niet halen doen niet mee, ook niet bij het besteden van restgeld. Met de onderdelen van nu geeft dat:
+
+| Scherm | Lichte games | Zware games |
+|---|---|---|
+| Full HD | GeForce RTX 5060 of beter | GeForce RTX 5060 of beter |
+| 1440p | GeForce RTX 5060 of beter | Radeon RX 9060 XT of beter |
+| 4K | Radeon RX 9060 XT of beter | Radeon RX 9070 XT of beter |
+
+Boven het resultaat staat een zin in gewone taal, bijvoorbeeld: "Deze build haalt gemiddeld ongeveer 67 FPS in zware games op 1440p. Vanaf 60 FPS (beelden per seconde) voelt een game vloeiend." Bij werken is er geen scherm of soort games, want daar zit geen videokaart in de build.
 
 `cheapestFinish()` probeert de combinaties van de categorieën die nog over zijn, van goedkoop naar duur. Is een pad duurder dan de beste oplossing tot nu toe, dan stopt het op dat pad. Alle combinaties proberen zou ruim 2 miljoen mogelijkheden zijn, zo blijft een aanbeveling onder de 20 milliseconden.
 
@@ -704,7 +775,7 @@ Alle antwoorden zijn JSON. Categorieën en doelen gebruiken Engelse waarden, net
 | POST | `/api/builds` | Build opslaan | body: `name`, `part_ids` | 201, 400, 422 |
 | GET | `/api/builds/{code}` | Opgeslagen build ophalen | | 200, 404 |
 | POST | `/api/builds/check` | Build controleren zonder op te slaan | body: `part_ids` | 200, 400, 422 |
-| GET | `/api/recommendation` | Aanbeveling opvragen | query: `budget`, `goal` | 200, 422 |
+| GET | `/api/recommendation` | Aanbeveling opvragen | query: `goal`, en optioneel `budget`, `resolution` (`1080p`, `1440p`, `4k`) en `game_type` (`light`, `heavy`) | 200, 422 |
 
 Betekenis van de statuscodes:
 
@@ -729,6 +800,7 @@ Foutcodes die de API teruggeeft:
 | 405 | `method_not_allowed` | Het pad bestaat, maar niet met deze methode |
 | 422 | `invalid_category` | Onbekende categorie in het filter |
 | 422 | `invalid_max_price` | Maximale prijs is geen getal boven 0 |
+| 422 | `invalid_sort` | Onbekende sortering |
 | 422 | `invalid_part_ids` | `part_ids` is geen lijst met positieve gehele getallen |
 | 422 | `unknown_part` | Een onderdeel uit de lijst bestaat niet |
 | 422 | `duplicate_category` | Twee onderdelen in dezelfde categorie |
@@ -736,7 +808,9 @@ Foutcodes die de API teruggeeft:
 | 422 | `empty_build` | Build zonder onderdelen opslaan |
 | 422 | `invalid_budget` | Budget is geen geheel getal van 1 tot 100.000 |
 | 422 | `invalid_goal` | Doel ontbreekt of bestaat niet |
+| 422 | `invalid_game_target` | Alleen scherm of alleen soort games, of een waarde die niet bestaat |
 | 422 | `budget_too_low` | Budget is lager dan de goedkoopste complete build |
+| 422 | `no_build_possible` | Geen enkele videokaart haalt het gekozen scherm en soort games |
 | 500 | `server_error` | Onverwachte fout op de server |
 
 Een onderdeel in een antwoord ziet er zo uit. Wat in `specs` staat, hangt af van de categorie:
@@ -760,7 +834,7 @@ Een onderdeel in een antwoord ziet er zo uit. Wat in `specs` staat, hangt af van
 }
 ```
 
-`GET /api/parts` geeft `count` en een lijst `parts` terug. Zijn er geen resultaten, dan is dat gewoon een 200 met `count` 0. `POST /api/builds` en `GET /api/builds/{code}` geven `share_code`, `url`, `name`, `created_at`, `parts` en `check` terug, waarbij `check` hetzelfde is als het antwoord van de controle hieronder. `GET /api/recommendation` geeft `goal`, `budget_eur`, `leftover_eur`, `choices` en `check` terug. Elke keuze in `choices` heeft `part`, `category_budget_eur` en `reason`.
+`GET /api/parts` geeft `count` en een lijst `parts` terug. Zijn er geen resultaten, dan is dat gewoon een 200 met `count` 0. `POST /api/builds` en `GET /api/builds/{code}` geven `share_code`, `url`, `name`, `created_at`, `parts` en `check` terug, waarbij `check` hetzelfde is als het antwoord van de controle hieronder. `GET /api/recommendation` geeft `goal`, `budget_eur`, `leftover_eur`, `summary`, `choices` en `check` terug. Zonder budget is `budget_eur` leeg (`null`) en `leftover_eur` 0. Zonder scherm en soort games is `summary` leeg. Elke keuze in `choices` heeft `part`, `category_budget_eur` en `reason`. Een videokaart heeft in `specs` ook `fps_1080p`, `fps_1440p` en `fps_4k`.
 
 Voorbeeld van een controle:
 
@@ -814,7 +888,8 @@ Voorbeeld van een foutmelding:
 | `/opslaan` | POST: slaat de build op en stuurt door naar de opgeslagen build. |
 | `/build/open` | Verwerkt het veld met de deelcode op de startpagina. |
 | `/build/{code}` | Een opgeslagen build. |
-| `/aanbeveling` | Formulier voor budget en doel, en daaronder het resultaat. |
+| `/aanbeveling` | Formulier voor doel, scherm, soort games en budget, en daaronder het resultaat. |
+| `/aanbeveling/overnemen` | POST: rekent de aanbeveling opnieuw uit, zet hem in de sessie en stuurt door naar het overzicht. |
 
 De build waar de gebruiker mee bezig is, staat in de PHP-sessie. Kiezen en verwijderen gaat met een gewoon formulier (POST). Daarna stuurt de server de browser door naar dezelfde stap, zodat vernieuwen de keuze niet opnieuw verstuurt. Zo werkt alles zonder JavaScript (NF-07).
 
@@ -892,8 +967,10 @@ De namen op de kaartjes in deze schetsen zijn voorbeelden. De echte onderdelen k
 | F-13 | `Build::totalPriceCents()`, `Build::estimatedPowerW()`, JavaScript (§9) |
 | F-14, F-15 | `BuildRepository`, tabellen `builds` en `build_parts`, `POST /api/builds`, `GET /api/builds/{code}` |
 | F-16, F-17 | `Recommender` (§7), `GET /api/recommendation` |
+| F-31 | `GameTarget`, `GameType`, `Resolution`, FPS-kolommen in `gpus` (§3, §7.3) |
+| F-32 | `Input::budget()`, `Recommender::recommend()` (§7.2) |
 | F-18 | REST API (§8) |
-| F-19 | Pagina `/aanbeveling`, sessie |
+| F-19 | `RecommendationPageController::adopt()`, `WorkingBuild::replaceWith()` |
 | F-21 | Extra regel `IntegratedGraphicsRule` (zelfde interface als §4.2) |
 | NF-01, NF-02 | `public/css/style.css`, templates |
 | NF-03 | `PartRepository` en `BuildRepository` met prepared statements, escaping in de templates |

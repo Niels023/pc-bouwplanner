@@ -4,8 +4,12 @@ namespace Tests\Unit\Recommendation;
 
 use App\Compatibility\CompatibilityChecker;
 use App\Model\Category;
+use App\Model\Resolution;
 use App\Recommendation\BudgetTooLowException;
+use App\Recommendation\GameTarget;
+use App\Recommendation\GameType;
 use App\Recommendation\Goal;
+use App\Recommendation\NoBuildPossibleException;
 use App\Recommendation\Recommendation;
 use App\Recommendation\RecommendedChoice;
 use App\Recommendation\Recommender;
@@ -127,6 +131,77 @@ class RecommenderTest extends TestCase
         $this->assertTrue($recommendation->build->cpu()->hasIntegratedGraphics);
     }
 
+    public function testNoBudgetGivesTheCheapestBuild(): void
+    {
+        $recommendation = $this->recommender(self::GOALS)->recommend(null, Goal::Gaming);
+
+        $this->assertSame(self::MINIMUM_GAMING_EUR * 100, $recommendation->build->totalPriceCents());
+        $this->assertSame(0, $recommendation->leftoverCents());
+        $this->assertFalse($recommendation->budgetGiven);
+    }
+
+    public function testReasonWithoutBudgetDoesNotMentionABudget(): void
+    {
+        $recommendation = $this->recommender(self::GOALS)->recommend(null, Goal::Gaming);
+
+        foreach ($recommendation->choices as $choice) {
+            $this->assertStringStartsWith('De goedkoopste keuze die past', $choice->reason);
+            $this->assertStringNotContainsString('deelbudget', $choice->reason);
+        }
+    }
+
+    public function testTargetOnlyAllowsFastEnoughGpu(): void
+    {
+        $target = new GameTarget(Resolution::Uhd, GameType::Heavy, 60);
+
+        $recommendation = $this->recommender(self::GOALS)->recommend(null, Goal::Gaming, $target);
+
+        $this->assertSame(65, $recommendation->build->gpu()->fps4k);
+    }
+
+    public function testTargetRaisesTheMinimumBudget(): void
+    {
+        $target = new GameTarget(Resolution::Uhd, GameType::Heavy, 60);
+
+        $this->expectException(BudgetTooLowException::class);
+        $this->expectExceptionMessage('Voor zware games op 4K heb je minimaal');
+
+        $this->recommender(self::GOALS)->recommend(self::MINIMUM_GAMING_EUR, Goal::Gaming, $target);
+    }
+
+    public function testTargetThatNoGpuReachesGivesClearError(): void
+    {
+        $target = new GameTarget(Resolution::Uhd, GameType::Heavy, 500);
+
+        $this->expectException(NoBuildPossibleException::class);
+
+        $this->recommender(self::GOALS)->recommend(3000, Goal::Gaming, $target);
+    }
+
+    public function testReasonOfGpuNamesTheTarget(): void
+    {
+        $target = new GameTarget(Resolution::FullHd, GameType::Heavy, 60);
+
+        $recommendation = $this->recommender(self::GOALS)->recommend(1100, Goal::Gaming, $target);
+
+        $reason = $this->choiceFor($recommendation, Category::Gpu)->reason;
+        $this->assertStringContainsString('geschikt voor zware games op Full HD', $reason);
+    }
+
+    public function testSummaryDescribesTheBuild(): void
+    {
+        $target = new GameTarget(Resolution::FullHd, GameType::Heavy, 60);
+
+        $recommendation = $this->recommender(self::GOALS)->recommend(1100, Goal::Gaming, $target);
+
+        $this->assertStringContainsString('ongeveer 100 FPS', $recommendation->summary());
+    }
+
+    public function testNoSummaryWithoutTarget(): void
+    {
+        $this->assertNull($this->recommend(1100)->summary());
+    }
+
     public function testPicksBestPartWithinCategoryBudget(): void
     {
         $recommendation = $this->recommend(3000);
@@ -233,10 +308,7 @@ class RecommenderTest extends TestCase
     {
         $choice = $this->choiceFor($this->recommend(self::MINIMUM_GAMING_EUR), Category::Storage);
 
-        $this->assertSame(
-            'Het deelbudget van € 46 was te krap, daarom de goedkoopste keuze die past.',
-            $choice->reason,
-        );
+        $this->assertStringStartsWith('Het deelbudget van € 46 was te krap', $choice->reason);
     }
 
     public function testReasonSaysWhenLeftoverPaidForUpgrade(): void
@@ -286,7 +358,7 @@ class RecommenderTest extends TestCase
             Parts::ram('DDR5', capacityGb: 16, priceCents: 30000),
             Parts::ram('DDR5', capacityGb: 32, priceCents: 60000),
             Parts::gpu(lengthMm: 250, powerW: 150, priceCents: 40000),
-            Parts::gpu(lengthMm: 300, powerW: 300, priceCents: 100000),
+            Parts::gpu(lengthMm: 300, powerW: 300, priceCents: 100000, fps1080p: 160, fps1440p: 115, fps4k: 65),
             Parts::cooler(heightMm: 150, priceCents: 3000),
             Parts::cooler(heightMm: 160, priceCents: 8000),
             Parts::pcCase(Parts::atx(), priceCents: 6000),

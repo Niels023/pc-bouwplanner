@@ -9,8 +9,11 @@ use App\Http\Request;
 use App\Http\Response;
 use App\Http\View;
 use App\Http\WorkingBuild;
+use App\Model\Resolution;
 use App\Recommendation\BudgetTooLowException;
+use App\Recommendation\GameType;
 use App\Recommendation\Goal;
+use App\Recommendation\NoBuildPossibleException;
 use App\Recommendation\Recommendation;
 use App\Recommendation\Recommender;
 use App\Repository\PartFilter;
@@ -24,6 +27,7 @@ class RecommendationPageController
         private CompatibilityChecker $checker,
         private WorkingBuild $working,
         private array $goals,
+        private array $gameTypes,
     ) {
     }
 
@@ -32,21 +36,30 @@ class RecommendationPageController
         $data = [
             'title' => 'Laat een build voorstellen',
             'goals' => Goal::cases(),
+            'resolutions' => Resolution::cases(),
+            'gameTypes' => GameType::cases(),
             'budget' => $request->query('budget') ?? '',
             'selectedGoal' => $request->query('goal') ?? Goal::Gaming->value,
+            'selectedResolution' => $request->query('resolution') ?? Resolution::FullHd->value,
+            'selectedGameType' => $request->query('game_type') ?? GameType::Heavy->value,
             'recommendation' => null,
             'report' => null,
             'error' => null,
+            'cheapestUrl' => null,
         ];
 
-        // Zonder budget en doel in de URL is het formulier nog niet verstuurd.
-        if (!array_key_exists('budget', $request->queryParams)) {
+        // Zonder doel in de URL is het formulier nog niet verstuurd.
+        if (!array_key_exists('goal', $request->queryParams)) {
             return $this->view->render('recommendation', $data);
         }
 
         try {
             $recommendation = $this->recommendationFor($request);
-        } catch (HttpException | BudgetTooLowException $e) {
+        } catch (BudgetTooLowException $e) {
+            $data['cheapestUrl'] = $this->urlWithoutBudget($request);
+
+            return $this->view->render('recommendation', ['error' => $e->getMessage()] + $data, 422);
+        } catch (HttpException | NoBuildPossibleException $e) {
             return $this->view->render('recommendation', ['error' => $e->getMessage()] + $data, 422);
         }
 
@@ -62,8 +75,8 @@ class RecommendationPageController
     {
         try {
             $recommendation = $this->recommendationFor($request);
-        } catch (BudgetTooLowException $e) {
-            throw new HttpException(422, 'budget_too_low', $e->getMessage());
+        } catch (BudgetTooLowException | NoBuildPossibleException $e) {
+            throw new HttpException(422, 'no_recommendation', $e->getMessage());
         }
 
         $this->working->replaceWith($recommendation->build);
@@ -75,8 +88,17 @@ class RecommendationPageController
     {
         $budget = Input::budget($request->query('budget'));
         $goal = Input::goal($request->query('goal'));
+        $target = Input::gameTarget($request, $goal, $this->gameTypes);
         $parts = $this->parts->findByFilter(new PartFilter());
 
-        return (new Recommender($parts, $this->checker, $this->goals))->recommend($budget, $goal);
+        return (new Recommender($parts, $this->checker, $this->goals))->recommend($budget, $goal, $target);
+    }
+
+    private function urlWithoutBudget(Request $request): string
+    {
+        $query = $request->queryParams;
+        unset($query['budget']);
+
+        return '/aanbeveling?' . http_build_query($query);
     }
 }

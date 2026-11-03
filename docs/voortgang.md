@@ -66,13 +66,15 @@ Start: woensdag 28 oktober 2026.
 - De website gebouwd op branches `feature/paginas-basis`, `feature/bouwplanner` en `feature/aanbeveling-pagina`: startpagina, acht stappen met filters en kaartjes, grijze onderdelen met uitleg, totalen, overzicht, opslaan, openen met deelcode en de aanbevelingspagina. Eén klein JavaScript-bestand om te kiezen zonder herladen.
 - Alle 200 tests slagen en de linter geeft 0 fouten. Handmatig getest: breedtes van 360 tot 1920 pixels, Lighthouse (100 op alle gemeten pagina's), contrast, toetsenbord, zonder JavaScript, snelheid en een schone installatie. Alle Must haves zijn nu gebouwd.
 - Schermafbeeldingen van de site in `docs/img/` gezet voor het verslag.
+- Should haves gebouwd en gemerged: sorteren op prijs en naam (#20, `feature/sorteren`), controle op beeld zonder videokaart (#21, `feature/zonder-videokaart`) en de aanbeveling overnemen in de bouwplanner (#19, `feature/aanbeveling-overnemen`). Werken krijgt nu geen losse videokaart meer, daardoor kost de goedkoopste build voor werken € 766,21 in plaats van € 1.126. Alle 228 tests slaagden.
+- Ik vond dat alleen een budget weinig zegt voor iemand die niets van PC's weet. Daarom twee nieuwe Should haves toegevoegd: F-31 (#35, scherm en soort games kiezen) en F-32 (#36, budget mag leeg). FPS per videokaart opgezocht bij Tom's Hardware. Op branch `feature/aanbeveling-scherm-en-games` gebouwd en getest, 258 tests.
 
 **Open:**
 
 - Gebruikerstest met 2 of 3 echte mensen (`docs/testplan.md`, hoofdstuk 6). Dit moet ik zelf doen.
 - De site laten zien aan de docent en de feedback opschrijven.
 - `verbetervoorstellen.md` maken, op basis van de gebruikerstest en de feedback. Eerste punten: de aanbeveling kijkt alleen naar prijs en niet naar koelvermogen, en de site is nog niet getest in Firefox, Safari en op een echte telefoon.
-- Should haves: F-19 (aanbeveling overnemen), F-20 (sorteren) en F-21 (build zonder videokaart, maakt de aanbeveling voor werken goedkoper).
+- Documentatie van F-19 t/m F-21, F-31 en F-32 bijwerken en `feature/aanbeveling-scherm-en-games` mergen.
 - Eén persoon laten installeren met de README voor NF-09 (#34).
 
 **Afwijkingen en wat ik eraan gedaan heb:**
@@ -89,5 +91,16 @@ Start: woensdag 28 oktober 2026.
 - De mutatietest vond twee zwakke tests. Oplossing: tests verbeterd, zie het testrapport.
 - De website gebruikt de API niet, anders dan in het ontwerp stond. Na een keuze moeten ook de kaartjes veranderen, en dan had ik die logica in JavaScript moeten schrijven. Oplossing: het script haalt de HTML van de pagina op en vervangt alleen de stukken die veranderen. Het ontwerp en `keuzes.md` zijn aangepast.
 - Bij het bekijken in de browser vielen dingen op die de tests niet zagen: onderdelen die niet passen stonden bovenaan, de filters duwden op een telefoon de kaartjes weg en een kolom was te smal. Oplossing: allemaal aangepast, zie het testrapport.
+- Bij het committen van het sorteren heb ik `git add -A` gebruikt. Daardoor kwamen twee bestanden van F-21 (`IntegratedGraphicsRule` en de test ervan) in de commit voor sorteren, en die ging naar mijn lokale `main`. De geschiedenis van `main` herschrijf ik niet. Oplossing: F-21 eerst afgemaakt en gemerged, en pas daarna gepusht. Zo heeft `main` op GitHub nooit halve code gehad. Sindsdien noem ik bij elke commit de bestanden zelf.
+- F-32 verandert het acceptatiecriterium van F-16: een leeg budget gaf eerst een melding en geeft nu de goedkoopste build. F-16 is daarop aangepast.
+- De mutatietest op F-31 vond een dubbele controle voor werken met scherm en games. De overbodige controle is weggehaald, zie het testrapport.
 
 **Komt de planning in gevaar?** Nee.
+
+### Sessie dinsdag 3 november 2026
+
+**Gedaan:**
+
+- Documentatie van F-19, F-20, F-21, F-31 en F-32 bijgewerkt: ontwerp met nieuwe PNG's, keuzes, bron van de FPS-gegevens, testplan, testrapport, uitleg en README.
+- Testrun: 258 tests slagen, de linter geeft 0 fouten.
+- Ik vond de vormgeving van de site lelijk. Drie stijlen bekeken: licht en modern, donker in gaming-stijl, of meegaan met de instelling van het apparaat. Gekozen voor licht en modern.

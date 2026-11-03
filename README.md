@@ -1,6 +1,6 @@
 # PC-bouwplanner
 
-Een website waarop je zelf een PC samenstelt. Je kiest per stap een onderdeel (processor, moederbord, geheugen, videokaart, koeler, kast, opslag en voeding). De site controleert of de onderdelen bij elkaar passen, telt de prijs en het geschatte stroomverbruik op en kan op basis van je budget en doel (gamen, werken of streamen) zelf een build voorstellen.
+Een website waarop je zelf een PC samenstelt. Je kiest per stap een onderdeel (processor, moederbord, geheugen, videokaart, koeler, kast, opslag en voeding). De site controleert of de onderdelen bij elkaar passen, telt de prijs en het geschatte stroomverbruik op en kan zelf een build voorstellen. Daarvoor kies je je doel (gamen, werken of streamen), je scherm en wat voor games je speelt. Een budget mag, maar hoeft niet.
 
 De basisversie is af: je kunt een PC samenstellen, je build opslaan en een aanbeveling vragen. De site werkt op telefoon en desktop, ook zonder JavaScript.
 
@@ -43,12 +43,12 @@ De site draait dan op http://localhost:8000. Naast de website is er een REST API
 
 | Methode | Pad | Wat |
 |---|---|---|
-| GET | `/api/parts` | Onderdelen ophalen. Filters: `category`, `brand`, `max_price`, `socket`, `ram_type`, `form_factor` |
+| GET | `/api/parts` | Onderdelen ophalen. Filters: `category`, `brand`, `max_price`, `socket`, `ram_type`, `form_factor`. Sorteren met `sort`: `price_asc`, `price_desc` of `name` |
 | GET | `/api/parts/{id}` | Eén onderdeel ophalen |
 | POST | `/api/builds/check` | Onderdelen controleren, body: `{"part_ids": [1, 2]}` |
 | POST | `/api/builds` | Build opslaan, body: `{"name": "Mijn pc", "part_ids": [1, 2]}` |
 | GET | `/api/builds/{code}` | Opgeslagen build ophalen |
-| GET | `/api/recommendation` | Aanbeveling, bijvoorbeeld `?budget=2000&goal=gaming`. Doelen: `gaming`, `work`, `streaming` |
+| GET | `/api/recommendation` | Aanbeveling, bijvoorbeeld `?goal=gaming&resolution=1440p&game_type=heavy&budget=2000`. Doelen: `gaming`, `work`, `streaming`. Schermen: `1080p`, `1440p`, `4k`. Games: `light`, `heavy`. Zonder `budget` krijg je de goedkoopste build |
 
 ## Tests en codestijl
 

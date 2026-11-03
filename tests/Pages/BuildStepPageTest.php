@@ -41,7 +41,7 @@ class BuildStepPageTest extends PageTestCase
         $expected = [
             'motherboard' => '4 geheugensloten',
             'ram' => 'DDR4',
-            'gpu' => 'Lengte 197 mm',
+            'gpu' => 'Zware games: 88 FPS op Full HD',
             'cooler' => 'Hoogte 70 mm',
             'case' => 'Koeler tot 70 mm',
             'storage' => 'NVMe',

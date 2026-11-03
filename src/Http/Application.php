@@ -43,7 +43,12 @@ class Application
 
         $partApi = new PartApiController($parts);
         $buildApi = new BuildApiController($parts, $builds, $checker);
-        $recommendationApi = new RecommendationApiController($parts, $checker, $this->config['goals']);
+        $recommendationApi = new RecommendationApiController(
+            $parts,
+            $checker,
+            $this->config['goals'],
+            $this->config['game_types'],
+        );
 
         $view = new View();
         $homePage = new HomePageController($view);
@@ -55,6 +60,7 @@ class Application
             $checker,
             $working,
             $this->config['goals'],
+            $this->config['game_types'],
         );
 
         $router = new Router();

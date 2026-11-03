@@ -201,3 +201,24 @@ De data is zo gekozen dat elke controleregel ook met echte onderdelen een keer a
 - **Lengte videokaart:** de ROG Astral (358 mm) past niet in de Fractal North (355 mm), maar wel in de Q300L V2 (360 mm).
 - **Hoogte koeler:** de NH-L12S (70 mm) past precies in de NR200P V3 (70 mm). De Freezer 36 (159 mm) past precies in de Q300L V2 (159 mm), de AK620 (160 mm) net niet.
 - **Voeding:** de Ryzen 7 9800X3D met de ROG Astral en de rest van de onderdelen verbruikt ongeveer 583 W. Met 30% marge is 758 W nodig. Een voeding van 750 W geeft dan een waarschuwing, 850 W is in orde.
+
+## 7. FPS van de videokaarten
+
+Voor F-31 heeft elke videokaart drie getallen: de gemiddelde FPS in zware games op Full HD, 1440p en 4K.
+
+Bron: [GPU Benchmarks Hierarchy van Tom's Hardware](https://www.tomshardware.com/reviews/gpu-hierarchy,4388.html), bijgewerkt op 24 juni 2026, opgezocht op 30 oktober 2026. Ik gebruik de tabel voor rasterization: het gemiddelde over 11 games op hoge instellingen, zonder upscaling. Alle kaarten zijn daar op dezelfde testcomputer gemeten, dus de getallen zijn met elkaar te vergelijken.
+
+| Chip | Full HD | 1440p | 4K |
+|---|---|---|---|
+| GeForce RTX 5060 | 88 | 59 | 21 |
+| Radeon RX 9060 XT 16GB | 98 | 67 | 35 |
+| GeForce RTX 5060 Ti 16GB | 105 | 73 | 40 |
+| GeForce RTX 5070 | 132 | 96 | 54 |
+| Radeon RX 9070 XT | 156 | 116 | 65 |
+| GeForce RTX 5080 | 166 | 128 | 77 |
+
+Keuzes:
+
+- **Naar beneden afgerond.** Zo belooft de site nooit meer dan de test.
+- **Per chip, niet per merk.** Tom's Hardware test de standaardversie van een chip. De MSI- en ASUS-versie van de RTX 5080 krijgen dus dezelfde getallen. Fabrieksoverklokte kaarten zijn in de praktijk een paar procent sneller, dat is de veilige kant.
+- **Andere processor, andere FPS.** De getallen zijn gemeten met de testcomputer van Tom's Hardware. Met een andere processor kan de echte FPS anders uitvallen, vooral op Full HD, waar de processor meer uitmaakt. Dit staat ook bij de verbeterpunten.
