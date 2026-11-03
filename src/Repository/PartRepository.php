@@ -123,7 +123,11 @@ class PartRepository
             Category::Motherboard => $this->motherboard($common, $row),
             Category::Ram => $this->ramKit($common, $row),
             Category::Gpu => $this->gpu($common, $row),
-            Category::Cooler => new Cooler(...$common, heightMm: $row['height_mm']),
+            Category::Cooler => new Cooler(
+                ...$common,
+                heightMm: $row['height_mm'],
+                sockets: explode(',', $row['cooler_sockets'] ?? ''),
+            ),
             Category::PcCase => $this->pcCase($common, $row),
             Category::Storage => $this->storageDrive($common, $row),
             Category::Psu => $this->psu($common, $row),
