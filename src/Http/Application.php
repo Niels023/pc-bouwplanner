@@ -39,7 +39,7 @@ class Application
         $pdo = Connection::connect($this->config['db']);
         $parts = new PartRepository($pdo);
         $builds = new BuildRepository($pdo, $parts);
-        $checker = CompatibilityChecker::withAllRules($this->config['psu_margin_percent']);
+        $checker = new CompatibilityChecker($this->config['psu_margin_percent']);
 
         $partApi = new PartApiController($parts);
         $buildApi = new BuildApiController($parts, $builds, $checker);

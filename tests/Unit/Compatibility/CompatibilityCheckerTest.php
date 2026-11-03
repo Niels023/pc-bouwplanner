@@ -18,7 +18,7 @@ class CompatibilityCheckerTest extends TestCase
     protected function setUp(): void
     {
         $config = require __DIR__ . '/../../../config/app.php';
-        $this->checker = CompatibilityChecker::withAllRules($config['psu_margin_percent']);
+        $this->checker = new CompatibilityChecker($config['psu_margin_percent']);
     }
 
     public function testEmptyBuildChecksNothing(): void

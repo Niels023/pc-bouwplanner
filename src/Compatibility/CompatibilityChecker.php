@@ -2,40 +2,34 @@
 
 namespace App\Compatibility;
 
-use App\Compatibility\Rules\CoolerHeightRule;
-use App\Compatibility\Rules\FormFactorRule;
-use App\Compatibility\Rules\GpuLengthRule;
-use App\Compatibility\Rules\IntegratedGraphicsRule;
-use App\Compatibility\Rules\PsuWattageRule;
-use App\Compatibility\Rules\RamTypeRule;
-use App\Compatibility\Rules\SocketRule;
 use App\Model\Build;
 use App\Model\Category;
 use App\Model\Part;
 
 class CompatibilityChecker
 {
-    /** @param CompatibilityRule[] $rules */
-    public function __construct(private array $rules)
-    {
-    }
+    // Per regel de onderdelen die nodig zijn. Ontbreekt er een, dan wordt de regel nog niet gecontroleerd.
+    private const RULES = [
+        'socket' => [Category::Cpu, Category::Motherboard],
+        'ram_type' => [Category::Motherboard, Category::Ram],
+        'form_factor' => [Category::Motherboard, Category::PcCase],
+        // Zonder processor valt het verbruik zo laag uit dat elke voeding goed lijkt.
+        'psu_wattage' => [Category::Psu, Category::Cpu],
+        'gpu_length' => [Category::PcCase],
+        'cooler_height' => [Category::Cooler, Category::PcCase],
+        'graphics' => [Category::Cpu],
+    ];
 
-    public static function withAllRules(int $psuMarginPercent): self
+    public function __construct(private int $psuMarginPercent)
     {
-        return new self([
-            new SocketRule(),
-            new RamTypeRule(),
-            new FormFactorRule(),
-            new PsuWattageRule($psuMarginPercent),
-            new GpuLengthRule(),
-            new CoolerHeightRule(),
-            new IntegratedGraphicsRule(),
-        ]);
     }
 
     public function check(Build $build): CheckReport
     {
-        $results = array_map(fn (CompatibilityRule $rule) => $this->runRule($rule, $build), $this->rules);
+        $results = [];
+        foreach (array_keys(self::RULES) as $rule) {
+            $results[] = $this->runRule($rule, $build);
+        }
 
         return new CheckReport($results, $build->isComplete(), $build->totalPriceCents(), $build->estimatedPowerW());
     }
@@ -50,14 +44,14 @@ class CompatibilityChecker
         $withCandidate = $build->withPart($candidate);
         $problems = [];
 
-        foreach ($this->rules as $rule) {
+        foreach (self::RULES as $rule => $categories) {
             $result = $this->runRule($rule, $withCandidate);
             if (!$result->isProblem()) {
                 continue;
             }
 
             // Een probleem tussen andere onderdelen ligt niet aan dit onderdeel.
-            $usesCandidate = in_array($candidate->category(), $rule->requiredCategories(), true);
+            $usesCandidate = in_array($candidate->category(), $categories, true);
             if ($usesCandidate || !$this->runRule($rule, $build)->isProblem()) {
                 $problems[] = $result;
             }
@@ -66,20 +60,165 @@ class CompatibilityChecker
         return $problems;
     }
 
-    private function runRule(CompatibilityRule $rule, Build $build): RuleResult
+    private function runRule(string $rule, Build $build): RuleResult
     {
-        $missing = array_filter(
-            $rule->requiredCategories(),
-            fn (Category $category) => !$build->hasPart($category),
-        );
+        $missing = array_filter(self::RULES[$rule], fn (Category $category) => !$build->hasPart($category));
 
         if ($missing !== []) {
             $names = array_map(fn (Category $category) => $category->withArticle(), $missing);
-            $message = 'Kies eerst ' . implode(' en ', $names) . '.';
 
-            return new RuleResult($rule->name(), CheckStatus::NotChecked, $message);
+            return new RuleResult($rule, CheckStatus::NotChecked, 'Kies eerst ' . implode(' en ', $names) . '.');
         }
 
-        return $rule->evaluate($build);
+        // Elke regel geeft een status en een melding terug.
+        [$status, $message] = match ($rule) {
+            'socket' => $this->socketRule($build),
+            'ram_type' => $this->ramTypeRule($build),
+            'form_factor' => $this->formFactorRule($build),
+            'psu_wattage' => $this->psuWattageRule($build),
+            'gpu_length' => $this->gpuLengthRule($build),
+            'cooler_height' => $this->coolerHeightRule($build),
+            'graphics' => $this->graphicsRule($build),
+        };
+
+        return new RuleResult($rule, $status, $message);
+    }
+
+    private function socketRule(Build $build): array
+    {
+        $cpuSocket = $build->cpu()->socket;
+        $boardSocket = $build->motherboard()->socket;
+
+        if ($cpuSocket !== $boardSocket) {
+            $message = "De processor heeft socket $cpuSocket, maar het moederbord heeft socket $boardSocket.";
+
+            return [CheckStatus::Error, $message];
+        }
+
+        $message = "De processor en het moederbord hebben allebei socket $cpuSocket.";
+
+        return [CheckStatus::Ok, $message];
+    }
+
+    private function ramTypeRule(Build $build): array
+    {
+        $ramType = $build->ram()->ramType;
+        $boardRamType = $build->motherboard()->ramType;
+
+        if ($ramType !== $boardRamType) {
+            $message = "Het geheugen is $ramType, maar het moederbord ondersteunt alleen $boardRamType.";
+
+            return [CheckStatus::Error, $message];
+        }
+
+        $message = "Het geheugen en het moederbord gebruiken allebei $ramType.";
+
+        return [CheckStatus::Ok, $message];
+    }
+
+    private function formFactorRule(Build $build): array
+    {
+        $board = $build->motherboard()->formFactor;
+        $case = $build->pcCase()->maxFormFactor;
+
+        if (!$board->fitsIn($case)) {
+            $message = "Het moederbord is {$board->name}, maar in deze kast past maximaal {$case->name}.";
+
+            return [CheckStatus::Error, $message];
+        }
+
+        $message = "Het moederbord ({$board->name}) past in deze kast (maximaal {$case->name}).";
+
+        return [CheckStatus::Ok, $message];
+    }
+
+    private function psuWattageRule(Build $build): array
+    {
+        $wattage = $build->psu()->wattageW;
+        $usage = $build->estimatedPowerW();
+        $margin = $this->psuMarginPercent;
+        $needed = (int) ceil($usage * (100 + $margin) / 100);
+
+        if ($wattage < $usage) {
+            $message = "De voeding levert $wattage W, maar de onderdelen verbruiken samen ongeveer $usage W.";
+
+            return [CheckStatus::Error, $message];
+        }
+
+        if ($wattage < $needed) {
+            $message = "De voeding levert $wattage W. Dat is genoeg voor de ongeveer $usage W die de "
+                . "onderdelen verbruiken, maar met $margin% marge is $needed W beter.";
+
+            return [CheckStatus::Warning, $message];
+        }
+
+        $message = "De voeding levert $wattage W. De onderdelen verbruiken ongeveer $usage W, "
+            . "met $margin% marge is $needed W nodig.";
+
+        return [CheckStatus::Ok, $message];
+    }
+
+    private function gpuLengthRule(Build $build): array
+    {
+        if (!$build->hasPart(Category::Gpu)) {
+            $message = 'Er is geen videokaart gekozen die moet passen.';
+
+            return [CheckStatus::Ok, $message];
+        }
+
+        $length = $build->gpu()->lengthMm;
+        $maxLength = $build->pcCase()->maxGpuLengthMm;
+
+        if ($length > $maxLength) {
+            $message = "De videokaart is $length mm lang, maar in deze kast past maximaal $maxLength mm.";
+
+            return [CheckStatus::Error, $message];
+        }
+
+        $message = "De videokaart ($length mm) past in deze kast (maximaal $maxLength mm).";
+
+        return [CheckStatus::Ok, $message];
+    }
+
+    private function coolerHeightRule(Build $build): array
+    {
+        $height = $build->cooler()->heightMm;
+        $maxHeight = $build->pcCase()->maxCoolerHeightMm;
+
+        if ($height > $maxHeight) {
+            $message = "De koeler is $height mm hoog, maar in deze kast past maximaal $maxHeight mm.";
+
+            return [CheckStatus::Error, $message];
+        }
+
+        $message = "De koeler ($height mm) past in deze kast (maximaal $maxHeight mm).";
+
+        return [CheckStatus::Ok, $message];
+    }
+
+    private function graphicsRule(Build $build): array
+    {
+        if ($build->hasPart(Category::Gpu)) {
+            $message = 'Er is een videokaart gekozen, dus de PC geeft beeld.';
+
+            return [CheckStatus::Ok, $message];
+        }
+
+        if ($build->cpu()->hasIntegratedGraphics) {
+            $message = 'De processor heeft ingebouwde graphics, dus een videokaart is niet nodig.';
+
+            return [CheckStatus::Ok, $message];
+        }
+
+        // Pas een fout als de rest gekozen is: daarvoor kan de videokaart nog komen.
+        if ($build->hasAllExceptGpu()) {
+            $message = 'Deze processor heeft geen ingebouwde graphics. Zonder videokaart krijg je geen beeld.';
+
+            return [CheckStatus::Error, $message];
+        }
+
+        $message = 'Kies nog een videokaart, want deze processor heeft geen ingebouwde graphics.';
+
+        return [CheckStatus::NotChecked, $message];
     }
 }
