@@ -20,7 +20,62 @@ Hier leg ik in gewone taal uit hoe de PC-bouwplanner in elkaar zit. Dit document
 | `tests/` | Alle tests. `Unit` draait zonder database, `Database` en `Api` met een aparte testdatabase |
 | `vendor/` | Packages van Composer. Staat niet in git, je maakt het met `composer install` |
 
-`bootstrap.php` laadt de autoloader van Composer en de instellingen uit `.env`. Elk script begint daarmee.
+## Waar alles begint
+
+Drie bestanden worden vaak door elkaar gehaald. Ze doen alle drie iets anders.
+
+| Bestand | Wat is het | Wanneer draait het |
+|---|---|---|
+| `public/index.php` | De ingang van de website, geen pagina | Bij elk verzoek naar de site, of het nu `/`, `/bouwen/cpu` of `/api/parts` is |
+| `bootstrap.php` | Wat elk script eerst moet klaarzetten | Aan het begin van de website, `composer seed` en `composer test` |
+| `templates/layout.php` | Het HTML-frame om elke pagina: kop, menu en voet | Als `View` een pagina maakt |
+
+Op veel kleine PHP-sites is `index.php` de startpagina zelf. Hier niet: de HTML van de startpagina staat in `templates/home.php`.
+
+### public/index.php
+
+`composer start` draait `php -S localhost:8000 -t public`, de ingebouwde webserver van PHP met `public/` als map. Vraagt de browser een bestand dat bestaat, zoals `/css/style.css`, dan stuurt de server dat terug. Een adres als `/bouwen/cpu` is geen bestand, en dan start de server `index.php`. Zo komt elk verzoek binnen via één bestand. Dat heet een front controller.
+
+`index.php` doet maar vier dingen:
+
+1. `bootstrap.php` laden en de instellingen in `$config` zetten.
+2. De sessie starten, zodat de build waar je mee bezig bent bewaard blijft.
+3. Met `Request::fromGlobals()` een object maken van wat de browser stuurde.
+4. Dat aan `Application` geven en het antwoord met `send()` naar de browser sturen.
+
+Welke pagina je krijgt, beslist niet `index.php` maar de `Router` in `Application`. Daarom is `index.php` zo kort.
+
+### bootstrap.php
+
+```php
+require __DIR__ . '/vendor/autoload.php';
+Dotenv\Dotenv::createImmutable(__DIR__)->safeLoad();
+return require __DIR__ . '/config/app.php';
+```
+
+1. **De autoloader van Composer laden.** Daardoor kun je `new PartRepository($pdo)` schrijven zonder eerst het bestand met `require` te laden. Composer weet uit `composer.json` dat een klasse in `App\` in de map `src/` staat, en zoekt het bestand bij de naam: `App\Repository\PartRepository` staat in `src/Repository/PartRepository.php`.
+2. **`.env` inlezen.** De databasegegevens komen in `$_ENV`.
+3. **De instellingen teruggeven.** `config/app.php` is een array met alle instellingen. Met `$config = require 'bootstrap.php'` krijgt een script die array.
+
+Drie scripts hebben dit nodig: `public/index.php` voor de website, `database/seed.php` voor `composer seed` en de tests, via `bootstrap="bootstrap.php"` in `phpunit.xml`. Zonder `bootstrap.php` zouden die drie regels op drie plekken staan.
+
+### templates/layout.php
+
+Dit is HTML met een paar keer `<?= ?>`, zonder logica. `View::render('home', ...)` maakt eerst de HTML van `home.php` en zet die daarna in `layout.php` op de plek van `<?= $content ?>`. Zo staan de kop, het menu en de voet maar op één plek, en heeft elke pagina ze toch.
+
+### Het hele pad van één verzoek
+
+```text
+browser vraagt /bouwen/cpu
+  -> public/index.php
+       -> bootstrap.php: autoloader, .env en instellingen
+       -> sessie starten, Request maken
+  -> Application: maakt de Router en de controllers
+  -> Router: zoekt de route, roept BuildPageController::step() aan
+  -> controller haalt onderdelen op en vraagt View om de pagina
+  -> View: templates/step.php, daarna in templates/layout.php
+  -> Response terug naar index.php, die hem met send() naar de browser stuurt
+```
 
 ## De database vullen
 
