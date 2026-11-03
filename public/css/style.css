@@ -989,6 +989,58 @@ fieldset {
     padding: 0.1rem 0.6rem;
 }
 
+.compare-form {
+    max-width: 40rem;
+}
+
+.compare-card {
+    padding: 0;
+}
+
+.compare {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.compare th,
+.compare td {
+    border-bottom: 1px solid var(--line);
+    overflow-wrap: break-word;
+    padding: 0.7rem 1rem;
+    text-align: left;
+    vertical-align: top;
+}
+
+.compare thead th {
+    background: var(--surface-soft);
+}
+
+.compare tbody th,
+.compare tfoot th {
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+}
+
+.compare tfoot td {
+    font-weight: 700;
+}
+
+.compare tfoot tr:first-child th,
+.compare tfoot tr:first-child td {
+    border-top: 2px solid var(--line);
+}
+
+.compare tr:last-child th,
+.compare tr:last-child td {
+    border-bottom: 0;
+}
+
+.compare .is-empty,
+.compare-price {
+    color: var(--ink-soft);
+}
+
 .error-page {
     max-width: 36rem;
     margin: 2rem auto;
@@ -1066,5 +1118,34 @@ fieldset {
 
     .recommendation-form {
         padding: 1rem;
+    }
+
+    .compare thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+    }
+
+    .compare tr {
+        display: block;
+        border-bottom: 1px solid var(--line);
+        padding: 0.7rem 1rem;
+    }
+
+    .compare th,
+    .compare td,
+    .compare tfoot tr:first-child th,
+    .compare tfoot tr:first-child td {
+        display: block;
+        border: 0;
+        padding: 0.1rem 0;
+    }
+
+    .compare td::before {
+        content: attr(data-label) ": ";
+        color: var(--ink-soft);
+        font-weight: 600;
     }
 }

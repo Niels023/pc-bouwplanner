@@ -14,6 +14,7 @@ use App\Http\WorkingBuild;
 use App\Model\Build;
 use App\Model\Category;
 use App\Model\Part;
+use App\Model\SavedBuild;
 use App\Repository\BuildRepository;
 use App\Repository\PartFilter;
 use App\Repository\PartRepository;
@@ -101,11 +102,7 @@ class BuildPageController
 
     public function show(Request $request): Response
     {
-        $saved = $this->builds->findByShareCode($request->routeParams['code']);
-
-        if ($saved === null) {
-            throw new HttpException(404, 'build_not_found', 'Geen build gevonden met deze code.');
-        }
+        $saved = $this->savedBuild($request->routeParams['code']);
 
         return $this->view->render('saved-build', [
             'title' => $saved->name,
@@ -121,6 +118,18 @@ class BuildPageController
         return Response::redirect($code === '' ? '/' : '/build/' . rawurlencode($code));
     }
 
+    public function compare(Request $request): Response
+    {
+        $first = $this->savedBuild($request->query('a'));
+        $second = $this->savedBuild($request->query('b'));
+
+        return $this->view->render('compare', [
+            'title' => 'Builds vergelijken',
+            'first' => $first,
+            'second' => $second,
+        ]);
+    }
+
     private function renderOverview(?string $error = null, string $name = '', int $status = 200): Response
     {
         $build = $this->working->build();
@@ -132,6 +141,17 @@ class BuildPageController
             'error' => $error,
             'name' => $name,
         ], $status);
+    }
+
+    private function savedBuild(?string $code): SavedBuild
+    {
+        $saved = $code === null ? null : $this->builds->findByShareCode(trim($code));
+
+        if ($saved === null) {
+            throw new HttpException(404, 'build_not_found', 'Geen build gevonden met deze code.');
+        }
+
+        return $saved;
     }
 
     private function categoryFrom(Request $request): Category

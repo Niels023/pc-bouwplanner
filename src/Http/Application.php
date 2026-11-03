@@ -70,6 +70,7 @@ class Application
         $router->add('POST', '/opslaan', $buildPage->save(...));
         $router->add('GET', '/build/open', $buildPage->open(...));
         $router->add('GET', '/build/{code}', $buildPage->show(...));
+        $router->add('GET', '/vergelijken', $buildPage->compare(...));
         $router->add('GET', '/aanbeveling', $recommendationPage->show(...));
         $router->add('POST', '/aanbeveling/overnemen', $recommendationPage->adopt(...));
         $router->add('GET', '/api/parts', $partApi->index(...));
