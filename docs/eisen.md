@@ -76,3 +76,4 @@ Functionele eisen hebben een ID die begint met F, niet-functionele eisen een ID 
 | NF-07 | Should | Werkt zonder JavaScript | Met JavaScript uit werken alle Must-functies nog. JavaScript zorgt er alleen voor dat de totalen bijwerken zonder dat de pagina herlaadt. |
 | NF-08 | Should | Snel | Elke pagina en elk API-verzoek geeft lokaal binnen 1 seconde antwoord. |
 | NF-09 | Should | Makkelijk te installeren | Iemand anders kan de site installeren en starten met alleen de stappen uit de README. |
+| NF-10 | Should | Verzorgde vormgeving | Alle pagina's hebben dezelfde stijl met vaste kleuren, ronde hoeken en knoppen, vastgelegd als variabelen in de CSS. Op een kaartje vallen de naam, de prijs en de knop het meest op. Keuzes in het aanbevelingsformulier zijn grote vlakken met uitleg die je in één keer aanklikt. NF-01 en NF-02 blijven gehaald. |
