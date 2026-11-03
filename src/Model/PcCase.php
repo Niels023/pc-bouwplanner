@@ -17,6 +17,7 @@ readonly class PcCase extends Part
         public FormFactor $maxFormFactor,
         public int $maxGpuLengthMm,
         public int $maxCoolerHeightMm,
+        public int $maxRadiatorMm,
     ) {
         parent::__construct($id, $brand, $name, $priceCents, $priceDate, $powerW);
     }
@@ -32,6 +33,7 @@ readonly class PcCase extends Part
             'max_form_factor' => $this->maxFormFactor->name,
             'max_gpu_length_mm' => $this->maxGpuLengthMm,
             'max_cooler_height_mm' => $this->maxCoolerHeightMm,
+            'max_radiator_mm' => $this->maxRadiatorMm,
         ];
     }
 
@@ -41,6 +43,7 @@ readonly class PcCase extends Part
             "Moederbord tot {$this->maxFormFactor->name}",
             "Videokaart tot {$this->maxGpuLengthMm} mm",
             "Koeler tot {$this->maxCoolerHeightMm} mm",
+            "Radiator tot {$this->maxRadiatorMm} mm",
         ];
     }
 }

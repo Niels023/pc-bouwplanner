@@ -80,6 +80,16 @@ class PartRepositoryTest extends TestCase
         $this->assertSame(['AM4', 'AM5', 'LGA1700', 'LGA1851'], $this->partNamed('AK400')->sockets);
     }
 
+    public function testLiquidCoolerGetsRadiatorAndNoHeight(): void
+    {
+        $cooler = $this->partNamed('Liquid Freezer III Pro 240');
+
+        $this->assertTrue($cooler->isLiquidCooler());
+        $this->assertSame(240, $cooler->radiatorMm);
+        $this->assertNull($cooler->heightMm);
+        $this->assertSame(240, $this->partNamed('North TG Clear Charcoal Black')->maxRadiatorMm);
+    }
+
     public function testFindByIdReturnsNullForUnknownId(): void
     {
         $this->assertNull($this->parts->findById(999999));

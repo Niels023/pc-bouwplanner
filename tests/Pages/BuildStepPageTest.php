@@ -246,6 +246,14 @@ class BuildStepPageTest extends PageTestCase
         $this->assertPageContains('href="/overzicht"', $this->get('/bouwen/psu'));
     }
 
+    public function testCoolerStepShowsSocketsAndLiquidCoolers(): void
+    {
+        $response = $this->get('/bouwen/cooler');
+
+        $this->assertPageContains('Waterkoeling, radiator 360 mm', $response);
+        $this->assertPageContains('Past op AM4, AM5, LGA1700', $response);
+    }
+
     public function testGpuStepSaysWhenAGpuIsOptional(): void
     {
         $this->choose('cpu', 'Ryzen 5 7600 Boxed');

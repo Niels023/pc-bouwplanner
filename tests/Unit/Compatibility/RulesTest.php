@@ -270,6 +270,37 @@ class RulesTest extends TestCase
         $this->assertStringContainsString('geen beeld', $result->message);
     }
 
+    public function testLiquidCoolerDoesNotNeedCoolerHeight(): void
+    {
+        $build = new Build(Parts::liquidCooler(360), Parts::pcCase(maxCoolerHeightMm: 70));
+
+        $this->assertSame(CheckStatus::Ok, $this->resultFor($build, 'cooler_height')->status);
+    }
+
+    public function testAirCoolerNeedsNoRadiatorSpace(): void
+    {
+        $build = new Build(Parts::cooler(), Parts::pcCase(maxRadiatorMm: 240));
+
+        $this->assertSame(CheckStatus::Ok, $this->resultFor($build, 'radiator')->status);
+    }
+
+    public function testRadiatorOfExactlyMaxSizeFits(): void
+    {
+        $build = new Build(Parts::liquidCooler(280), Parts::pcCase(maxRadiatorMm: 280));
+
+        $this->assertSame(CheckStatus::Ok, $this->resultFor($build, 'radiator')->status);
+    }
+
+    public function testRadiatorThatIsTooBigGivesErrorWithBothSizes(): void
+    {
+        $build = new Build(Parts::liquidCooler(360), Parts::pcCase(maxRadiatorMm: 280));
+
+        $result = $this->resultFor($build, 'radiator');
+
+        $this->assertSame(CheckStatus::Error, $result->status);
+        $this->assertSame('De radiator is 360 mm, maar in deze kast past maximaal 280 mm.', $result->message);
+    }
+
     public function testCoolerOnSupportedSocketIsOk(): void
     {
         $build = new Build(Parts::cpu(socket: 'AM5'), Parts::cooler(sockets: ['AM4', 'AM5']));
