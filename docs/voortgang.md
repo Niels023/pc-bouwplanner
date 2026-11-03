@@ -104,3 +104,19 @@ Start: woensdag 28 oktober 2026.
 - Documentatie van F-19, F-20, F-21, F-31 en F-32 bijgewerkt: ontwerp met nieuwe PNG's, keuzes, bron van de FPS-gegevens, testplan, testrapport, uitleg en README.
 - Testrun: 258 tests slagen, de linter geeft 0 fouten.
 - Ik vond de vormgeving van de site lelijk. Drie stijlen bekeken: licht en modern, donker in gaming-stijl, of meegaan met de instelling van het apparaat. Gekozen voor licht en modern.
+- `feature/aanbeveling-scherm-en-games` gemerged en gepusht. Issues #19, #20, #21, #35 en #36 gesloten.
+- Nieuwe eis NF-10 (verzorgde vormgeving, #37) toegevoegd. Op branch `feature/vormgeving` de hele site in de nieuwe stijl gezet: kleuren als variabelen in de CSS, een startpagina met grote keuzes en uitleg hoe het werkt, kaartjes met labels voor de specificaties, een totaalbalk die onderaan in beeld blijft en grote keuzevlakken in het aanbevelingsformulier.
+- Getest: 258 tests, linter schoon, Lighthouse 100 op vijf pagina's, contrast minimaal 5,02:1, geen horizontaal scrollen van 360 tot 1920 pixels. Schermafbeeldingen in `docs/img/` vernieuwd.
+
+**Open:**
+
+- Gebruikerstest met 2 of 3 mensen (testplan hoofdstuk 6), nu ook met TC-G-09 voor scherm en games. Daarin ook vragen wat ze van de nieuwe vormgeving vinden.
+- De site laten zien aan de docent en de feedback opschrijven.
+- `verbetervoorstellen.md` maken. Punten tot nu toe: de aanbeveling kijkt alleen naar prijs en niet naar koelvermogen, de FPS komt uit één test met een andere processor, 30 FPS voor lichte games is een aanname, en de site is nog niet getest in Firefox, Safari en op een echte telefoon.
+- Eén persoon laten installeren met de README (#34).
+
+**Afwijkingen en wat ik eraan gedaan heb:**
+
+- NF-10 hoort bij de eisen, maar het issuenummer volgt niet de vaste regel. NF-01 t/m NF-09 zijn #26 t/m #34, maar #35 en #36 waren al gebruikt voor F-31 en F-32. NF-10 is daarom #37.
+
+**Komt de planning in gevaar?** Nee.
