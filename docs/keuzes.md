@@ -226,3 +226,17 @@ De API-tests maken een `Request`-object en geven dat direct aan `Application`, z
 **Waarom:** `main` werkt altijd. In de geschiedenis is per feature terug te zien wat ik gedaan heb, en via het issuenummer bij welke eis het hoort.
 
 **Alternatief:** alles direct op `main` committen. Sneller, maar dan staat er soms halve code op `main` en is per feature minder goed te zien wat erbij hoort.
+
+## 16. Uitbreidingen: vergelijken, afdrukken, sockets van koelers en waterkoeling
+
+**Vergelijken als gewone pagina (F-22).** Twee opgeslagen builds vergelijk je op `/vergelijken?a=...&b=...`. De codes staan in de URL, zodat je de vergelijking kunt delen. Het alternatief was een API-endpoint en JavaScript dat de tabel maakt, maar dan werkt het niet zonder JavaScript en staat er logica dubbel. De verschillen worden in de template uitgerekend, omdat het alleen om weergave gaat. Op een telefoon is een tabel met vier kolommen te smal. Daar zet de CSS per onderdeel de twee builds onder elkaar, met de naam van de build ervoor.
+
+**Afdrukken met CSS (F-23).** Gekozen voor een blok `@media print` in de bestaande CSS. Alternatieven waren een aparte printpagina of een PDF maken met een PHP-package. Een aparte pagina is dubbel werk, en een package voegt veel code toe voor iets wat de browser al kan. Een knop "Afdrukken" heb ik niet gemaakt, want die heeft JavaScript nodig. Er staat een korte tip bij: Ctrl+P.
+
+**Sockets van een koeler in een koppeltabel (F-24).** Een koeler past op meerdere sockets. Die staan in de tabel `cooler_sockets` en verwijzen naar de bestaande tabel `sockets`. Het alternatief was een tekstveld zoals `"AM4,AM5"`, maar dan kan een tikfout ervoor zorgen dat een regel faalt, en dat wilde ik juist voorkomen met de opzoektabellen.
+
+**Veilige kant bij sockets.** Noemt een fabrikant een socket niet, dan staat hij niet in de data, ook als hij waarschijnlijk wel past. Zo zegt de site eerder "past niet" dan andersom. Bij de AK620 en LGA1851 gebeurt dat, zie [data-controle.md](data-controle.md).
+
+**Waterkoeling met één maat per kast (F-25).** Een kast heeft in de data alleen de grootste radiator die erin past. Het alternatief was per plek (voorin, bovenin) een maat en ook de dikte van de radiator. Dat is nauwkeuriger, maar die gegevens geeft niet elke fabrikant op, en ik wil geen maten verzinnen. Bij de Fractal Design North, waar een radiator voorin de videokaart kleiner maakt, staat daarom de veilige maat van bovenin.
+
+**Twee regels in plaats van één.** Een waterkoeler heeft geen koeltoren, dus de hoogteregel is dan altijd in orde. De radiator controleert een eigen regel, `radiator`. Zo blijven de namen en meldingen van de bestaande regels hetzelfde, ook in de API.
