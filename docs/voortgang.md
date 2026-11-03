@@ -103,4 +103,4 @@ Start: woensdag 28 oktober 2026.
 
 - Documentatie van F-19, F-20, F-21, F-31 en F-32 bijgewerkt: ontwerp met nieuwe PNG's, keuzes, bron van de FPS-gegevens, testplan, testrapport, uitleg en README.
 - Testrun: 258 tests slagen, de linter geeft 0 fouten.
-- Ik vond de vormgeving van de site lelijk. Drie stijlen bekeken: licht en modern, donker in gaming-stijl, of meegaan met de instelling van het apparaat. Gekozen voor licht en modern, omdat dat het best leesbaar is, ook op een beamer bij de demo.
+- Ik vond de vormgeving van de site lelijk. Drie stijlen bekeken: licht en modern, donker in gaming-stijl, of meegaan met de instelling van het apparaat. Gekozen voor licht en modern.
