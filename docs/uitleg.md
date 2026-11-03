@@ -46,23 +46,25 @@ Een `Build` is een verzameling onderdelen, maximaal één per categorie. Hij kan
 
 Dit is het belangrijkste deel van de app. Het staat in `src/Compatibility/` en weet niets van de database of de website. Daardoor is het makkelijk te testen.
 
-Elke regel is een eigen klasse in `Rules/` en implementeert de interface `CompatibilityRule`. Een interface is een afspraak: elke regel moet deze drie methodes hebben.
+Alle regels staan in de klasse `CompatibilityChecker`. Bovenaan staat de lijst `RULES` met per regel de onderdelen die nodig zijn, bijvoorbeeld `'socket' => [Category::Cpu, Category::Motherboard]`. Daaronder heeft elke regel een eigen methode, zoals `socketRule()`. Zo'n methode geeft twee dingen terug: een status en een melding.
 
-| Methode | Wat doet het | Voorbeeld bij `SocketRule` |
-|---|---|---|
-| `name()` | De naam van de regel | `'socket'` |
-| `requiredCategories()` | Welke onderdelen de regel nodig heeft | processor en moederbord |
-| `evaluate($build)` | De controle zelf, geeft een `RuleResult` terug | vergelijkt de twee sockets |
+```php
+if ($cpuSocket !== $boardSocket) {
+    $message = "De processor heeft socket $cpuSocket, maar het moederbord heeft socket $boardSocket.";
+
+    return [CheckStatus::Error, $message];
+}
+```
 
 Een `RuleResult` bevat de naam van de regel, een status (`Ok`, `Warning`, `Error` of `NotChecked`) en een melding in het Nederlands.
 
 ### Wat gebeurt er bij een controle?
 
-De `CompatibilityChecker` heeft een lijst met alle regels. Bij `check($build)` doet hij dit voor elke regel:
+Bij `check($build)` gaat de checker de lijst `RULES` langs en doet in `runRule()` voor elke regel dit:
 
-1. Kijken of de onderdelen uit `requiredCategories()` gekozen zijn.
+1. Kijken of de onderdelen uit `RULES` gekozen zijn.
 2. Ontbreekt er iets, dan maakt de checker zelf een resultaat `NotChecked` met de melding "Kies eerst een moederbord."
-3. Is alles er, dan roept hij `evaluate()` van de regel aan.
+3. Is alles er, dan kiest een `match` de methode van de regel, zoals `socketRule()`. Met `[$status, $message] = ...` haalt hij de status en de melding uit het antwoord, en maakt er een `RuleResult` van.
 
 Alle resultaten komen samen met de totaalprijs en het verbruik in een `CheckReport`. `overallStatus()` bepaalt daaruit de totaalstatus: eerst kijken of er een fout is, dan een waarschuwing, dan of de build nog niet alle acht onderdelen heeft, en anders is alles in orde. Ook zonder opslag is een build dus nog niet compleet, al heeft geen enkele regel opslag nodig.
 
@@ -121,7 +123,7 @@ Bij werken zit er geen losse videokaart in de build, maar een processor met inge
 
 ## Onderdelen uit de database halen
 
-De klasse `PartRepository` haalt onderdelen op. De query's lezen uit de view `part_details`, die alle tabellen van een onderdeel samenvoegt tot één rij. `PartMapper` maakt van zo'n rij het juiste object: bij categorie `cpu` een `Cpu`, bij `gpu` een `Gpu`.
+De klasse `PartRepository` haalt onderdelen op. De query's lezen uit de view `part_details`, die alle tabellen van een onderdeel samenvoegt tot één rij. `fromRow()` maakt van zo'n rij het juiste object: bij categorie `cpu` een `Cpu`, bij `gpu` een `Gpu`.
 
 Filters staan in een `PartFilter`. `findByFilter()` bouwt daarmee de `WHERE` op: voor elk ingevuld filter komt er een stukje `kolom = ?` bij, en de waarde gaat apart mee. Dat is een prepared statement. De waarde wordt nooit in de SQL geplakt, dus SQL-injectie werkt niet.
 
@@ -226,11 +228,13 @@ De keuzevlakken in het aanbevelingsformulier zijn gewone radioknoppen. Het hele 
 
 **Waarom testen de API-tests zonder webserver?** Dat is sneller. Ik maak zelf een `Request` en geef die aan `Application`, en controleer de `Response`. Daarnaast heb ik met curl getest of het ook via een echte server werkt, en dat vond meteen een probleem: mijn eigen database miste de view.
 
-**Waarom is elke regel een eigen klasse?** Elke regel is klein en apart te testen. Een nieuwe regel toevoegen is één nieuwe klasse maken en die aan de lijst in `withAllRules()` toevoegen. De rest van de code hoeft niet te veranderen.
+**Waarom staan alle regels in één klasse?** Eerst had elke regel een eigen klasse met een interface. Dat waren 8 bestanden met veel dezelfde code voor controles van een paar regels. Nu staan alle regels op één plek en zijn ze van boven naar beneden te lezen. Elke regel is wel een eigen methode, en de tests testen elke regel apart.
+
+**Wat moet je doen om een regel toe te voegen?** Drie dingen in de `CompatibilityChecker`: de regel en de nodige onderdelen in `RULES` zetten, een regel in de `match` in `runRule()` en een nieuwe methode die een status en een melding teruggeeft.
 
 **Waarom controleert de checker of onderdelen ontbreken, en niet de regels zelf?** Dan zou die controle zes keer in de code staan. Nu staat hij op één plek.
 
-**Waarom staat de marge niet in de code van de regel?** De marge is een instelling. Hij staat in `config/app.php` en wordt via de constructor meegegeven aan `PsuWattageRule`. In de test kan ik zo ook een andere marge gebruiken.
+**Waarom staat de marge niet in de code van de regel?** De marge is een instelling. Hij staat in `config/app.php` en wordt via de constructor meegegeven aan de `CompatibilityChecker`. In de test kan ik zo ook een andere marge gebruiken.
 
 **Hoe weet je dat je tests goed zijn?** Ik test precies op de grenzen, bijvoorbeeld een kaart van 355 mm en 356 mm in een kast van 355 mm. Ik heb ook expres 12 fouten in de code gezet, en de tests vingen ze allemaal.
 
