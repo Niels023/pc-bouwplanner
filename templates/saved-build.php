@@ -8,3 +8,15 @@
 <?= $this->partial('partials/totals', ['report' => $report]) ?>
 <?= $this->partial('partials/build-list', ['build' => $saved->build, 'editable' => false]) ?>
 <?= $this->partial('partials/check-results', ['report' => $report]) ?>
+
+<section class="card compare-form" aria-labelledby="compare-title">
+    <h2 id="compare-title">Vergelijken met een andere build</h2>
+    <form action="/vergelijken" method="get" class="inline-form">
+        <input type="hidden" name="a" value="<?= $this->e($saved->shareCode) ?>">
+        <div class="field">
+            <label for="b">Deelcode van de andere build</label>
+            <input id="b" name="b" type="text" maxlength="8" autocomplete="off" required>
+        </div>
+        <button type="submit" class="button">Vergelijken</button>
+    </form>
+</section>
