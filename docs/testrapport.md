@@ -392,6 +392,47 @@ Eén paginatest is aangepast: die zocht naar "Full HD (1920 x 1080)", maar in he
 
 - De eerste versie van de nieuwe stijl had te brede statuslabels bij de controle, links die wegvielen in het overzicht en een menu dat op een telefoon over twee regels liep. Gezien op de screenshots en aangepast voordat het gecommit werd.
 
+## Testrun 3 november 2026, refactor
+
+**Omgeving:** gelijk aan de vorige runs. Branch `refactor/minder-bestanden`.
+
+Bij deze refactor zijn de zeven regelklassen en de interface samengevoegd in de `CompatibilityChecker`, is `PartMapper` opgenomen in `PartRepository`, heeft de startpagina geen eigen controller meer en is ongebruikte code weggehaald. In `src/` ging het aantal PHP-bestanden van 55 naar 45 en het aantal regels code van 3.078 naar 2.868. De zeven testbestanden van de regels zijn één bestand geworden, `RulesTest`. De namen van de tests zijn niet veranderd, dus het testplan klopt nog.
+
+**Resultaat `composer test`:**
+
+```text
+OK (258 tests, 2453 assertions)
+```
+
+**Resultaat `composer lint`:** 0 fouten en 0 waarschuwingen.
+
+Ook met de echte server getest: de startpagina, een stap, het overzicht, een aanbeveling en de API gaven allemaal status 200, en de controle via de API gaf dezelfde regelnamen en meldingen als voor de refactor.
+
+### Mutatietest
+
+Omdat de regels op een andere plek staan, heb ik de mutatietest van 30 oktober opnieuw gedaan, met vier fouten extra voor de nieuwe opzet: 16 fouten met opzet ingebouwd en steeds de unit tests gedraaid.
+
+| Ingebouwde fout | Gevangen door de tests |
+|---|---|
+| Voeding: `<` bij de marge wordt `<=` | Ja |
+| Voeding: `<` bij het verbruik wordt `<=` | Ja |
+| Voeding: `ceil` wordt `floor` | Ja |
+| Voeding: regel heeft geen processor meer nodig | Ja |
+| Videokaart: `>` wordt `>=` | Ja |
+| Videokaart: 1 mm extra speling | Ja |
+| Koeler: `>` wordt `>=` | Ja |
+| Koeler: 1 mm extra speling | Ja |
+| Formaat: `<=` wordt `<` | Ja |
+| Socket: regel geeft nooit een fout | Ja |
+| RAM-type: regel geeft nooit een fout | Ja |
+| Totaalstatus: waarschuwing wordt fout | Ja |
+| Beeld: fout ook als nog niet alles gekozen is | Ja |
+| Beeld: ingebouwde graphics telt niet | Ja |
+| Ontbrekende onderdelen worden niet meer gemeld | Ja |
+| Grijze kaartjes: alleen nieuwe problemen tellen | Ja |
+
+**Conclusie:** alle 16 fouten zijn gevangen. De refactor heeft de tests niet zwakker gemaakt.
+
 ## Nog niet getest
 
 - Gebruikerstests met echte mensen (TC-G-01 t/m TC-G-09).
