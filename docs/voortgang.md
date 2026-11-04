@@ -114,7 +114,7 @@ Start: woensdag 28 oktober 2026.
 - `docs/verbetervoorstellen.md` gemaakt, met zeven voorstellen, prioriteit en een planning in sprints. In `docs/opdracht.md` opgeschreven hoe de scope tijdens het project veranderd is.
 - Het verslag deels ingevuld: alle blokken van B1-K1 en de projectmethodiek van B1-K2, op basis van de documentatie, de git-geschiedenis en de issues. Daarna ook samenwerken, feedback en evaluatie, met mijn eigen antwoorden. Alleen de presentatie staat nog open.
 
-**Feedback van klasgenoten:** er mocht meer detail komen bij het laten voorstellen van een build. Verwerkt in F-31: je kiest nu ook je scherm en het soort games, en ziet in gewone taal wat de build haalt.
+**Feedback van klasgenoten:** er mochten meer keuzes komen als de site een build voor je maakt. Verwerkt in F-31 en F-32: je kiest nu ook je scherm en het soort games, het budget mag leeg, en je ziet in gewone taal wat de build haalt.
 
 **Afspraak met mezelf:** het project is in november af. Op 3 november zijn alle eisen behalve NF-09 gebouwd en getest, dus dat ligt op schema.
 
@@ -135,3 +135,20 @@ Start: woensdag 28 oktober 2026.
 - NF-10 hoort bij de eisen, maar het issuenummer volgt niet de vaste regel. NF-01 t/m NF-09 zijn #26 t/m #34, maar #35 en #36 waren al gebruikt voor F-31 en F-32. NF-10 is daarom #37.
 
 **Komt de planning in gevaar?** Nee.
+
+### Sessie woensdag 4 november 2026
+
+**Gedaan:**
+
+- Feedback opgeschreven. Ik heb de site voor de nieuwe vormgeving gepresenteerd aan twee mensen. Daaruit kwam dat de vormgeving anders moest. Dat heb ik op 3 november gedaan (NF-10, #37).
+- De feedback van klasgenoten preciezer opgeschreven: er mochten meer keuzes komen als de site een build voor je maakt.
+- Het verslag bijgewerkt: de presentatie en de feedback staan erin. Nu zijn 26 van de 28 blokken ingevuld.
+
+**Open:**
+
+- In het verslag nog "Afstemmen doelgroep" en "Beantwoorden vragen" bij de presentatie: wie de twee mensen waren en welke vragen ze stelden.
+- Gebruikerstest met 2 of 3 mensen (testplan hoofdstuk 6).
+- Een sprintreview en retrospective van sprint 1 schrijven.
+- Eén persoon laten installeren met de README (#34).
+
+**Komt de planning in gevaar?** Nee. De afspraak om in november klaar te zijn ligt op schema.

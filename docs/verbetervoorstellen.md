@@ -13,7 +13,8 @@ Ik heb deze bronnen doorgelopen op 3 november 2026:
 | [data-controle.md](data-controle.md) | Waar de data een aanname of een vereenvoudiging is |
 | [keuzes.md](keuzes.md) | Bewuste vereenvoudigingen met een nadeel |
 | De mutatietests | Of de tests sterk genoeg zijn. Alle ingebouwde fouten worden nu gevangen, dus daar komt geen voorstel uit |
-| Feedback van klasgenoten | Meer detail bij het voorstellen van een build. Al verwerkt in F-31, dus geen nieuw voorstel |
+| Feedback van klasgenoten | Meer keuzes als de site een build voor je maakt. Al verwerkt in F-31 en F-32, dus geen nieuw voorstel |
+| Presentatie aan twee mensen | De vormgeving moest anders. Al verwerkt in NF-10, dus geen nieuw voorstel |
 | Gebruikerstest en feedback van de docent | Nog niet gedaan. Wat daaruit komt, voeg ik hier toe |
 
 ## 2. Voorstellen
