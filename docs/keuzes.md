@@ -181,7 +181,7 @@ De pagina's roepen de logica direct aan en gaan niet via de API. Dat is sneller 
 
 **Gekozen:** een lichte stijl met witte kaartjes, ronde hoeken en één accentkleur (paars). Alle kleuren staan als variabelen in de CSS.
 
-**Waarom:** de eerste versie werkte, maar zag er kaal uit. Ik heb drie stijlen naast elkaar gelegd en gekozen voor licht en modern. Een lichte stijl is ook makkelijk goed leesbaar te houden: elke tekst heeft een contrast van minimaal 5:1.
+**Waarom:** de eerste versie werkte, maar zag er kaal uit. Na mijn presentatie zeiden twee familieleden dat de site er niet echt modern uitzag. Ik heb drie stijlen naast elkaar gelegd en gekozen voor licht en modern. Een lichte stijl is ook makkelijk goed leesbaar te houden: elke tekst heeft een contrast van minimaal 5:1.
 
 **Alternatieven:**
 

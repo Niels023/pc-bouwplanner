@@ -140,13 +140,13 @@ Start: woensdag 28 oktober 2026.
 
 **Gedaan:**
 
-- Feedback opgeschreven. Ik heb de site voor de nieuwe vormgeving gepresenteerd aan twee mensen. Daaruit kwam dat de vormgeving anders moest. Dat heb ik op 3 november gedaan (NF-10, #37).
+- Feedback opgeschreven. Ik heb de site voor de nieuwe vormgeving gepresenteerd aan twee familieleden die weinig van PC's weten. Ik vroeg wat ze vonden van hoe de website eruitzag, en hun antwoord was dat die niet echt modern was. Dat heb ik op 3 november aangepakt (NF-10, #37).
 - De feedback van klasgenoten preciezer opgeschreven: er mochten meer keuzes komen als de site een build voor je maakt.
-- Het verslag bijgewerkt: de presentatie en de feedback staan erin. Nu zijn 26 van de 28 blokken ingevuld.
+- Het verslag bijgewerkt: de presentatie en de feedback staan erin. Nu zijn 27 van de 28 blokken ingevuld.
 
 **Open:**
 
-- In het verslag nog "Afstemmen doelgroep" en "Beantwoorden vragen" bij de presentatie: wie de twee mensen waren en welke vragen ze stelden.
+- In het verslag nog "Beantwoorden vragen" bij de presentatie: welke vragen de familieleden stelden en wat ik antwoordde.
 - Gebruikerstest met 2 of 3 mensen (testplan hoofdstuk 6).
 - Een sprintreview en retrospective van sprint 1 schrijven.
 - Eén persoon laten installeren met de README (#34).
